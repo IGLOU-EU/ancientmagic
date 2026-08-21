@@ -457,14 +457,21 @@ function realizeCurseClause(clause: ClausePlan, rng: Rng): Realization {
 function realizeInvocationClause(
   clause: ClausePlan,
   rng: Rng,
-  eldritch: boolean,
+  plan: FormulaPlan,
   used: Set<string>,
 ): Realization {
+  const eldritch = plan.eldritch;
   const agentGenes = clause.genes.filter((g) => g.role === 'AGENT');
+  // Spec 3.9 counts the AGENT chain in nouns: three at tier 8 (a head plus two
+  // n-genitives), four at tier 9. The plan hands three AGENT genes at both
+  // tiers, so tier 9 stacks one more epithet on the field of the last gene.
+  const lastGene = agentGenes[agentGenes.length - 1];
+  const chain =
+    plan.difficulty >= 9 && lastGene !== undefined ? [...agentGenes, lastGene] : agentGenes;
   const words: EgyptianWord[] = [fixed(FN_I)];
   const names: string[] = [];
 
-  agentGenes.forEach((gene, index) => {
+  chain.forEach((gene, index) => {
     if (index > 0) words.push(fixed(FN_N));
     if (eldritch) {
       const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
@@ -746,7 +753,7 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng): Realization {
     } else if (plan.school === 'curse') {
       realized = realizeCurseClause(clause, rng);
     } else {
-      realized = realizeInvocationClause(clause, rng, plan.eldritch, clauseUsed);
+      realized = realizeInvocationClause(clause, rng, plan, clauseUsed);
     }
     words.push(...realized.words);
     glossParts.push(realized.gloss);

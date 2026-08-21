@@ -292,11 +292,14 @@ function realizeCurseClause(clause, rng) {
         gloss: `May the ${adjectiveGloss(modifier)}${target.noun ?? ''} be ${intent.pp ?? ''}${adverb.gloss}.`,
     };
 }
-function realizeInvocationClause(clause, rng, eldritch, used) {
+function realizeInvocationClause(clause, rng, plan, used) {
+    const eldritch = plan.eldritch;
     const agentGenes = clause.genes.filter((g) => g.role === 'AGENT');
+    const lastGene = agentGenes[agentGenes.length - 1];
+    const chain = plan.difficulty >= 9 && lastGene !== undefined ? [...agentGenes, lastGene] : agentGenes;
     const words = [fixed(FN_I)];
     const names = [];
-    agentGenes.forEach((gene, index) => {
+    chain.forEach((gene, index) => {
         if (index > 0)
             words.push(fixed(FN_N));
         if (eldritch) {
@@ -546,7 +549,7 @@ function composeEgyptian(plan, rng) {
             realized = realizeCurseClause(clause, rng);
         }
         else {
-            realized = realizeInvocationClause(clause, rng, plan.eldritch, clauseUsed);
+            realized = realizeInvocationClause(clause, rng, plan, clauseUsed);
         }
         words.push(...realized.words);
         glossParts.push(realized.gloss);

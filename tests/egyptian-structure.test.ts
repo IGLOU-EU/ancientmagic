@@ -218,13 +218,24 @@ test('invocation clauses open on the vocative and reach my before the power word
   }
 });
 
-test('the epithet chain grows with the tier', () => {
-  for (const difficulty of [3, 5, 6, 7, 8, 9]) {
+// Spec 3.9: the AGENT chain counted in nouns, a head plus its n-genitives.
+const AGENT_CHAIN: Readonly<Record<number, number>> = {
+  3: 1,
+  4: 1,
+  5: 1,
+  6: 2,
+  7: 2,
+  8: 3,
+  9: 4,
+};
+
+test('the epithet chain grows with the tier, four nouns at tier 9', () => {
+  for (const difficulty of [3, 4, 5, 6, 7, 8, 9]) {
     for (const seed of SEEDS) {
       const where = label('invocation', difficulty, seed);
       const line = words('invocation', difficulty, seed);
       // Each clause opens on the vocative i and stacks n-genitive epithets.
-      const perClause = difficulty >= 8 ? 3 : difficulty >= 6 ? 2 : 1;
+      const perClause = AGENT_CHAIN[difficulty] ?? 0;
       const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
       const genitives = line.filter((w) => w === 'en').length;
       // The EO2 title line also spends one n at tiers 3, 4, 8 and 9, and each
@@ -236,6 +247,50 @@ test('the epithet chain grows with the tier', () => {
         clauses * (perClause - 1) + titleN + litanyN,
         `n-genitive count in ${where}`,
       );
+    }
+  }
+});
+
+test('every vocative heads a chain of exactly its tier length', () => {
+  for (const school of ['invocation', 'eldritch'] as const) {
+    for (const difficulty of [3, 4, 5, 6, 7, 8, 9]) {
+      for (const seed of SEEDS) {
+        const where = label(school, difficulty, seed);
+        const list = egyptianWords(school, difficulty, seed);
+        const expected = AGENT_CHAIN[difficulty] ?? 0;
+        // The vocatives of the school clauses are the ones that reach my. The
+        // gate addresses of the litany run to rekhi or rekhek instead.
+        const chains: number[] = [];
+        list.forEach((word, index) => {
+          if (word.spoken !== 'i') return;
+          let nouns = 0;
+          for (let at = index + 1; at < list.length; at += 1) {
+            const here = list[at];
+            if (here === undefined) break;
+            if (here.role === 'content') nouns += 1;
+            else if (here.spoken !== 'en') break;
+          }
+          const stop = list.findIndex((w, at) => at > index && w.role !== 'content' && w.spoken !== 'en');
+          if (list[stop]?.spoken !== 'mi') return;
+          chains.push(nouns);
+        });
+        assert.strictEqual(chains.length, difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3, `clause count in ${where}`);
+        for (const nouns of chains) {
+          assert.strictEqual(nouns, expected, `agent chain length in ${where}`);
+        }
+      }
+    }
+  }
+});
+
+test('the agent pools never run dry across a wide seed sweep', () => {
+  for (const school of ALL_SCHOOLS) {
+    for (const difficulty of [8, 9]) {
+      for (let seed = 0; seed < 400; seed += 1) {
+        // A dry pool makes pick throw, which fails the test here.
+        const out = egyptian(school, difficulty, seed);
+        assert.ok(out.glyphs.length > 0, `empty draw for ${label(school, difficulty, seed)}`);
+      }
     }
   }
 });
