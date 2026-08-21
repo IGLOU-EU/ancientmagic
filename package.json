@@ -1,7 +1,7 @@
 {
   "name": "ancientmagic",
   "version": "0.1.0",
-  "description": "Static website for ancientmagic.iglou.eu, plain HTML5, Sass and vanilla TypeScript",
+  "description": "Arcane spell generator: a static site that writes incantations in ancient scripts such as runes",
   "private": true,
   "license": "Unlicense",
   "scripts": {
