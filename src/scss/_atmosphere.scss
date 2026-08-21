@@ -102,51 +102,50 @@ body::before {
 
 // The milky way, design revision 1. A rotated band of dense stars, bright
 // clumps and a luminous core, cut to shape by a soft mask. Three mismatched
-// tile sizes keep the dense field from forming a visible lattice.
+// tile sizes keep the dense field from forming a visible lattice. Dot radii
+// stay above one device pixel and opacities above 0.4, anything finer is
+// rasterized into invisibility once the mask ramp dims it.
 $band-near-pos: (12% 30%, 45% 72%, 78% 15%, 30% 88%, 90% 55%);
-$band-mid-pos: (25% 20%, 62% 52%, 8% 66%, 84% 82%);
-$band-far-pos: (18% 45%, 55% 10%, 40% 58%, 70% 85%, 5% 92%, 92% 25%);
+$band-mid-pos: (25% 20%, 62% 52%, 8% 66%, 84% 82%, 48% 8%, 71% 33%);
+$band-far-pos: (18% 45%, 55% 10%, 40% 58%, 70% 85%, 5% 92%, 92% 25%, 33% 78%, 82% 62%);
 
-$band-core: linear-gradient(
+// Two nested gradients rather than one, so the core reads as a glow with a
+// bright spine instead of a flat grey stripe.
+$band-core-wide: linear-gradient(
   to bottom,
   a($star-far, 0) 0,
-  a($star-far, 0.05) 32%,
-  a($star-mid, 0.11) 50%,
-  a($star-far, 0.05) 68%,
+  a($star-far, 0.04) 30%,
+  a($star-far, 0.1) 44%,
+  a($star-far, 0.13) 50%,
+  a($star-far, 0.1) 56%,
+  a($star-far, 0.04) 70%,
   a($star-far, 0) 100%
 );
+$band-core-axis: linear-gradient(
+  to bottom,
+  a($star-mid, 0) 41%,
+  a($star-mid, 0.12) 50%,
+  a($star-mid, 0) 59%
+);
 $band-clumps: (
-  radial-gradient(ellipse 9% 6% at 26% 48%, a($star-mid, 0.16) 0, a($star-mid, 0) 100%),
-  radial-gradient(ellipse 12% 8% at 58% 55%, a($nebula-dusk, 0.35) 0, a($nebula-dusk, 0) 100%),
-  radial-gradient(ellipse 8% 5% at 82% 44%, a($star-far, 0.18) 0, a($star-far, 0) 100%)
+  radial-gradient(ellipse 9% 6% at 26% 48%, a($star-mid, 0.3) 0, a($star-mid, 0) 100%),
+  radial-gradient(ellipse 12% 8% at 58% 55%, a($nebula-dusk, 0.5) 0, a($nebula-dusk, 0) 100%),
+  radial-gradient(ellipse 8% 5% at 82% 44%, a($star-far, 0.32) 0, a($star-far, 0) 100%)
 );
 $band-stars: list.join(
-  star-dots($band-near-pos, 1px, a($star-mid, 0.45)),
+  star-dots($band-near-pos, 1.5px, a($star-mid, 0.85)),
   list.join(
-    star-dots($band-mid-pos, 0.75px, a($star-far, 0.4)),
-    star-dots($band-far-pos, 0.5px, a($star-far, 0.28)),
+    star-dots($band-mid-pos, 1px, a($star-far, 0.6)),
+    star-dots($band-far-pos, 0.75px, a($star-far, 0.45)),
     comma
   ),
   comma
 );
 
-@function fill($value, $count) {
-  $out: ();
-
-  @for $i from 1 through $count {
-    $out: list.append($out, $value, comma);
-  }
-
-  @return $out;
-}
-
-$band-sizes: list.join(
-  fill(150px 130px, 5),
-  list.join(fill(110px 92px, 4), list.join(fill(88px 72px, 6), fill(100% 100%, 4), comma), comma),
-  comma
-);
-
-// Oversized so the rotation never exposes a corner of the layer.
+// Oversized so the rotation never exposes a corner of the layer. The size and
+// repeat lists are explicit, one entry per layer: 5 near, 6 mid and 8 far
+// star tiles, then 3 clumps and 2 cores at full size. Keep them in step with
+// the position lists above.
 body::after {
   content: '';
   position: fixed;
@@ -154,9 +153,61 @@ body::after {
   inset: -45%;
   rotate: -32deg;
   pointer-events: none;
-  background-image: list.join($band-stars, list.join($band-clumps, ($band-core,), comma), comma);
-  background-size: $band-sizes;
-  background-repeat: list.join(fill(repeat, 15), fill(no-repeat, 4), comma);
+  background-image: list.join(
+    $band-stars,
+    list.join($band-clumps, ($band-core-axis, $band-core-wide), comma),
+    comma
+  );
+  background-size:
+    150px 130px,
+    150px 130px,
+    150px 130px,
+    150px 130px,
+    150px 130px,
+    110px 92px,
+    110px 92px,
+    110px 92px,
+    110px 92px,
+    110px 92px,
+    110px 92px,
+    88px 72px,
+    88px 72px,
+    88px 72px,
+    88px 72px,
+    88px 72px,
+    88px 72px,
+    88px 72px,
+    88px 72px,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-repeat:
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat;
   mix-blend-mode: screen;
 
   @include mask(linear-gradient(to bottom, transparent 30%, #000 44% 56%, transparent 70%));
