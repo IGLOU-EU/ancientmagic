@@ -62,12 +62,11 @@ $dur-enter: 500ms;
 $dur-flare: 900ms;
 $hold-copied: 1600ms;
 
-// Vapor loops. Breathe and drift run on mismatched periods so the combined
-// cycle never reads as mechanical, the mist crosses the page in over a minute.
+// Vapor loops of the glyph glow. Breathe, drift and sway run on mismatched
+// periods so the combined cycle never reads as mechanical.
 $dur-vapor-breathe: 6500ms;
 $dur-vapor-drift: 11s;
 $dur-glow-sway: 7s;
-$dur-mist: 75s;
 
 // Font stacks. Glyph chains end in the serif stack so a missing script font
 // degrades to something rather than to tofu.

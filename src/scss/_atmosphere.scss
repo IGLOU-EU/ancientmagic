@@ -5,7 +5,7 @@
 // Dot positions inside one tile, design table 6.1.
 $star-near-pos: (33% 37%, 88% 79%);
 $star-mid-pos: (77% 18%, 21% 62%, 49% 89%);
-$star-far-pos: (12% 24%, 63% 8%, 38% 71%, 86% 54%);
+$star-far-pos: (12% 24%, 63% 8%, 86% 54%);
 
 // Radii are half of the sizes given in table 6.2, which state the full width
 // and height of each wash.
@@ -63,16 +63,14 @@ body::before {
     340px 300px,
     340px 300px,
     340px 300px,
-    220px 180px,
-    220px 180px,
-    220px 180px,
-    220px 180px,
+    263px 211px,
+    263px 211px,
+    263px 211px,
     100% 100%,
     100% 100%,
     100% 100%;
   background-repeat:
     no-repeat,
-    repeat,
     repeat,
     repeat,
     repeat,
@@ -94,7 +92,6 @@ body::before {
     normal,
     normal,
     normal,
-    normal,
     screen,
     screen,
     screen;
@@ -106,9 +103,20 @@ body::before {
 // and the field reads as random. Dot radii stay above one device pixel and
 // opacities above 0.4, anything finer is rasterized into invisibility once
 // the mask ramp dims it.
-$band-near-pos: (23% 31%, 57% 74%, 86% 19%);
-$band-mid-pos: (11% 57%, 39% 13%, 67% 83%, 91% 41%);
-$band-far-pos: (7% 22%, 29% 66%, 47% 37%, 63% 91%, 81% 9%, 94% 71%);
+@function star($x, $y, $radius, $tint) {
+  @return radial-gradient(circle $radius at $x $y, $tint 0, $tint 45%, a($tint, 0) 100%);
+}
+
+// One dot per layer: no constellation exists to repeat as a group. Tile
+// periods share no common factor and each layer gets its own phase offset,
+// so no two layers ever align twice the same way on screen.
+$band-stars: (
+  star(37%, 63%, 1.5px, a($star-mid, 0.8)),
+  star(71%, 23%, 1.25px, a($star-far, 0.6)),
+  star(13%, 41%, 1px, a($star-far, 0.55)),
+  star(59%, 87%, 1px, a($star-far, 0.5)),
+  star(89%, 9%, 0.75px, a($star-far, 0.45))
+);
 
 // Two nested gradients rather than one, so the core reads as a glow with a
 // spine instead of a flat grey stripe. Lavender tints only, a whiter core
@@ -133,20 +141,10 @@ $band-clumps: (
   radial-gradient(ellipse 12% 8% at 58% 55%, a($nebula-dusk, 0.4) 0, a($nebula-dusk, 0) 100%),
   radial-gradient(ellipse 8% 5% at 82% 44%, a($star-far, 0.25) 0, a($star-far, 0) 100%)
 );
-$band-stars: list.join(
-  star-dots($band-near-pos, 1.5px, a($star-mid, 0.8)),
-  list.join(
-    star-dots($band-mid-pos, 1px, a($star-far, 0.55)),
-    star-dots($band-far-pos, 0.75px, a($star-far, 0.45)),
-    comma
-  ),
-  comma
-);
-
-// Oversized so the rotation never exposes a corner of the layer. The size and
-// repeat lists are explicit, one entry per layer: 3 near, 4 mid and 6 far
+// Oversized so the rotation never exposes a corner of the layer. The size,
+// repeat and position lists are explicit, one entry per layer: 5 single-dot
 // star tiles, then 2 clumps and 2 cores at full size. Keep them in step with
-// the position lists above.
+// $band-stars above.
 body::after {
   content: '';
   position: fixed;
@@ -159,33 +157,27 @@ body::after {
     list.join($band-clumps, ($band-core-axis, $band-core-wide), comma),
     comma
   );
+  background-position:
+    0 0,
+    83px 47px,
+    151px 101px,
+    211px 173px,
+    271px 229px,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
   background-size:
-    191px 163px,
-    191px 163px,
-    191px 163px,
-    257px 223px,
-    257px 223px,
-    257px 223px,
-    257px 223px,
-    331px 283px,
-    331px 283px,
-    331px 283px,
-    331px 283px,
-    331px 283px,
-    331px 283px,
+    263px 227px,
+    311px 269px,
+    359px 313px,
+    401px 347px,
+    449px 383px,
     100% 100%,
     100% 100%,
     100% 100%,
     100% 100%;
   background-repeat:
-    repeat,
-    repeat,
-    repeat,
-    repeat,
-    repeat,
-    repeat,
-    repeat,
-    repeat,
     repeat,
     repeat,
     repeat,
@@ -200,9 +192,9 @@ body::after {
   @include mask(linear-gradient(to bottom, transparent 30%, #000 44% 56%, transparent 70%));
 }
 
-// The vaporous drift above the band. Transform and opacity only, so the loop
-// stays on the compositor. Painted after body::after by tree order, which
-// puts the mist over the stars.
+// The vaporous wash above the band. Deliberately static: a drifting sky
+// pulled attention away from the formula. Painted after body::after by tree
+// order, which puts the mist over the stars.
 html::after {
   content: '';
   position: fixed;
@@ -214,13 +206,6 @@ html::after {
     radial-gradient(ellipse 38% 26% at 70% 62%, a($violet-fill, 0.18) 0, a($violet-fill, 0) 100%),
     radial-gradient(ellipse 26% 18% at 52% 18%, a($star-far, 0.1) 0, a($star-far, 0) 100%);
   mix-blend-mode: screen;
-  animation: am-mist-drift $dur-mist ease-in-out infinite alternate;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html::after {
-    animation: none;
-  }
 }
 
 // Section separators, design 6.5. The 12px and 23px periods are mismatched on
