@@ -1,4 +1,15 @@
+import { generate } from './generator/pipeline.js';
+import type { School, Settings } from './generator/types.js';
+import { renderFormula } from './ui/manifestation.js';
+
 const COPY_HOLD_MS = 1600;
+
+const SCHOOL_LABELS: Record<School, string> = {
+  protection: 'Protection',
+  curse: 'Curse',
+  invocation: 'Invocation',
+  eldritch: 'Eldritch',
+};
 
 type CopyState = 'idle' | 'copied' | 'failed';
 
@@ -110,7 +121,59 @@ function wireCopy(): void {
   });
 }
 
+function isSchool(value: string): value is School {
+  return value in SCHOOL_LABELS;
+}
+
+function freshSeed(): number {
+  return Math.floor(Math.random() * 4294967296) >>> 0;
+}
+
+function readSettings(): Settings {
+  const school = document.getElementById('school');
+  const difficulty = document.getElementById('difficulty');
+  const schoolValue =
+    school instanceof HTMLSelectElement && isSchool(school.value)
+      ? school.value
+      : 'protection';
+  const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
+  // Only the Runic genome ships in this phase, the other language options
+  // stay disabled in the select.
+  return { language: 'runic', school: schoolValue, difficulty: level };
+}
+
+function conjure(settings: Settings): void {
+  const output = generate(settings, freshSeed());
+  renderFormula(output, {
+    languageLabel: 'Runic',
+    schoolLabel: SCHOOL_LABELS[settings.school],
+    difficulty: settings.difficulty,
+  });
+}
+
+function wireGenerator(): void {
+  const generateButton = document.getElementById('generate');
+  const rerollButton = document.getElementById('reroll');
+
+  // Reroll replays the settings of the last conjuration with a fresh seed.
+  // Before any conjuration it reads the altar like Conjure does.
+  let lastSettings: Settings | null = null;
+
+  if (generateButton !== null) {
+    generateButton.addEventListener('click', () => {
+      lastSettings = readSettings();
+      conjure(lastSettings);
+    });
+  }
+  if (rerollButton !== null) {
+    rerollButton.addEventListener('click', () => {
+      conjure(lastSettings ?? readSettings());
+    });
+  }
+}
+
 wireDifficulty();
 wireCopy();
+wireGenerator();
 
 export {};

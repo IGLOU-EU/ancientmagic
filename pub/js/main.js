@@ -1,4 +1,12 @@
+import { generate } from './generator/pipeline.js';
+import { renderFormula } from './ui/manifestation.js';
 const COPY_HOLD_MS = 1600;
+const SCHOOL_LABELS = {
+    protection: 'Protection',
+    curse: 'Curse',
+    invocation: 'Invocation',
+    eldritch: 'Eldritch',
+};
 const COPY_ANNOUNCEMENT = {
     idle: '',
     copied: 'Copied',
@@ -90,6 +98,45 @@ function wireCopy() {
         });
     });
 }
+function isSchool(value) {
+    return value in SCHOOL_LABELS;
+}
+function freshSeed() {
+    return Math.floor(Math.random() * 4294967296) >>> 0;
+}
+function readSettings() {
+    const school = document.getElementById('school');
+    const difficulty = document.getElementById('difficulty');
+    const schoolValue = school instanceof HTMLSelectElement && isSchool(school.value)
+        ? school.value
+        : 'protection';
+    const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
+    return { language: 'runic', school: schoolValue, difficulty: level };
+}
+function conjure(settings) {
+    const output = generate(settings, freshSeed());
+    renderFormula(output, {
+        languageLabel: 'Runic',
+        schoolLabel: SCHOOL_LABELS[settings.school],
+        difficulty: settings.difficulty,
+    });
+}
+function wireGenerator() {
+    const generateButton = document.getElementById('generate');
+    const rerollButton = document.getElementById('reroll');
+    let lastSettings = null;
+    if (generateButton !== null) {
+        generateButton.addEventListener('click', () => {
+            lastSettings = readSettings();
+            conjure(lastSettings);
+        });
+    }
+    if (rerollButton !== null) {
+        rerollButton.addEventListener('click', () => {
+            conjure(lastSettings ?? readSettings());
+        });
+    }
+}
 wireDifficulty();
 wireCopy();
-export {};
+wireGenerator();

@@ -1,5 +1,6 @@
 # Build tooling only. The pub/ directory is the versioned build, keep it tracked.
 node_modules/
 .sass-cache/
+.test-build/
 *.log
 *.map

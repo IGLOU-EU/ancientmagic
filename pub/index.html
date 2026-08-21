@@ -64,8 +64,8 @@
           <span class="select-shell">
             <select class="select" id="language" name="language">
               <option value="runic" selected>Runic</option>
-              <option value="egyptian">Egyptian Hieroglyphs</option>
-              <option value="phoenician">Phoenician</option>
+              <option value="egyptian" disabled>Egyptian Hieroglyphs (soon)</option>
+              <option value="phoenician" disabled>Phoenician (soon)</option>
             </select>
           </span>
         </div>
@@ -108,8 +108,7 @@
       </div>
 
       <div class="altar-action">
-        <button class="btn btn--primary" type="button" id="generate" disabled aria-describedby="altar-note">Conjure (soon)</button>
-        <p class="helper" id="altar-note">The generator arrives in the next build. The formula below is a fixed sample.</p>
+        <button class="btn btn--primary" type="button" id="generate">Conjure</button>
       </div>
     </section>
 
@@ -139,7 +138,7 @@
       </div>
 
       <div class="output-actions">
-        <button class="btn btn--secondary" type="button" id="reroll" disabled>Reroll (soon)</button>
+        <button class="btn btn--secondary" type="button" id="reroll">Reroll</button>
         <button class="btn btn--small copy" type="button" id="copy" data-state="idle">
           <span class="copy-labels">
             <span class="copy-label" data-label="idle">Copy glyphs</span>

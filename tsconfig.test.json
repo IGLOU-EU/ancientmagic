@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".test-build",
+    "lib": ["ES2022"]
+  },
+  "include": ["src/ts/generator/**/*", "src/ts/languages/**/*", "tests/**/*"]
+}

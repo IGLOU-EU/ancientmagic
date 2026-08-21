@@ -4,7 +4,9 @@
   "description": "Arcane spell generator: a static site that writes incantations in ancient scripts such as runes",
   "private": true,
   "license": "Unlicense",
+  "type": "module",
   "scripts": {
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/tests",
     "build": "npm run build:css && npm run build:js",
     "build:css": "sass --style=compressed --no-source-map src/scss/main.scss pub/css/main.css",
     "build:js": "tsc",
