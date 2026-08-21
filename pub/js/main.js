@@ -12,7 +12,7 @@ const LANGUAGE_LABELS = {
     egyptian: 'Egyptian Hieroglyphs',
     phoenician: 'Phoenician',
 };
-const SHIPPED_LANGUAGES = ['runic', 'egyptian'];
+const SHIPPED_LANGUAGES = ['runic', 'egyptian', 'phoenician'];
 const COPY_ANNOUNCEMENT = {
     idle: '',
     copied: 'Copied',

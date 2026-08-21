@@ -19,7 +19,7 @@ const LANGUAGE_LABELS: Record<LanguageId, string> = {
 
 // Only the genomes that ship are selectable, the other options of the select
 // stay disabled in the markup.
-const SHIPPED_LANGUAGES: ReadonlyArray<LanguageId> = ['runic', 'egyptian'];
+const SHIPPED_LANGUAGES: ReadonlyArray<LanguageId> = ['runic', 'egyptian', 'phoenician'];
 
 type CopyState = 'idle' | 'copied' | 'failed';
 

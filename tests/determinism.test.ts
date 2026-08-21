@@ -1,10 +1,14 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
-import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, runic } from './gen.js';
+import { genomes } from '../src/ts/languages/index.js';
+import type { LanguageId } from '../src/ts/generator/types.js';
+import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, phoenician, runic } from './gen.js';
+
+const GENOMES = [runic, egyptian, phoenician];
 
 test('same seed and settings produce byte-identical output', () => {
-  for (const genome of [runic, egyptian]) {
+  for (const genome of GENOMES) {
     for (const school of ALL_SCHOOLS) {
       for (const difficulty of DIFFICULTIES) {
         for (const seed of SEEDS) {
@@ -18,7 +22,7 @@ test('same seed and settings produce byte-identical output', () => {
 });
 
 test('different seeds change the output somewhere in the sweep', () => {
-  for (const genome of [runic, egyptian]) {
+  for (const genome of GENOMES) {
     let diverged = false;
     for (const school of ALL_SCHOOLS) {
       const a = genome(school, 5, 1);
@@ -29,14 +33,21 @@ test('different seeds change the output somewhere in the sweep', () => {
   }
 });
 
-test('the two shipped genomes render one plan differently', () => {
+test('the three shipped genomes render one plan differently', () => {
   for (const school of ALL_SCHOOLS) {
-    const a = runic(school, 5, 42);
-    const b = egyptian(school, 5, 42);
-    assert.notStrictEqual(a.glyphs, b.glyphs, `${school} rendered alike`);
+    const lines = GENOMES.map((genome) => genome(school, 5, 42).glyphs);
+    assert.strictEqual(new Set(lines).size, GENOMES.length, `${school} rendered alike`);
   }
 });
 
-test('unshipped genomes are rejected', () => {
-  assert.throws(() => generate({ language: 'phoenician', school: 'curse', difficulty: 5 }, 1));
+test('the registry carries the three mvp genomes and nothing else', () => {
+  assert.deepStrictEqual(Object.keys(genomes).sort(), ['egyptian', 'phoenician', 'runic']);
+  for (const [id, genome] of Object.entries(genomes)) {
+    assert.strictEqual(genome?.id, id, `registry key ${id} points elsewhere`);
+  }
+});
+
+test('a language the registry does not carry is rejected', () => {
+  const unshipped = 'greek' as unknown as LanguageId;
+  assert.throws(() => generate({ language: unshipped, school: 'curse', difficulty: 5 }, 1));
 });

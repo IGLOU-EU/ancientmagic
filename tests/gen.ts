@@ -4,6 +4,7 @@ import { generate } from '../src/ts/generator/pipeline.js';
 import { buildPlan } from '../src/ts/generator/plan.js';
 import { mulberry32 } from '../src/ts/generator/rng.js';
 import { composeEgyptian, type EgyptianWord } from '../src/ts/languages/egyptian.js';
+import { composePhoenician, type PhoenicianWord } from '../src/ts/languages/phoenician.js';
 import type { FormulaOutput, School } from '../src/ts/generator/types.js';
 import { parseGlyphs } from './spec.js';
 
@@ -32,6 +33,10 @@ export function egyptian(school: School, difficulty: number, seed: number): Form
   return generate({ language: 'egyptian', school, difficulty }, seed);
 }
 
+export function phoenician(school: School, difficulty: number, seed: number): FormulaOutput {
+  return generate({ language: 'phoenician', school, difficulty }, seed);
+}
+
 export function sweep(
   schools: ReadonlyArray<School>,
   cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
@@ -56,6 +61,32 @@ export function sweepEgyptian(
       }
     }
   }
+}
+
+export function sweepPhoenician(
+  schools: ReadonlyArray<School>,
+  cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
+): void {
+  for (const school of schools) {
+    for (const difficulty of DIFFICULTIES) {
+      for (const seed of SEEDS) {
+        cb(phoenician(school, difficulty, seed), school, difficulty, seed);
+      }
+    }
+  }
+}
+
+// Rebuilds the word list behind a Phoenician formula, so the contract tests
+// can read each word's kind and its vocalized romanization.
+export function phoenicianWords(
+  school: School,
+  difficulty: number,
+  seed: number,
+): PhoenicianWord[] {
+  const level = Math.min(9, Math.max(1, Math.trunc(difficulty)));
+  const rng = mulberry32(seed >>> 0);
+  const plan = buildPlan(school, level, rng);
+  return composePhoenician(plan, rng).words;
 }
 
 // Rebuilds the word list behind an Egyptian formula. The script carries no
