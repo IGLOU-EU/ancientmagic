@@ -72,7 +72,9 @@ $dur-glow-sway: 7s;
 // degrades to something rather than to tofu.
 $font-sans: system-ui, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif;
 $font-serif: 'Iowan Old Style', 'Palatino Linotype', palatino, georgia, 'Times New Roman', serif;
-$font-runic: 'Noto Sans Runic', 'Segoe UI Historic', junicode, $font-serif;
+// Noto Sans Linear B carries the Aegean Numbers of the seal, which Noto Sans
+// Runic does not cover.
+$font-runic: 'Noto Sans Runic', 'Noto Sans Linear B', 'Segoe UI Historic', junicode, $font-serif;
 $font-egyptian: 'Noto Sans Egyptian Hieroglyphs', 'Segoe UI Historic', $font-serif;
 $font-phoenician: 'Noto Sans Phoenician', 'Segoe UI Historic', $font-serif;
 

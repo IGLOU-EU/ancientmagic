@@ -1,0 +1,48 @@
+// The self-hosted script fonts, subsets of Noto under the SIL Open Font
+// License 1.1. See pub/fonts/OFL.txt for the notice and tools/subset-fonts.sh
+// for how the files are rebuilt from the official releases.
+//
+// Egyptian Hieroglyphs and Phoenician live in the Supplementary Multilingual
+// Plane and are absent from almost every system, so an incantation would read
+// as a row of tofu without these. Runic is better supported but travels with
+// the site too, so the three scripts render the same everywhere.
+//
+// Paths are relative to pub/css/main.css, the only file that ships this.
+
+@font-face {
+  font-family: 'Noto Sans Runic';
+  src: url('../fonts/noto-sans-runic-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: u+16a0-16f8;
+}
+
+@font-face {
+  font-family: 'Noto Sans Egyptian Hieroglyphs';
+  src: url('../fonts/noto-sans-egyptian-hieroglyphs-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: u+13000-1342f;
+}
+
+@font-face {
+  font-family: 'Noto Sans Phoenician';
+  src: url('../fonts/noto-sans-phoenician-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: u+10900-1091f;
+}
+
+// Runic numeric seals are written in Aegean Numbers, which Noto covers here
+// rather than in Noto Sans Runic. The file holds only the four seal glyphs.
+@font-face {
+  font-family: 'Noto Sans Linear B';
+  src: url('../fonts/noto-sans-linear-b-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: u+10100-1013f;
+}
