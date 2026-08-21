@@ -1,0 +1,160 @@
+// A leaf from a grimoire that costs almost no ink, design section 10.
+@use 'tokens' as *;
+
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  :root {
+    color-scheme: light;
+  }
+
+  // Browsers ship with background graphics off for printing, so the default
+  // sheet is ink on white and the parchment leaf is opt-in. Both pass AA.
+  html {
+    background-color: $parchment;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow-x: visible;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: $ink-primary;
+    font-family: $font-serif;
+  }
+
+  body::before {
+    display: none;
+  }
+
+  .sigil-band,
+  .altar,
+  .promise,
+  .eyebrow,
+  .magic-circle,
+  .output-actions,
+  .footer-line,
+  .visually-hidden {
+    display: none;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    max-width: none;
+  }
+
+  .site-header {
+    padding-bottom: 8mm;
+    border-bottom: 0.5pt solid $print-rule;
+  }
+
+  .wordmark {
+    color: $ink-secondary;
+    font-size: 14pt;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-align: center;
+    text-transform: uppercase;
+    background: none;
+    -webkit-text-fill-color: currentcolor;
+    text-shadow: none;
+  }
+
+  .manifestation {
+    margin-top: 12mm;
+  }
+
+  .well-stage {
+    position: static;
+  }
+
+  .well {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .output {
+    break-inside: avoid;
+  }
+
+  // Gold is what carries the illuminated meaning, so it is the one place
+  // print forces exact color. Gold ink stays legible in greyscale.
+  .glyph-line {
+    color: $gold-ink;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    font-size: 32pt;
+    line-height: 1.45;
+    text-shadow: none;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+
+  // One printed sheet for every difficulty, so the glyph tiers step down.
+  .output[data-size='medium'] .glyph-line {
+    font-size: 24pt;
+  }
+
+  .output[data-size='small'] .glyph-line {
+    font-size: 18pt;
+  }
+
+  .translit {
+    margin-top: 6mm;
+    color: $ink-secondary;
+    font-size: 12pt;
+    break-after: avoid;
+  }
+
+  .gloss {
+    margin-top: 3mm;
+    color: $ink-primary;
+    font-size: 11pt;
+    widows: 3;
+    orphans: 3;
+  }
+
+  .print-caption {
+    margin-top: 8mm;
+    color: $ink-secondary;
+    font-size: 9pt;
+    text-align: center;
+  }
+
+  .site-footer {
+    margin-top: auto;
+    padding-top: 8mm;
+    color: $ink-secondary;
+  }
+
+  .disclaimer,
+  .print-url {
+    margin-top: 0;
+    max-width: none;
+    color: $ink-secondary;
+    font-size: 8pt;
+    text-align: center;
+  }
+}

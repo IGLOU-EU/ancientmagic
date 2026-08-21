@@ -1,0 +1,178 @@
+// The drawn backgrounds, design section 6.
+@use 'sass:list';
+@use 'tokens' as *;
+
+// Dot positions inside one tile, design table 6.1.
+$star-near-pos: (33% 37%, 88% 79%);
+$star-mid-pos: (77% 18%, 21% 62%, 49% 89%);
+$star-far-pos: (12% 24%, 63% 8%, 38% 71%, 86% 54%);
+
+// Radii are half of the sizes given in table 6.2, which state the full width
+// and height of each wash.
+$wash-dawn: radial-gradient(
+  ellipse 35% 27.5% at 18% 12%,
+  a($nebula-dawn, 0.38) 0,
+  a($nebula-dawn, 0.16) 55%,
+  a($nebula-dawn, 0) 100%
+);
+$wash-dusk: radial-gradient(
+  ellipse 42.5% 30% at 88% 42%,
+  a($nebula-dusk, 0.3) 0,
+  a($nebula-dusk, 0.12) 55%,
+  a($nebula-dusk, 0) 100%
+);
+$wash-deep: radial-gradient(
+  ellipse 30% 22.5% at 50% 96%,
+  a($nebula-deep, 0.45) 0,
+  a($nebula-deep, 0.18) 55%,
+  a($nebula-deep, 0) 100%
+);
+$vignette: radial-gradient(
+  farthest-corner at 50% 38%,
+  a($abyss, 0) 0,
+  a($abyss, 0) 45%,
+  a($abyss, 0.35) 75%,
+  a($abyss, 0.85) 100%
+);
+
+$stars: list.join(
+  star-dots($star-near-pos, 1.5px, a($star-near, 0.3)),
+  list.join(
+    star-dots($star-mid-pos, 1px, a($star-mid, 0.35)),
+    star-dots($star-far-pos, 0.5px, a($star-far, 0.22)),
+    comma
+  ),
+  comma
+);
+
+// The whole atmosphere is one fixed layer so the starfield holds still while
+// the page scrolls, design section 6.1.
+body::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-color: $void;
+  background-image: list.join(list.join(($vignette,), $stars, comma), ($wash-deep, $wash-dusk, $wash-dawn), comma);
+  background-position: 0 0;
+  background-size:
+    100% 100%,
+    520px 460px,
+    520px 460px,
+    340px 300px,
+    340px 300px,
+    340px 300px,
+    220px 180px,
+    220px 180px,
+    220px 180px,
+    220px 180px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-repeat:
+    no-repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat;
+  background-blend-mode:
+    normal,
+    normal,
+    normal,
+    normal,
+    normal,
+    normal,
+    normal,
+    normal,
+    normal,
+    normal,
+    screen,
+    screen,
+    screen;
+}
+
+// Section separators, design 6.5. The 12px and 23px periods are mismatched on
+// purpose so no moire lattice forms.
+.sigil-band {
+  height: 14px;
+  margin-block: var(--sp-band);
+  background-image:
+    linear-gradient($hairline, $hairline),
+    repeating-linear-gradient(-45deg, a($gold, 0.35) 0 1px, transparent 1px 23px),
+    repeating-linear-gradient(45deg, a($control-border, 0.45) 0 2px, transparent 2px 12px);
+  background-position: center, 0 0, 0 0;
+  background-size: 100% 1px, auto, auto;
+  background-repeat: no-repeat, repeat, repeat;
+
+  @include mask(linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%));
+}
+
+// Design 6.4. Centred with negative margins rather than a transform, because a
+// transform would create a stacking context and cut the bloom off from the
+// page atmosphere it has to blend with.
+.magic-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--mc-size);
+  margin-top: calc(var(--mc-size) / -2);
+  margin-left: calc(var(--mc-size) / -2);
+  aspect-ratio: 1;
+  pointer-events: none;
+
+  > span {
+    display: block;
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.mc-bloom {
+  opacity: 0.1;
+  background-image: radial-gradient(ellipse 100% 100% at 50% 50%, $gold 0, a($gold, 0) 60%);
+  mix-blend-mode: screen;
+  animation: am-bloom 9s $ease-settle infinite alternate;
+}
+
+.mc-rings {
+  background-image:
+    radial-gradient(
+      ellipse 100% 100% at 50% 50%,
+      transparent 0 calc(50% - 1px),
+      a($control-border, 0.3) calc(50% - 1px) 50%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 100% 100% at 50% 50%,
+      transparent 0 calc(33% - 1px),
+      a($gold, 0.18) calc(33% - 1px) 33%,
+      transparent 33%
+    );
+}
+
+.mc-ticks {
+  background-image: repeating-conic-gradient(from 0deg, a($gold, 0.18) 0deg 1deg, transparent 1deg 6deg);
+  animation: am-spin-ccw 160s linear infinite;
+
+  @include mask(
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 30%, #000 31% 33%, transparent 34%)
+  );
+}
+
+.mc-spokes {
+  background-image: repeating-conic-gradient(from 0deg, a($gold, 0.26) 0deg 3deg, transparent 3deg 15deg);
+  animation: am-spin-cw 240s linear infinite;
+
+  @include mask(
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 42%, #000 44% 48%, transparent 50%)
+  );
+}

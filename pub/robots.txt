@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ancientmagic.iglou.eu/sitemap.xml

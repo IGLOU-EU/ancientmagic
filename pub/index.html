@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ancient Magic, fictional incantations in real ancient scripts</title>
+<meta name="description" content="Pick a script, a school of magic and a difficulty, then read a fictional incantation written in real ancient glyphs, with its transliteration and a plain-language gloss.">
+<link rel="canonical" href="https://ancientmagic.iglou.eu/">
+<meta name="theme-color" content="#0B0714">
+
+<meta property="og:site_name" content="Ancient Magic">
+<meta property="og:title" content="Ancient Magic, fictional incantations in real ancient scripts">
+<meta property="og:description" content="Pick a script, a school of magic and a difficulty, then read a fictional incantation written in real ancient glyphs, with its transliteration and a plain-language gloss.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ancientmagic.iglou.eu/">
+<meta property="og:locale" content="en_GB">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ancient Magic, fictional incantations in real ancient scripts">
+<meta name="twitter:description" content="Pick a script, a school of magic and a difficulty, then read a fictional incantation written in real ancient glyphs, with its transliteration and a plain-language gloss.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Ancient Magic",
+  "url": "https://ancientmagic.iglou.eu/",
+  "description": "A single-page generator of fictional incantations written in real ancient scripts, with transliteration and a plain-language gloss.",
+  "applicationCategory": "EntertainmentApplication",
+  "operatingSystem": "Any modern web browser",
+  "browserRequirements": "Requires JavaScript",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "license": "https://unlicense.org/",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  }
+}
+</script>
+
+<link rel="stylesheet" href="css/main.css">
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <h1 class="wordmark">Ancient Magic</h1>
+    <p class="promise">Fictional incantations, written in real ancient scripts.</p>
+  </header>
+
+  <main class="main">
+
+    <div class="sigil-band" aria-hidden="true"></div>
+
+    <section class="altar" aria-labelledby="altar-title">
+      <h2 class="eyebrow" id="altar-title">The Altar</h2>
+
+      <div class="altar-grid">
+        <div class="field">
+          <label class="control-label" for="language">Language</label>
+          <span class="select-shell">
+            <select class="select" id="language" name="language">
+              <option value="runic" selected>Runic</option>
+              <option value="egyptian">Egyptian Hieroglyphs</option>
+              <option value="phoenician">Phoenician</option>
+            </select>
+          </span>
+        </div>
+
+        <div class="field">
+          <label class="control-label" for="school">School of magic</label>
+          <span class="select-shell">
+            <select class="select" id="school" name="school">
+              <option value="protection" selected>Protection</option>
+              <option value="curse">Curse</option>
+              <option value="invocation">Invocation</option>
+              <option value="eldritch">Eldritch</option>
+            </select>
+          </span>
+        </div>
+      </div>
+
+      <div class="field field--difficulty">
+        <div class="difficulty-head">
+          <label class="control-label" for="difficulty">Difficulty</label>
+          <span class="difficulty-readout">
+            <span class="difficulty-value" id="difficulty-value">5</span>
+            <span class="difficulty-tier" id="difficulty-tier">Rite</span>
+          </span>
+        </div>
+        <input class="slider" type="range" id="difficulty" name="difficulty"
+               min="1" max="9" step="1" value="5"
+               aria-describedby="difficulty-tier">
+        <div class="ticks" id="difficulty-ticks" aria-hidden="true">
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick tick--current"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+        </div>
+      </div>
+
+      <div class="altar-action">
+        <button class="btn btn--primary" type="button" id="generate" disabled aria-describedby="altar-note">Conjure (soon)</button>
+        <p class="helper" id="altar-note">The generator arrives in the next build. The formula below is a fixed sample.</p>
+      </div>
+    </section>
+
+    <div class="sigil-band" aria-hidden="true"></div>
+
+    <section class="manifestation" aria-labelledby="manifestation-title">
+      <h2 class="eyebrow" id="manifestation-title">The Manifestation</h2>
+
+      <div class="well-stage">
+        <div class="magic-circle" aria-hidden="true">
+          <span class="mc-bloom"></span>
+          <span class="mc-rings"></span>
+          <span class="mc-ticks"></span>
+          <span class="mc-spokes"></span>
+        </div>
+
+        <div class="well">
+          <div class="output" id="output" data-script="runic" data-size="medium" aria-live="polite" aria-atomic="true">
+            <p class="glyph-line" id="glyph-line" role="img" aria-label="alu wardaz thursan withra binda runoz fahido">ᚨᛚᚢ᛫<wbr>ᚹᚨᚱᛞᚨᛉ᛫<wbr>ᚦᚢᚱᛊᚨᚾ᛫<wbr>ᚹᛁᚦᚱᚨ᛫<wbr>ᛒᛁᚾᛞᚨ᛫<wbr>ᚱᚢᚾᛟᛉ᛫<wbr>ᚠᚨᚺᛁᛞᛟ</p>
+            <p class="translit" dir="ltr">alu · wardaz · þursan · wiþra · binda · runoz · fahido</p>
+            <p class="gloss">Alu. A ward bound against the giant. These runes I coloured.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="output-actions">
+        <button class="btn btn--secondary" type="button" id="reroll" disabled>Reroll (soon)</button>
+        <button class="btn btn--small copy" type="button" id="copy" data-state="idle">
+          <span class="copy-labels">
+            <span class="copy-label" data-label="idle">Copy glyphs</span>
+            <span class="copy-label" data-label="copied" aria-hidden="true">Copied</span>
+            <span class="copy-label" data-label="failed" aria-hidden="true">Copy failed</span>
+          </span>
+        </button>
+      </div>
+
+      <p class="print-caption print-only">Runic · Protection · Difficulty 5</p>
+    </section>
+
+    <div class="sigil-band" aria-hidden="true"></div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-line">
+      <span class="footer-item">Public domain (Unlicense)</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <a class="footer-item" href="https://iglou.eu">Source</a>
+    </p>
+    <p class="disclaimer">Every formula here is generated fiction. It translates nothing and teaches nothing.</p>
+    <p class="print-url print-only">ancientmagic.iglou.eu</p>
+  </footer>
+
+</div>
+
+<p class="visually-hidden" id="copy-status" role="status" aria-live="polite"></p>
+</body>
+</html>

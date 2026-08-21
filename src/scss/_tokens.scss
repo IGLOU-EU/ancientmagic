@@ -1,0 +1,148 @@
+// Design tokens, transcribed from docs/design.md sections 2, 4.1, 5.1 and 9.1.
+@use 'sass:color';
+@use 'sass:list';
+
+// Structure, violet darks
+$abyss: #07040e;
+$void: #0b0714;
+$well: #0d0819;
+$surface: #171029;
+$raised: #221838;
+$raised-hover: #2b1f47;
+$track: #2e2350;
+$nebula-peak: #1e1140;
+
+// Violet mids
+$hairline: #33265a;
+$panel-edge: #3e2e68;
+$control-border: #7b62be;
+$violet-fill: #4a2f86;
+$violet-fill-hover: #5c3ca3;
+
+// Gold, the only accent
+$gold: #e8c46a;
+$gold-bright: #f2d68f;
+$gold-pale: #f4dfa4;
+$gold-deep: #c9a24f;
+
+// Text
+$text-primary: #efe9fb;
+$text-secondary: #c3b6e0;
+$text-muted: #9c8dc0;
+$text-disabled: #7a6d9c;
+
+// Print
+$parchment: #f3ebda;
+$ink-primary: #3a2a63;
+$ink-secondary: #4e3d72;
+$gold-ink: #6e5210;
+$print-rule: #9a8258;
+
+// Atmosphere-only tints
+$star-far: #c9b8f0;
+$star-mid: #efe9fb;
+$star-near: #e8c46a;
+$nebula-dawn: #4a2f86;
+$nebula-dusk: #5c3ca3;
+$nebula-deep: #2a1e5e;
+
+// Easing curves
+$ease-emerge: cubic-bezier(0.16, 1, 0.3, 1);
+$ease-settle: cubic-bezier(0.33, 1, 0.68, 1);
+$ease-press: cubic-bezier(0.4, 0, 1, 1);
+
+// Durations
+$dur-color: 140ms;
+$dur-press: 80ms;
+$dur-thumb: 120ms;
+$dur-swap: 160ms;
+$dur-reveal: 420ms;
+$dur-reveal-reduced: 120ms;
+$dur-enter: 500ms;
+$dur-flare: 900ms;
+$hold-copied: 1600ms;
+
+// Font stacks. Glyph chains end in the serif stack so a missing script font
+// degrades to something rather than to tofu.
+$font-sans: system-ui, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif;
+$font-serif: 'Iowan Old Style', 'Palatino Linotype', palatino, georgia, 'Times New Roman', serif;
+$font-runic: 'Noto Sans Runic', 'Segoe UI Historic', junicode, $font-serif;
+$font-egyptian: 'Noto Sans Egyptian Hieroglyphs', 'Segoe UI Historic', $font-serif;
+$font-phoenician: 'Noto Sans Phoenician', 'Segoe UI Historic', $font-serif;
+
+// Single breakpoint, design section 5.2. There is no tablet layout.
+$bp: 720px;
+
+@mixin mobile {
+  @media (max-width: $bp) {
+    @content;
+  }
+}
+
+// Safari below 15.4 still needs the prefixed mask properties.
+@mixin mask($image, $size: null, $position: null) {
+  -webkit-mask-image: $image;
+  mask-image: $image;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  @if $size {
+    -webkit-mask-size: $size;
+    mask-size: $size;
+  }
+
+  @if $position {
+    -webkit-mask-position: $position;
+    mask-position: $position;
+  }
+}
+
+// The universal focus ring, design section 8.1. The glow is left to the
+// caller because every focusable element already owns its box-shadow list.
+@mixin focus-ring {
+  outline: 2px solid $gold-pale;
+  outline-offset: 2px;
+}
+
+// Engines drop a whole rule when one selector in the list is unknown, so the
+// two vendor thumbs must be written as two separate rules.
+@mixin range-thumb($state: null) {
+  $base: '&';
+
+  @if $state {
+    $base: '&' + $state;
+  }
+
+  #{$base}::-webkit-slider-thumb {
+    @content;
+  }
+
+  #{$base}::-moz-range-thumb {
+    @content;
+  }
+}
+
+@function a($c, $alpha) {
+  @return color.change($c, $alpha: $alpha);
+}
+
+// One background layer per star. A radial gradient can only place one dot per
+// tile, and the design fixes the exact dot positions inside each tile.
+@function star-dots($positions, $radius, $tint) {
+  $out: ();
+
+  @each $pos in $positions {
+    $out: list.append(
+      $out,
+      radial-gradient(
+        circle $radius at list.nth($pos, 1) list.nth($pos, 2),
+        $tint 0,
+        $tint 45%,
+        a($tint, 0) 100%
+      ),
+      comma
+    );
+  }
+
+  @return $out;
+}

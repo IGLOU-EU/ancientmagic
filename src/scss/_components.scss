@@ -1,0 +1,739 @@
+// Components and interactive states, design sections 7 and 8.
+@use 'tokens' as *;
+
+$corner-mark: linear-gradient(a($gold, 0.4), a($gold, 0.4));
+
+// ------------------------------------------------------------------- links
+a {
+  color: $gold;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition:
+    color $dur-color $ease-settle,
+    text-decoration-thickness $dur-color $ease-settle;
+}
+
+a:hover {
+  color: $gold-bright;
+  text-decoration-thickness: 2px;
+}
+
+a:active {
+  color: $gold-deep;
+}
+
+a:focus-visible {
+  box-shadow: 0 0 12px a($gold, 0.4);
+
+  @include focus-ring;
+}
+
+// ------------------------------------------------------------------ header
+.site-header {
+  text-align: center;
+  animation: am-reveal $dur-enter $ease-emerge both;
+}
+
+.wordmark {
+  // Painted first so a browser that cannot clip a gradient to text still
+  // shows gold rather than nothing.
+  color: $gold;
+  font-family: $font-serif;
+  font-size: var(--fs-wordmark);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  background-image: linear-gradient(to bottom, $gold-pale, $gold-deep);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 24px a($gold, 0.18);
+}
+
+.promise {
+  max-width: 46ch;
+  margin: var(--sp-header-gap) auto 0;
+  color: $text-secondary;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+.eyebrow {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 24px;
+  color: $text-muted;
+  font-family: $font-serif;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+// ------------------------------------------------------------------- altar
+.altar {
+  position: relative;
+  padding: var(--sp-altar-pad);
+  border: 1px solid $panel-edge;
+  border-radius: 4px;
+  background-color: $surface;
+  background-image: linear-gradient(#1e1533, #140e24);
+  box-shadow:
+    inset 0 1px 0 a($control-border, 0.22),
+    inset 0 -1px 0 a($abyss, 0.6),
+    0 0 40px a($abyss, 0.55);
+  animation: am-reveal $dur-enter $ease-emerge 80ms both;
+}
+
+// Illuminator's corner marks. The 8px inset with an 18px arm is the one
+// deliberate value off the 4px spacing scale, design 6.6.
+.altar::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  background-image:
+    $corner-mark,
+    $corner-mark,
+    $corner-mark,
+    $corner-mark,
+    $corner-mark,
+    $corner-mark,
+    $corner-mark,
+    $corner-mark;
+  background-position:
+    left top,
+    left top,
+    right top,
+    right top,
+    left bottom,
+    left bottom,
+    right bottom,
+    right bottom;
+  background-size:
+    18px 1px,
+    1px 18px,
+    18px 1px,
+    1px 18px,
+    18px 1px,
+    1px 18px,
+    18px 1px,
+    1px 18px;
+  background-repeat: no-repeat;
+}
+
+.altar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-control-gap);
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.control-label {
+  display: block;
+  margin-bottom: 8px;
+  color: $text-secondary;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+// ------------------------------------------------------------------ selects
+.select-shell {
+  display: block;
+  position: relative;
+}
+
+.select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 36px 0 14px;
+  border: 1px solid $control-border;
+  border-radius: 2px;
+  background-color: $raised;
+  color: $text-primary;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color $dur-color $ease-settle;
+}
+
+// A solid gold triangle drawn as a pair of diagonal gradient edges. It is a
+// mask over a solid fill rather than a background image so its color can
+// transition with the rest of the control.
+.select-shell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  translate: 0 -50%;
+  width: 8px;
+  height: 5px;
+  pointer-events: none;
+  background-color: $gold;
+  transition: background-color $dur-color $ease-settle;
+
+  @include mask(
+    (
+      linear-gradient(to bottom left, #000 0 50%, transparent 50%),
+      linear-gradient(to bottom right, #000 0 50%, transparent 50%)
+    ),
+    (4px 5px, 4px 5px),
+    (left top, right top)
+  );
+}
+
+.select:hover:not(:disabled) {
+  background-color: $raised-hover;
+}
+
+.select-shell:hover:not(:has(.select:disabled))::after {
+  background-color: $gold-bright;
+}
+
+.select:focus-visible {
+  box-shadow: 0 0 12px a($gold, 0.4);
+
+  @include focus-ring;
+}
+
+.select-shell:has(.select:active:not(:disabled)) .select {
+  background-color: $raised-hover;
+}
+
+.select-shell:has(.select:active:not(:disabled))::after {
+  background-color: $gold-bright;
+  scale: 1 -1;
+}
+
+.select:disabled {
+  border-color: $hairline;
+  background-color: $surface;
+  color: $text-disabled;
+  cursor: default;
+}
+
+.select-shell:has(.select:disabled)::after {
+  background-color: $text-disabled;
+}
+
+// ------------------------------------------------------------------ slider
+.field--difficulty {
+  margin-top: var(--sp-control-gap);
+}
+
+.difficulty-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .control-label {
+    margin-bottom: 0;
+  }
+}
+
+.difficulty-readout {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.difficulty-value {
+  color: $gold;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.difficulty-tier {
+  color: $text-muted;
+  font-size: var(--fs-caption);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.slider {
+  --fill-ratio: 0.5;
+
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  background-color: transparent;
+  cursor: pointer;
+
+  // The ring belongs to the thumb alone, design 8.3.
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-runnable-track {
+    height: 6px;
+    border: 1px solid $control-border;
+    border-radius: 2px;
+    background-color: $track;
+    background-image: linear-gradient($gold, $gold);
+    background-origin: border-box;
+    background-repeat: no-repeat;
+    background-size: calc(12px + var(--fill-ratio) * (100% - 24px)) 100%;
+  }
+
+  &::-moz-range-track {
+    height: 6px;
+    border: 1px solid $control-border;
+    border-radius: 2px;
+    background-color: $track;
+  }
+
+  &::-moz-range-progress {
+    height: 6px;
+    border-radius: 2px;
+    background-color: $gold;
+  }
+
+  @include range-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid $void;
+    border-radius: 50%;
+    background-color: $gold;
+    box-shadow: 0 0 10px a($gold, 0.35);
+    cursor: pointer;
+    transition:
+      width $dur-thumb $ease-settle,
+      height $dur-thumb $ease-settle,
+      background-color $dur-color $ease-settle,
+      box-shadow $dur-thumb $ease-settle;
+  }
+
+  // Gecko centres the thumb on the track by itself, Blink does not.
+  &::-webkit-slider-thumb {
+    margin-top: -9px;
+  }
+
+  @include range-thumb(':hover:not(:disabled)') {
+    background-color: $gold-bright;
+    box-shadow: 0 0 14px a($gold, 0.5);
+  }
+
+  @include range-thumb(':focus-visible') {
+    outline: 2px solid $gold-pale;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 10px a($gold, 0.35),
+      0 0 12px a($gold, 0.4);
+  }
+
+  @include range-thumb(':active:not(:disabled)') {
+    width: 22px;
+    height: 22px;
+    background-color: $gold-deep;
+    box-shadow: none;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:disabled::-webkit-slider-runnable-track {
+    border-color: $hairline;
+    background-color: $surface;
+    background-image: linear-gradient($text-disabled, $text-disabled);
+  }
+
+  &:disabled::-moz-range-track {
+    border-color: $hairline;
+    background-color: $surface;
+  }
+
+  &:disabled::-moz-range-progress {
+    background-color: $text-disabled;
+  }
+
+  @include range-thumb(':disabled') {
+    background-color: $text-disabled;
+    box-shadow: none;
+  }
+}
+
+// Inset by half a thumb on each side so the marks line up with the thumb
+// centres and not with the track ends.
+.ticks {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  height: 6px;
+  margin: 4px 12px 0;
+}
+
+.tick {
+  width: 1px;
+  height: 4px;
+  background-color: $control-border;
+}
+
+.tick--current {
+  height: 6px;
+  background-color: $gold;
+}
+
+// ----------------------------------------------------------------- buttons
+.btn {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color $dur-color $ease-settle,
+    border-color $dur-color $ease-settle,
+    color $dur-color $ease-settle,
+    box-shadow $dur-color $ease-settle;
+}
+
+.btn:active:not(:disabled) {
+  transition-duration: $dur-press;
+  transition-timing-function: $ease-press;
+}
+
+.btn:disabled {
+  cursor: default;
+}
+
+.altar-action {
+  margin-top: var(--sp-generate-gap);
+  text-align: center;
+}
+
+.helper {
+  max-width: 46ch;
+  margin: 12px auto 0;
+  color: $text-muted;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+}
+
+.btn--primary {
+  width: 280px;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  background-color: $gold;
+  color: $void;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 0 20px a($gold, 0.25);
+
+  @include mobile {
+    width: 100%;
+  }
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: $gold-bright;
+  box-shadow: 0 0 28px a($gold, 0.38);
+}
+
+.btn--primary:active:not(:disabled) {
+  background-color: $gold-deep;
+  box-shadow: none;
+}
+
+// Gold pale on gold is 1.27, so the ring needs a dark gap to stay visible.
+// Weighted past the hover rule so a hovered keyboard focus keeps the gap.
+.btn.btn--primary:focus-visible {
+  box-shadow:
+    0 0 0 2px $void,
+    0 0 20px a($gold, 0.25),
+    0 0 12px a($gold, 0.4);
+
+  @include focus-ring;
+}
+
+.btn--primary:disabled {
+  background-color: $track;
+  color: $text-disabled;
+  box-shadow: none;
+}
+
+.btn--secondary,
+.btn--small {
+  border: 1px solid $control-border;
+  background-color: transparent;
+  color: $gold;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+}
+
+.btn--secondary {
+  min-height: 40px;
+  padding: 0 20px;
+  font-size: var(--fs-label);
+}
+
+.btn--small {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: var(--fs-caption);
+}
+
+.btn--secondary:hover:not(:disabled),
+.btn--small:hover:not(:disabled) {
+  border-color: $gold;
+  background-color: $raised-hover;
+  color: $gold-bright;
+}
+
+.btn--secondary:active:not(:disabled),
+.btn--small:active:not(:disabled) {
+  border-color: $gold-deep;
+  background-color: $raised;
+  color: $gold-deep;
+}
+
+.btn.btn--secondary:focus-visible,
+.btn.btn--small:focus-visible {
+  box-shadow: 0 0 12px a($gold, 0.4);
+
+  @include focus-ring;
+}
+
+.btn--secondary:disabled,
+.btn--small:disabled {
+  border-color: $hairline;
+  color: $text-disabled;
+}
+
+// ----------------------------------------------------- the manifestation
+.manifestation {
+  position: relative;
+}
+
+.well-stage {
+  position: relative;
+}
+
+.well {
+  position: relative;
+  z-index: 1;
+  padding: var(--sp-well-pad-y) var(--sp-well-pad-x);
+  border: 1px solid $panel-edge;
+  border-radius: 4px;
+  background-color: $well;
+  background-image: radial-gradient(
+    ellipse 75% 75% at 50% 45%,
+    a($nebula-peak, 0.55) 0,
+    a($nebula-peak, 0) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 a($control-border, 0.2),
+    0 0 60px a($gold, 0.06);
+  text-align: center;
+}
+
+.glyph-line {
+  color: $gold;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 8px a($gold, 0.3);
+  animation:
+    am-reveal $dur-reveal $ease-emerge both,
+    am-glyph-flare $dur-flare $ease-emerge both;
+}
+
+.output[data-size='large'] .glyph-line {
+  font-size: var(--fs-glyph-l);
+}
+
+.output[data-size='medium'] .glyph-line {
+  font-size: var(--fs-glyph-m);
+}
+
+.output[data-size='small'] .glyph-line {
+  font-size: var(--fs-glyph-s);
+}
+
+// Runic staves collide below 0.10em, design 4.3.
+.output[data-script='runic'] .glyph-line {
+  font-family: $font-runic;
+  letter-spacing: 0.1em;
+}
+
+.output[data-script='egyptian'] .glyph-line {
+  font-family: $font-egyptian;
+}
+
+// Direction and isolation live on the glyph block alone so the lines below
+// are never reordered.
+.output[data-script='phoenician'] .glyph-line {
+  direction: rtl;
+  unicode-bidi: isolate;
+  font-family: $font-phoenician;
+}
+
+.translit {
+  margin-top: var(--sp-glyph-gap);
+  color: $text-secondary;
+  font-size: var(--fs-translit);
+  font-style: italic;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  animation: am-reveal $dur-reveal $ease-emerge 60ms both;
+}
+
+.gloss {
+  max-width: 46ch;
+  margin: 12px auto 0;
+  color: $text-primary;
+  font-family: $font-serif;
+  font-size: var(--fs-gloss);
+  line-height: 1.6;
+  animation: am-reveal $dur-reveal $ease-emerge 120ms both;
+}
+
+.output-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: var(--sp-actions-gap);
+}
+
+// All three labels share one grid cell, so the button is always as wide as
+// the widest of them and nothing after it ever moves.
+.copy-labels {
+  display: grid;
+}
+
+.copy-label {
+  grid-area: 1 / 1;
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity $dur-swap $ease-settle;
+}
+
+.copy[data-state='idle'] .copy-label[data-label='idle'],
+.copy[data-state='copied'] .copy-label[data-label='copied'],
+.copy[data-state='failed'] .copy-label[data-label='failed'] {
+  opacity: 1;
+}
+
+// Weighted past the hover rule, otherwise the feedback would be swallowed by
+// the pointer that just clicked the button.
+.btn.copy[data-state='copied'] {
+  border-color: $gold-bright;
+  color: $gold-bright;
+  box-shadow: 0 0 16px a($gold, 0.45);
+}
+
+// Failure is carried by the word, not by a color the reader has to interpret.
+.btn.copy[data-state='failed'] {
+  border-color: $gold;
+  color: $gold;
+  box-shadow: 0 0 16px a($gold, 0.45);
+}
+
+// ------------------------------------------------------------------ footer
+.site-footer {
+  color: $text-muted;
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.footer-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.footer-item {
+  white-space: nowrap;
+}
+
+.footer-sep {
+  margin-inline: 12px;
+}
+
+.disclaimer {
+  max-width: 46ch;
+  margin: 12px auto 0;
+}
+
+// --------------------------------------------------------- reduced motion
+// Movement and loops go, feedback stays, design 9.6.
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    animation: am-fade $dur-enter $ease-emerge both;
+  }
+
+  .altar {
+    animation: am-fade $dur-enter $ease-emerge 80ms both;
+  }
+
+  .glyph-line {
+    text-shadow: 0 0 8px a($gold, 0.3);
+    animation: am-fade $dur-reveal-reduced $ease-emerge both;
+  }
+
+  .translit,
+  .gloss {
+    animation: am-fade $dur-reveal-reduced $ease-emerge both;
+  }
+
+  .mc-spokes {
+    rotate: 0deg;
+    animation: none;
+  }
+
+  // Held apart from the spokes so the two do not align into one bright axis.
+  .mc-ticks {
+    rotate: 8deg;
+    animation: none;
+  }
+
+  .mc-bloom {
+    opacity: 0.13;
+    animation: none;
+  }
+
+  .slider {
+    @include range-thumb(':active:not(:disabled)') {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}

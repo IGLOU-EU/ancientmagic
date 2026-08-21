@@ -1,0 +1,168 @@
+@use 'tokens' as *;
+
+// Type is authored in rem so operating system text size is respected,
+// design section 11.6.
+:root {
+  --fs-wordmark: 2.125rem;
+  --fs-glyph-l: 4rem;
+  --fs-glyph-m: 2.75rem;
+  --fs-glyph-s: 2rem;
+  --fs-translit: 1.25rem;
+  --fs-gloss: 1.125rem;
+  --fs-body: 1rem;
+  --fs-label: 0.875rem;
+  --fs-caption: 0.8125rem;
+  --fs-micro: 0.75rem;
+
+  --sp-page-y: 64px;
+  --sp-page-x: 24px;
+  --sp-header-gap: 12px;
+  --sp-band: 32px;
+  --sp-altar-pad: 32px;
+  --sp-control-gap: 24px;
+  --sp-generate-gap: 32px;
+  --sp-well-pad-y: 40px;
+  --sp-well-pad-x: 32px;
+  --sp-glyph-gap: 24px;
+  --sp-actions-gap: 32px;
+
+  --mc-size: min(128%, 720px);
+
+  color-scheme: dark;
+}
+
+@include mobile {
+  :root {
+    --fs-wordmark: 1.625rem;
+    --fs-glyph-l: 2.5rem;
+    --fs-glyph-m: 1.875rem;
+    --fs-glyph-s: 1.5rem;
+    --fs-translit: 1.125rem;
+    --fs-gloss: 1.0625rem;
+
+    --sp-page-y: 40px;
+    --sp-page-x: 16px;
+    --sp-header-gap: 8px;
+    --sp-band: 24px;
+    --sp-altar-pad: 20px;
+    --sp-control-gap: 20px;
+    --sp-generate-gap: 24px;
+    --sp-well-pad-y: 24px;
+    --sp-well-pad-x: 16px;
+    --sp-glyph-gap: 20px;
+    --sp-actions-gap: 24px;
+
+    --mc-size: min(150%, 420px);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: $void;
+
+  // The magic circle is wider than the column on narrow viewports, so it is
+  // clipped at the page level, design section 6.4.
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
+  margin: 0;
+  padding: var(--sp-page-y) var(--sp-page-x);
+  color: $text-primary;
+  font-family: $font-sans;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+::selection {
+  background-color: $violet-fill;
+  color: $text-primary;
+}
+
+.page {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.print-only {
+  display: none;
+}
+
+@keyframes am-reveal {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes am-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes am-glyph-flare {
+  from {
+    text-shadow: 0 0 24px a($gold, 0.6);
+  }
+
+  to {
+    text-shadow: 0 0 8px a($gold, 0.3);
+  }
+}
+
+@keyframes am-spin-cw {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes am-spin-ccw {
+  to {
+    rotate: -360deg;
+  }
+}
+
+@keyframes am-bloom {
+  from {
+    opacity: 0.1;
+  }
+
+  to {
+    opacity: 0.16;
+  }
+}
