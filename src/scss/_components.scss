@@ -558,16 +558,41 @@ a:focus-visible {
   text-align: center;
 }
 
+.glyph-stack {
+  position: relative;
+}
+
 .glyph-line {
+  position: relative;
+  z-index: 1;
   color: $gold;
   font-weight: 400;
   line-height: 1.45;
   letter-spacing: 0.06em;
   overflow-wrap: anywhere;
-  text-shadow: 0 0 8px a($gold, 0.3);
+  text-shadow: $glow-glyph-rest;
   animation:
     am-reveal $dur-reveal $ease-emerge both,
     am-glyph-flare $dur-flare $ease-emerge both;
+}
+
+// The vapor twin, design revision 1. The same text blurred behind the real
+// line, breathing and drifting on mismatched periods so the glow reads as
+// smoke rather than as a pulse. Kept out of the accessibility tree and out
+// of text selection because it duplicates the visible glyphs.
+.glyph-line--vapor {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  color: a($gold-bright, 0.9);
+  text-shadow: none;
+  filter: blur(9px);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+  animation:
+    am-vapor-breathe $dur-vapor-breathe ease-in-out infinite alternate,
+    am-vapor-drift $dur-vapor-drift ease-in-out infinite alternate;
 }
 
 .output[data-size='large'] .glyph-line {
@@ -704,9 +729,16 @@ a:focus-visible {
     animation: am-fade $dur-enter $ease-emerge 80ms both;
   }
 
+  // The rich glow stays, it is static. Only the loops and the flare go.
   .glyph-line {
-    text-shadow: 0 0 8px a($gold, 0.3);
+    text-shadow: $glow-glyph-rest;
     animation: am-fade $dur-reveal-reduced $ease-emerge both;
+  }
+
+  .glyph-line--vapor {
+    opacity: 0.5;
+    text-shadow: none;
+    animation: none;
   }
 
   .translit,

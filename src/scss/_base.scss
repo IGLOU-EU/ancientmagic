@@ -137,11 +137,41 @@ p {
 
 @keyframes am-glyph-flare {
   from {
-    text-shadow: 0 0 24px a($gold, 0.6);
+    text-shadow: $glow-glyph-flare;
   }
 
   to {
-    text-shadow: 0 0 8px a($gold, 0.3);
+    text-shadow: $glow-glyph-rest;
+  }
+}
+
+@keyframes am-vapor-breathe {
+  from {
+    opacity: 0.4;
+  }
+
+  to {
+    opacity: 0.75;
+  }
+}
+
+@keyframes am-vapor-drift {
+  from {
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    transform: scale(1.035) translateY(-3px);
+  }
+}
+
+@keyframes am-mist-drift {
+  from {
+    transform: translate3d(-1.5%, -1%, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(1.5%, 1.2%, 0) scale(1.05);
   }
 }
 

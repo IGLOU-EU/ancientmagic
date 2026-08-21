@@ -37,7 +37,9 @@
     font-family: $font-serif;
   }
 
-  body::before {
+  body::before,
+  body::after,
+  html::after {
     display: none;
   }
 
@@ -46,6 +48,7 @@
   .promise,
   .eyebrow,
   .magic-circle,
+  .glyph-line--vapor,
   .output-actions,
   .footer-line,
   .visually-hidden {

@@ -62,6 +62,12 @@ $dur-enter: 500ms;
 $dur-flare: 900ms;
 $hold-copied: 1600ms;
 
+// Vapor loops. Breathe and drift run on mismatched periods so the combined
+// cycle never reads as mechanical, the mist crosses the page in over a minute.
+$dur-vapor-breathe: 6500ms;
+$dur-vapor-drift: 11s;
+$dur-mist: 75s;
+
 // Font stacks. Glyph chains end in the serif stack so a missing script font
 // degrades to something rather than to tofu.
 $font-sans: system-ui, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif;
@@ -146,3 +152,18 @@ $bp: 720px;
 
   @return $out;
 }
+
+// Resting and flare glow of the manifested glyphs. Shared as lists so the
+// flare keyframes land exactly on the resting state without a visible jump.
+$glow-glyph-rest: (
+  0 0 2px a($gold-bright, 0.85),
+  0 0 12px a($gold, 0.55),
+  0 0 34px a($gold, 0.3),
+  0 0 70px a($violet-fill-hover, 0.5)
+);
+$glow-glyph-flare: (
+  0 0 6px a($gold-pale, 0.95),
+  0 0 30px a($gold, 0.85),
+  0 0 90px a($gold, 0.45),
+  0 0 130px a($violet-fill-hover, 0.6)
+);
