@@ -100,42 +100,43 @@ body::before {
     screen;
 }
 
-// The milky way, design revision 1. A rotated band of dense stars, bright
-// clumps and a luminous core, cut to shape by a soft mask. Three mismatched
-// tile sizes keep the dense field from forming a visible lattice. Dot radii
-// stay above one device pixel and opacities above 0.4, anything finer is
-// rasterized into invisibility once the mask ramp dims it.
-$band-near-pos: (12% 30%, 45% 72%, 78% 15%, 30% 88%, 90% 55%);
-$band-mid-pos: (25% 20%, 62% 52%, 8% 66%, 84% 82%, 48% 8%, 71% 33%);
-$band-far-pos: (18% 45%, 55% 10%, 40% 58%, 70% 85%, 5% 92%, 92% 25%, 33% 78%, 82% 62%);
+// The milky way, design revision 1. A rotated band of stars, soft clumps and
+// a luminous core, cut to shape by a soft mask. Tiles are large and their
+// dimensions share no common factor, so repeats sit hundreds of pixels apart
+// and the field reads as random. Dot radii stay above one device pixel and
+// opacities above 0.4, anything finer is rasterized into invisibility once
+// the mask ramp dims it.
+$band-near-pos: (23% 31%, 57% 74%, 86% 19%);
+$band-mid-pos: (11% 57%, 39% 13%, 67% 83%, 91% 41%);
+$band-far-pos: (7% 22%, 29% 66%, 47% 37%, 63% 91%, 81% 9%, 94% 71%);
 
 // Two nested gradients rather than one, so the core reads as a glow with a
-// bright spine instead of a flat grey stripe.
+// spine instead of a flat grey stripe. Lavender tints only, a whiter core
+// composited into a pronounced pale halo where the band leaves the viewport.
 $band-core-wide: linear-gradient(
   to bottom,
   a($star-far, 0) 0,
-  a($star-far, 0.04) 30%,
-  a($star-far, 0.1) 44%,
-  a($star-far, 0.13) 50%,
-  a($star-far, 0.1) 56%,
-  a($star-far, 0.04) 70%,
+  a($star-far, 0.03) 30%,
+  a($star-far, 0.08) 44%,
+  a($star-far, 0.1) 50%,
+  a($star-far, 0.08) 56%,
+  a($star-far, 0.03) 70%,
   a($star-far, 0) 100%
 );
 $band-core-axis: linear-gradient(
   to bottom,
-  a($star-mid, 0) 41%,
-  a($star-mid, 0.12) 50%,
-  a($star-mid, 0) 59%
+  a($star-far, 0) 41%,
+  a($star-far, 0.09) 50%,
+  a($star-far, 0) 59%
 );
 $band-clumps: (
-  radial-gradient(ellipse 9% 6% at 26% 48%, a($star-mid, 0.3) 0, a($star-mid, 0) 100%),
-  radial-gradient(ellipse 12% 8% at 58% 55%, a($nebula-dusk, 0.5) 0, a($nebula-dusk, 0) 100%),
-  radial-gradient(ellipse 8% 5% at 82% 44%, a($star-far, 0.32) 0, a($star-far, 0) 100%)
+  radial-gradient(ellipse 12% 8% at 58% 55%, a($nebula-dusk, 0.4) 0, a($nebula-dusk, 0) 100%),
+  radial-gradient(ellipse 8% 5% at 82% 44%, a($star-far, 0.25) 0, a($star-far, 0) 100%)
 );
 $band-stars: list.join(
-  star-dots($band-near-pos, 1.5px, a($star-mid, 0.85)),
+  star-dots($band-near-pos, 1.5px, a($star-mid, 0.8)),
   list.join(
-    star-dots($band-mid-pos, 1px, a($star-far, 0.6)),
+    star-dots($band-mid-pos, 1px, a($star-far, 0.55)),
     star-dots($band-far-pos, 0.75px, a($star-far, 0.45)),
     comma
   ),
@@ -143,8 +144,8 @@ $band-stars: list.join(
 );
 
 // Oversized so the rotation never exposes a corner of the layer. The size and
-// repeat lists are explicit, one entry per layer: 5 near, 6 mid and 8 far
-// star tiles, then 3 clumps and 2 cores at full size. Keep them in step with
+// repeat lists are explicit, one entry per layer: 3 near, 4 mid and 6 far
+// star tiles, then 2 clumps and 2 cores at full size. Keep them in step with
 // the position lists above.
 body::after {
   content: '';
@@ -159,26 +160,19 @@ body::after {
     comma
   );
   background-size:
-    150px 130px,
-    150px 130px,
-    150px 130px,
-    150px 130px,
-    150px 130px,
-    110px 92px,
-    110px 92px,
-    110px 92px,
-    110px 92px,
-    110px 92px,
-    110px 92px,
-    88px 72px,
-    88px 72px,
-    88px 72px,
-    88px 72px,
-    88px 72px,
-    88px 72px,
-    88px 72px,
-    88px 72px,
-    100% 100%,
+    191px 163px,
+    191px 163px,
+    191px 163px,
+    257px 223px,
+    257px 223px,
+    257px 223px,
+    257px 223px,
+    331px 283px,
+    331px 283px,
+    331px 283px,
+    331px 283px,
+    331px 283px,
+    331px 283px,
     100% 100%,
     100% 100%,
     100% 100%,
@@ -197,13 +191,6 @@ body::after {
     repeat,
     repeat,
     repeat,
-    repeat,
-    repeat,
-    repeat,
-    repeat,
-    repeat,
-    repeat,
-    no-repeat,
     no-repeat,
     no-repeat,
     no-repeat,
