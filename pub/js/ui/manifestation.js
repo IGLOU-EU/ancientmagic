@@ -21,7 +21,7 @@ export function renderFormula(output, meta) {
     const gloss = well.querySelector('.gloss');
     const caption = document.querySelector('.print-caption');
     glyphLine.textContent = output.glyphs;
-    glyphLine.setAttribute('aria-label', output.transliteration);
+    glyphLine.setAttribute('aria-label', `Incantation in ${meta.languageLabel}`);
     if (vapor !== null)
         vapor.textContent = output.glyphs;
     if (translit !== null)

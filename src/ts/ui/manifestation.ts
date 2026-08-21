@@ -38,9 +38,10 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   const caption = document.querySelector<HTMLElement>('.print-caption');
 
   glyphLine.textContent = output.glyphs;
-  // The transliteration is the accessible name of the glyph block, since
-  // supplementary-plane glyphs read as noise in a screen reader.
-  glyphLine.setAttribute('aria-label', output.transliteration);
+  // The glyph block is named for what it is, not for what it says: the well is
+  // one atomic live region, and naming it with the transliteration made the
+  // region announce that same line twice, once here and once below.
+  glyphLine.setAttribute('aria-label', `Incantation in ${meta.languageLabel}`);
   // The vapor twin must stay in text sync with the visible line (design 13.2).
   if (vapor !== null) vapor.textContent = output.glyphs;
   if (translit !== null) translit.textContent = output.transliteration;

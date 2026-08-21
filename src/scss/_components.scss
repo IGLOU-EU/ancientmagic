@@ -334,10 +334,15 @@ a:focus-visible {
     box-shadow: 0 0 14px a($gold, 0.5);
   }
 
+  // Gecko drops an outline on the range thumb, and the host outline is off, so
+  // the same ring is restated as two spread shadows. The dark gap is what
+  // keeps gold pale readable where the ring crosses the gold fill.
   @include range-thumb(':focus-visible') {
     outline: 2px solid $gold-pale;
     outline-offset: 2px;
     box-shadow:
+      0 0 0 2px $void,
+      0 0 0 4px $gold-pale,
       0 0 10px a($gold, 0.35),
       0 0 12px a($gold, 0.4);
   }
@@ -649,10 +654,13 @@ a:focus-visible {
   animation: am-reveal $dur-reveal $ease-emerge 120ms both;
 }
 
+// Wraps so the pair still fits when large text widens both buttons past the
+// column, which the page-level clip would otherwise cut off for good.
 .output-actions {
   position: relative;
   z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 12px;
@@ -707,10 +715,6 @@ a:focus-visible {
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: center;
-}
-
-.footer-item {
-  white-space: nowrap;
 }
 
 .footer-sep {
@@ -771,5 +775,35 @@ a:focus-visible {
       width: 24px;
       height: 24px;
     }
+  }
+}
+
+// ----------------------------------------------------------- forced colors
+// The forced palette drops gradients and shadows and repaints every color.
+// Only the four places where that leaves nothing behind are restated here,
+// each with a system color so the user's own theme still decides the hue.
+@media (forced-colors: active) {
+  // The wordmark is painted by a gradient clipped to the text, and the forced
+  // palette drops the gradient. Blink repaints the transparent fill on its
+  // own, but the property is not one the forced palette is required to touch,
+  // so the title is given the system color outright.
+  .wordmark {
+    -webkit-text-fill-color: canvastext;
+  }
+
+  // The primary button owns no border: its whole shape is the gold fill.
+  .btn--primary {
+    border: 1px solid buttonborder;
+  }
+
+  // The arrow is a filled box behind a mask, and the fill is a background.
+  .select-shell::after {
+    background-color: canvastext;
+  }
+
+  // One text color for both layers turns the blurred twin into a smear over
+  // the glyphs it sits behind.
+  .glyph-line--vapor {
+    display: none;
   }
 }

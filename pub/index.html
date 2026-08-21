@@ -107,7 +107,7 @@
         </div>
         <input class="slider" type="range" id="difficulty" name="difficulty"
                min="1" max="9" step="1" value="5"
-               aria-describedby="difficulty-tier">
+               aria-valuetext="5, Rite">
         <div class="ticks" id="difficulty-ticks" aria-hidden="true">
           <span class="tick"></span>
           <span class="tick"></span>
@@ -143,7 +143,7 @@
           <div class="output" id="output" data-script="runic" data-size="medium" aria-live="polite" aria-atomic="true">
             <div class="glyph-stack">
               <p class="glyph-line glyph-line--vapor" aria-hidden="true">ᚨᛚᚢ᛫<wbr>ᚹᚨᚱᛞᚨᛉ᛫<wbr>ᚹᛁᚦᚱᚨ᛫<wbr>ᚦᚢᚱᛊᚨᚾ᛫<wbr>ᛒᛁᚾᛞᛟ᛬<wbr>ᚱᚢᚾᛟᛉ᛫<wbr>ᚠᚨᛁᚺᛁᛞᛟ</p>
-              <p class="glyph-line" id="glyph-line" role="img" aria-label="alu wardaz withra thursan bindo runoz faihido">ᚨᛚᚢ᛫<wbr>ᚹᚨᚱᛞᚨᛉ᛫<wbr>ᚹᛁᚦᚱᚨ᛫<wbr>ᚦᚢᚱᛊᚨᚾ᛫<wbr>ᛒᛁᚾᛞᛟ᛬<wbr>ᚱᚢᚾᛟᛉ᛫<wbr>ᚠᚨᛁᚺᛁᛞᛟ</p>
+              <p class="glyph-line" id="glyph-line" role="img" aria-label="Incantation in Runic">ᚨᛚᚢ᛫<wbr>ᚹᚨᚱᛞᚨᛉ᛫<wbr>ᚹᛁᚦᚱᚨ᛫<wbr>ᚦᚢᚱᛊᚨᚾ᛫<wbr>ᛒᛁᚾᛞᛟ᛬<wbr>ᚱᚢᚾᛟᛉ᛫<wbr>ᚠᚨᛁᚺᛁᛞᛟ</p>
             </div>
             <p class="translit" dir="ltr">alu wardaz withra thursan bindo runoz faihido</p>
             <p class="gloss">Alu! I, the warder, bind against the hostile wight. I painted these runes.</p>
@@ -161,6 +161,8 @@
           </span>
         </button>
       </div>
+
+      <p class="visually-hidden" id="copy-status" role="status"></p>
 
       <p class="print-caption print-only">Runic · Protection · Difficulty 5</p>
     </section>
@@ -180,7 +182,5 @@
   </footer>
 
 </div>
-
-<p class="visually-hidden" id="copy-status" role="status" aria-live="polite"></p>
 </body>
 </html>

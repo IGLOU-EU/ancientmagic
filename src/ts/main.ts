@@ -46,11 +46,17 @@ function syncDifficulty(
   const min = Number(slider.min);
   const max = Number(slider.max);
   const ratio = max > min ? (value - min) / (max - min) : 0;
+  const tier = tierWord(value);
 
   slider.style.setProperty('--fill-ratio', ratio.toFixed(4));
 
+  // The tier is part of the value, not a description of the control: a
+  // description is spoken once on focus, so it would go stale as soon as the
+  // reader moved the slider across a tier boundary.
+  slider.setAttribute('aria-valuetext', `${value}, ${tier}`);
+
   if (valueOut !== null) valueOut.textContent = String(value);
-  if (tierOut !== null) tierOut.textContent = tierWord(value);
+  if (tierOut !== null) tierOut.textContent = tier;
 
   if (ticks !== null) {
     const marks = ticks.children;
@@ -60,18 +66,13 @@ function syncDifficulty(
   }
 }
 
+// Only the visual state moves. "Copied" and "Copy failed" are outcomes, not
+// labels of the control, so they stay out of the accessible name and are
+// spoken once by the status region instead. Swapping the name here would name
+// the button after its outcome, cost speech-input users their spoken target,
+// and make every reader that reports a name change say the word twice.
 function setCopyState(button: HTMLElement, state: CopyState): void {
   button.dataset.state = state;
-
-  // Exactly one label is exposed to assistive technology, the other two stay
-  // in the layout only to reserve the button's width.
-  button.querySelectorAll<HTMLElement>('.copy-label').forEach((label) => {
-    if (label.dataset.label === state) {
-      label.removeAttribute('aria-hidden');
-    } else {
-      label.setAttribute('aria-hidden', 'true');
-    }
-  });
 }
 
 async function writeToClipboard(text: string): Promise<boolean> {

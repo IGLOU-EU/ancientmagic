@@ -32,11 +32,13 @@ function syncDifficulty(slider, valueOut, tierOut, ticks) {
     const min = Number(slider.min);
     const max = Number(slider.max);
     const ratio = max > min ? (value - min) / (max - min) : 0;
+    const tier = tierWord(value);
     slider.style.setProperty('--fill-ratio', ratio.toFixed(4));
+    slider.setAttribute('aria-valuetext', `${value}, ${tier}`);
     if (valueOut !== null)
         valueOut.textContent = String(value);
     if (tierOut !== null)
-        tierOut.textContent = tierWord(value);
+        tierOut.textContent = tier;
     if (ticks !== null) {
         const marks = ticks.children;
         for (let i = 0; i < marks.length; i += 1) {
@@ -46,14 +48,6 @@ function syncDifficulty(slider, valueOut, tierOut, ticks) {
 }
 function setCopyState(button, state) {
     button.dataset.state = state;
-    button.querySelectorAll('.copy-label').forEach((label) => {
-        if (label.dataset.label === state) {
-            label.removeAttribute('aria-hidden');
-        }
-        else {
-            label.setAttribute('aria-hidden', 'true');
-        }
-    });
 }
 async function writeToClipboard(text) {
     const clipboard = navigator.clipboard;
