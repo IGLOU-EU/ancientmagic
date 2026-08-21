@@ -1,5 +1,5 @@
 import { generate } from './generator/pipeline.js';
-import type { School, Settings } from './generator/types.js';
+import type { LanguageId, School, Settings } from './generator/types.js';
 import { renderFormula } from './ui/manifestation.js';
 
 const COPY_HOLD_MS = 1600;
@@ -10,6 +10,16 @@ const SCHOOL_LABELS: Record<School, string> = {
   invocation: 'Invocation',
   eldritch: 'Eldritch',
 };
+
+const LANGUAGE_LABELS: Record<LanguageId, string> = {
+  runic: 'Runic',
+  egyptian: 'Egyptian Hieroglyphs',
+  phoenician: 'Phoenician',
+};
+
+// Only the genomes that ship are selectable, the other options of the select
+// stay disabled in the markup.
+const SHIPPED_LANGUAGES: ReadonlyArray<LanguageId> = ['runic', 'egyptian'];
 
 type CopyState = 'idle' | 'copied' | 'failed';
 
@@ -125,27 +135,35 @@ function isSchool(value: string): value is School {
   return value in SCHOOL_LABELS;
 }
 
+function isLanguage(value: string): value is LanguageId {
+  return SHIPPED_LANGUAGES.some((id) => id === value);
+}
+
 function freshSeed(): number {
   return Math.floor(Math.random() * 4294967296) >>> 0;
 }
 
 function readSettings(): Settings {
+  const language = document.getElementById('language');
   const school = document.getElementById('school');
   const difficulty = document.getElementById('difficulty');
+  const languageValue =
+    language instanceof HTMLSelectElement && isLanguage(language.value)
+      ? language.value
+      : 'runic';
   const schoolValue =
     school instanceof HTMLSelectElement && isSchool(school.value)
       ? school.value
       : 'protection';
   const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
-  // Only the Runic genome ships in this phase, the other language options
-  // stay disabled in the select.
-  return { language: 'runic', school: schoolValue, difficulty: level };
+  return { language: languageValue, school: schoolValue, difficulty: level };
 }
 
 function conjure(settings: Settings): void {
   const output = generate(settings, freshSeed());
   renderFormula(output, {
-    languageLabel: 'Runic',
+    languageId: settings.language,
+    languageLabel: LANGUAGE_LABELS[settings.language],
     schoolLabel: SCHOOL_LABELS[settings.school],
     difficulty: settings.difficulty,
   });

@@ -28,6 +28,7 @@ export function renderFormula(output, meta) {
         translit.textContent = output.transliteration;
     if (gloss !== null)
         gloss.textContent = output.gloss;
+    well.dataset.script = meta.languageId;
     well.dataset.size = sizeTier(output.glyphs);
     if (caption !== null) {
         caption.textContent = `${meta.languageLabel} · ${meta.schoolLabel} · Difficulty ${meta.difficulty}`;

@@ -7,6 +7,12 @@ const SCHOOL_LABELS = {
     invocation: 'Invocation',
     eldritch: 'Eldritch',
 };
+const LANGUAGE_LABELS = {
+    runic: 'Runic',
+    egyptian: 'Egyptian Hieroglyphs',
+    phoenician: 'Phoenician',
+};
+const SHIPPED_LANGUAGES = ['runic', 'egyptian'];
 const COPY_ANNOUNCEMENT = {
     idle: '',
     copied: 'Copied',
@@ -101,22 +107,30 @@ function wireCopy() {
 function isSchool(value) {
     return value in SCHOOL_LABELS;
 }
+function isLanguage(value) {
+    return SHIPPED_LANGUAGES.some((id) => id === value);
+}
 function freshSeed() {
     return Math.floor(Math.random() * 4294967296) >>> 0;
 }
 function readSettings() {
+    const language = document.getElementById('language');
     const school = document.getElementById('school');
     const difficulty = document.getElementById('difficulty');
+    const languageValue = language instanceof HTMLSelectElement && isLanguage(language.value)
+        ? language.value
+        : 'runic';
     const schoolValue = school instanceof HTMLSelectElement && isSchool(school.value)
         ? school.value
         : 'protection';
     const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
-    return { language: 'runic', school: schoolValue, difficulty: level };
+    return { language: languageValue, school: schoolValue, difficulty: level };
 }
 function conjure(settings) {
     const output = generate(settings, freshSeed());
     renderFormula(output, {
-        languageLabel: 'Runic',
+        languageId: settings.language,
+        languageLabel: LANGUAGE_LABELS[settings.language],
         schoolLabel: SCHOOL_LABELS[settings.school],
         difficulty: settings.difficulty,
     });

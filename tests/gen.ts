@@ -1,6 +1,9 @@
 // Shared sweep helpers for the contract tests.
 
 import { generate } from '../src/ts/generator/pipeline.js';
+import { buildPlan } from '../src/ts/generator/plan.js';
+import { mulberry32 } from '../src/ts/generator/rng.js';
+import { composeEgyptian, type EgyptianWord } from '../src/ts/languages/egyptian.js';
 import type { FormulaOutput, School } from '../src/ts/generator/types.js';
 import { parseGlyphs } from './spec.js';
 
@@ -25,6 +28,10 @@ export function runic(school: School, difficulty: number, seed: number): Formula
   return generate({ language: 'runic', school, difficulty }, seed);
 }
 
+export function egyptian(school: School, difficulty: number, seed: number): FormulaOutput {
+  return generate({ language: 'egyptian', school, difficulty }, seed);
+}
+
 export function sweep(
   schools: ReadonlyArray<School>,
   cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
@@ -36,6 +43,32 @@ export function sweep(
       }
     }
   }
+}
+
+export function sweepEgyptian(
+  schools: ReadonlyArray<School>,
+  cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
+): void {
+  for (const school of schools) {
+    for (const difficulty of DIFFICULTIES) {
+      for (const seed of SEEDS) {
+        cb(egyptian(school, difficulty, seed), school, difficulty, seed);
+      }
+    }
+  }
+}
+
+// Rebuilds the word list behind an Egyptian formula. The script carries no
+// separator, so the contract tests read the genome's own word seam.
+export function egyptianWords(
+  school: School,
+  difficulty: number,
+  seed: number,
+): EgyptianWord[] {
+  const level = Math.min(9, Math.max(1, Math.trunc(difficulty)));
+  const rng = mulberry32(seed >>> 0);
+  const plan = buildPlan(school, level, rng);
+  return composeEgyptian(plan, rng).words;
 }
 
 export function clauseCount(difficulty: number): number {

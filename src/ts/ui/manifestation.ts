@@ -1,8 +1,10 @@
 // Renders a generated formula into the manifestation well.
 
-import type { FormulaOutput } from '../generator/types.js';
+import type { FormulaOutput, LanguageId } from '../generator/types.js';
 
 export interface FormulaMeta {
+  // Drives the font stack the stylesheet picks per script.
+  languageId: LanguageId;
   languageLabel: string;
   schoolLabel: string;
   difficulty: number;
@@ -44,6 +46,7 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   if (translit !== null) translit.textContent = output.transliteration;
   if (gloss !== null) gloss.textContent = output.gloss;
 
+  well.dataset.script = meta.languageId;
   well.dataset.size = sizeTier(output.glyphs);
 
   if (caption !== null) {
