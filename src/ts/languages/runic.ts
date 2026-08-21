@@ -20,7 +20,6 @@ import {
   ELDRITCH_OPEN_SHORT,
   FIELDS,
   INVOCATION_COME,
-  INVOCATION_T2,
   RC1,
   RC2,
   RC3,
@@ -146,6 +145,12 @@ function nounsOf(field: SemanticField): RunicRoot[] {
 
 function verbsOf(field: SemanticField): RunicRoot[] {
   return FIELDS[field].filter((r) => r.verb !== undefined);
+}
+
+// An intransitive root never fills a slot that takes a direct object
+// (spec 2.3), which the tier 2 imperative does.
+function transitiveVerbsOf(field: SemanticField): RunicRoot[] {
+  return verbsOf(field).filter((r) => r.intransitive !== true);
 }
 
 function adjectivesOf(field: SemanticField): RunicRoot[] {
@@ -343,13 +348,7 @@ function realizeTierTwo(plan: FormulaPlan, rng: Rng): FormulaOutput {
   const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
   const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
 
-  let verbPool: RunicRoot[];
-  if (plan.school === 'protection' || plan.school === 'curse') {
-    verbPool = verbsOf(intentField);
-  } else {
-    verbPool = byNames(INVOCATION_T2);
-  }
-  const intent = pick(rng, verbPool);
+  const intent = pick(rng, transitiveVerbsOf(intentField));
   const target = pick(rng, nounsOf(targetField));
 
   const words = [verbForm(distort(intent.root), 'bare'), nounForm(distort(target.root), 'an')];

@@ -14,6 +14,10 @@ export interface RunicRoot {
   pp?: string;
   adj?: string;
   adv?: string;
+  // Spec 2.3: kum and swelt never fill a slot that takes a direct object.
+  intransitive?: boolean;
+  // Spec 2.3: rune-name roots are noun roots only.
+  runeName?: boolean;
 }
 
 export const RUNE_MAP: Readonly<Record<string, string>> = {
@@ -70,57 +74,58 @@ export const SEAL_GLOSS: Readonly<Record<SealCount, string>> = {
   12: 'Sealed twelve times.',
 };
 
-// Coined roots by semantic field (spec 2.3), rune-name roots appended to
-// the field they fit best. The spec lets a rune name fill any gene, this
-// data commits each one to a single field to keep the pools coherent.
+// Coined roots by semantic field (spec 2.3), each field followed by its
+// rune-name roots per the normative assignment table. Rune names are noun
+// roots only. Verb forms exist on every root a school can draw as a verb,
+// kum and swelt carry the spec's intransitive flag.
 export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> = {
   warding: [
     { root: 'ward', gloss: 'watch, guard', noun: 'warder', verb: 'ward' },
-    { root: 'skild', gloss: 'shield', noun: 'shield' },
+    { root: 'skild', gloss: 'shield', noun: 'shield', verb: 'shield' },
     { root: 'burg', gloss: 'stronghold', noun: 'stronghold' },
-    { root: 'helm', gloss: 'covering', noun: 'covering' },
-    { root: 'gard', gloss: 'enclosure', noun: 'enclosure' },
+    { root: 'helm', gloss: 'covering', noun: 'covering', verb: 'cover' },
+    { root: 'gard', gloss: 'enclosure', noun: 'enclosure', verb: 'enclose' },
     { root: 'frith', gloss: 'peace-bond', noun: 'peace-bond' },
     { root: 'mund', gloss: 'protecting hand', noun: 'protecting hand' },
     { root: 'wern', gloss: 'fend off', verb: 'fend' },
-    { root: 'halg', gloss: 'hallow' },
-    { root: 'skerm', gloss: 'screen' },
-    { root: 'alg', gloss: 'elk-guard', noun: 'elk-guard' },
-    { root: 'tiw', gloss: 'the sky god', noun: 'sky god' },
-    { root: 'berk', gloss: 'birch' },
-    { root: 'wunj', gloss: 'joy' },
-    { root: 'lauk', gloss: 'leek' },
+    { root: 'halg', gloss: 'hallow', verb: 'hallow' },
+    { root: 'skerm', gloss: 'screen', verb: 'screen' },
+    { root: 'wunj', gloss: 'joy', noun: 'joy', runeName: true },
+    { root: 'lauk', gloss: 'leek', noun: 'leek', runeName: true },
+    { root: 'alg', gloss: 'elk-guard', noun: 'elk-guard', runeName: true },
+    { root: 'tiw', gloss: 'the sky god', noun: 'sky god', runeName: true },
+    { root: 'berk', gloss: 'birch', noun: 'birch', runeName: true },
+    { root: 'othal', gloss: 'heritage', noun: 'heritage', runeName: true },
   ],
   harm: [
     { root: 'skath', gloss: 'scathe', verb: 'scathe', pp: 'scathed' },
     { root: 'bal', gloss: 'bale, evil', noun: 'bale' },
-    { root: 'sair', gloss: 'wound', noun: 'wound' },
+    { root: 'sair', gloss: 'wound', noun: 'wound', verb: 'wound', pp: 'wounded' },
     { root: 'agl', gloss: 'affliction', noun: 'affliction' },
-    { root: 'wund', gloss: 'gash', noun: 'gash' },
+    { root: 'wund', gloss: 'gash', noun: 'gash', verb: 'gash', pp: 'gashed' },
     { root: 'slah', gloss: 'strike', verb: 'strike', pp: 'struck' },
     { root: 'brek', gloss: 'break', verb: 'break', pp: 'broken' },
-    { root: 'ait', gloss: 'poison', noun: 'poison' },
+    { root: 'ait', gloss: 'poison', noun: 'poison', verb: 'poison', pp: 'poisoned' },
     { root: 'grim', gloss: 'fierce, cruel', adj: 'cruel', adv: 'grimly' },
-    { root: 'harm', gloss: 'grief, hurt', noun: 'grief' },
-    { root: 'ur', gloss: 'primal beast', noun: 'primal beast' },
-    { root: 'kaun', gloss: 'sore', noun: 'sore' },
-    { root: 'hagl', gloss: 'hail', noun: 'hail' },
+    { root: 'harm', gloss: 'grief, hurt', noun: 'grief', verb: 'harm', pp: 'harmed' },
+    { root: 'kaun', gloss: 'sore', noun: 'sore', runeName: true },
+    { root: 'hagl', gloss: 'hail', noun: 'hail', runeName: true },
   ],
   summoning: [
-    { root: 'lath', gloss: 'summon, invite' },
+    { root: 'lath', gloss: 'summon, invite', verb: 'summon' },
     { root: 'kall', gloss: 'call', verb: 'call' },
-    { root: 'bud', gloss: 'bid' },
-    { root: 'hait', gloss: 'command by name' },
+    { root: 'bud', gloss: 'bid', verb: 'bid' },
+    { root: 'hait', gloss: 'command by name', verb: 'command' },
     { root: 'wek', gloss: 'wake', verb: 'wake' },
-    { root: 'gal', gloss: 'chant, crow' },
-    { root: 'sok', gloss: 'seek' },
-    { root: 'kum', gloss: 'come', verb: 'come' },
-    { root: 'lok', gloss: 'lure' },
-    { root: 'stefn', gloss: 'voice-summons', noun: 'voice-summons' },
-    { root: 'ans', gloss: 'god', noun: 'god' },
-    { root: 'geb', gloss: 'gift' },
-    { root: 'ingw', gloss: 'the god Ing' },
-    { root: 'mann', gloss: 'man' },
+    { root: 'gal', gloss: 'chant, crow', verb: 'chant' },
+    { root: 'sok', gloss: 'seek', verb: 'seek' },
+    { root: 'kum', gloss: 'come', verb: 'come', intransitive: true },
+    { root: 'lok', gloss: 'lure', verb: 'lure' },
+    { root: 'stefn', gloss: 'voice-summons', noun: 'voice-summons', verb: 'call forth' },
+    { root: 'ur', gloss: 'primal beast', noun: 'primal beast', runeName: true },
+    { root: 'ans', gloss: 'god', noun: 'god', runeName: true },
+    { root: 'ehw', gloss: 'horse', noun: 'horse', runeName: true },
+    { root: 'ingw', gloss: 'the god Ing', noun: 'god Ing', runeName: true },
   ],
   hidden: [
     { root: 'run', gloss: 'secret', noun: 'secret' },
@@ -133,21 +138,23 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'grub', gloss: 'dig hidden' },
     { root: 'huld', gloss: 'the hidden one', noun: 'hidden one' },
     { root: 'swik', gloss: 'deceit', noun: 'deceit' },
-    { root: 'feh', gloss: 'wealth' },
-    { root: 'perth', gloss: 'lot-cup' },
+    { root: 'feh', gloss: 'hoarded wealth', noun: 'hoarded wealth', runeName: true },
+    { root: 'perth', gloss: 'lot-cup', noun: 'lot-cup', runeName: true },
   ],
   binding: [
     { root: 'bind', gloss: 'bind', verb: 'bind', pp: 'bound' },
     { root: 'band', gloss: 'bond', noun: 'bond' },
-    { root: 'haft', gloss: 'fetter-hold', noun: 'fetter-hold' },
-    { root: 'fetur', gloss: 'shackle', noun: 'shackle' },
-    { root: 'knut', gloss: 'knot', noun: 'knot' },
-    { root: 'wrid', gloss: 'twist, writhe' },
-    { root: 'spann', gloss: 'clasp' },
+    { root: 'haft', gloss: 'fetter-hold', noun: 'fetter-hold', verb: 'fetter' },
+    { root: 'fetur', gloss: 'shackle', noun: 'shackle', verb: 'shackle' },
+    { root: 'knut', gloss: 'knot', noun: 'knot', verb: 'knot' },
+    { root: 'wrid', gloss: 'twist, writhe', verb: 'twist' },
+    { root: 'spann', gloss: 'clasp', verb: 'clasp' },
     { root: 'tug', gloss: 'rope', noun: 'rope' },
     { root: 'hald', gloss: 'hold', verb: 'hold', pp: 'held' },
     { root: 'luk', gloss: 'lock shut', verb: 'lock', pp: 'locked' },
-    { root: 'naud', gloss: 'need' },
+    { root: 'geb', gloss: 'binding gift', noun: 'binding gift', runeName: true },
+    { root: 'naud', gloss: 'need-fetter', noun: 'need-fetter', runeName: true },
+    { root: 'is', gloss: 'ice', noun: 'ice', runeName: true },
   ],
   fire: [
     { root: 'fur', gloss: 'fire', noun: 'fire' },
@@ -160,7 +167,7 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'swid', gloss: 'singe' },
     { root: 'funk', gloss: 'spark', noun: 'spark' },
     { root: 'bael', gloss: 'pyre', noun: 'pyre' },
-    { root: 'sowil', gloss: 'sun', noun: 'sun' },
+    { root: 'sowil', gloss: 'sun', noun: 'sun', runeName: true },
   ],
   night: [
     { root: 'naht', gloss: 'night', noun: 'night' },
@@ -173,7 +180,6 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'rok', gloss: 'twilight', noun: 'twilight' },
     { root: 'hrim', gloss: 'hoarfrost', noun: 'hoarfrost' },
     { root: 'draum', gloss: 'dream', noun: 'dream' },
-    { root: 'is', gloss: 'ice', noun: 'ice' },
   ],
   death: [
     { root: 'dauth', gloss: 'death', noun: 'death' },
@@ -184,10 +190,11 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'lik', gloss: 'corpse', noun: 'corpse' },
     { root: 'mold', gloss: 'grave-earth', noun: 'grave-earth' },
     { root: 'draug', gloss: 'walker-again', noun: 'walker-again' },
-    { root: 'swelt', gloss: 'die' },
+    { root: 'swelt', gloss: 'die', verb: 'die', intransitive: true },
     { root: 'naw', gloss: 'the dead', noun: 'dead one' },
-    { root: 'thurs', gloss: 'hostile wight', noun: 'hostile wight' },
-    { root: 'iw', gloss: 'yew', noun: 'yew' },
+    { root: 'thurs', gloss: 'hostile wight', noun: 'hostile wight', runeName: true },
+    { root: 'iw', gloss: 'yew', noun: 'yew', runeName: true },
+    { root: 'mann', gloss: 'mortal man', noun: 'mortal man', runeName: true },
   ],
   gates: [
     { root: 'dur', gloss: 'door', noun: 'door' },
@@ -200,8 +207,7 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'weg', gloss: 'way', noun: 'way' },
     { root: 'bor', gloss: 'bored passage', noun: 'bored passage' },
     { root: 'gap', gloss: 'gap, chasm', noun: 'chasm' },
-    { root: 'raid', gloss: 'ride' },
-    { root: 'ehw', gloss: 'horse' },
+    { root: 'raid', gloss: 'ride, journey', noun: 'journey', runeName: true },
   ],
   time: [
     { root: 'tid', gloss: 'time, tide', noun: 'tide of time' },
@@ -214,9 +220,8 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'aband', gloss: 'evening of days', noun: 'evening of days' },
     { root: 'aiw', gloss: 'eternity', noun: 'eternity' },
     { root: 'forn', gloss: 'ancient time', noun: 'ancient time' },
-    { root: 'dag', gloss: 'day', noun: 'day' },
-    { root: 'jer', gloss: 'harvest-year' },
-    { root: 'othal', gloss: 'heritage' },
+    { root: 'dag', gloss: 'day', noun: 'day', runeName: true },
+    { root: 'jer', gloss: 'harvest-year', noun: 'harvest-year', runeName: true },
   ],
 };
 
@@ -289,8 +294,7 @@ export const ELDRITCH_CLOSE: Idiom = {
   gloss: 'It gnawed the runes.',
 };
 
-// Curated verb subsets where a flavor needs a narrower pool than the field:
-// the clause imperative addresses the invoked power, the tier 2 imperative
-// commands the caster's world.
+// The clause imperative addresses the invoked power itself, so it keeps
+// the come flavor of the school skeleton. Tier 2 draws instead from every
+// transitive verb of the planned field (spec 2.9).
 export const INVOCATION_COME: ReadonlyArray<string> = ['kum', 'wek'];
-export const INVOCATION_T2: ReadonlyArray<string> = ['wek', 'kall'];

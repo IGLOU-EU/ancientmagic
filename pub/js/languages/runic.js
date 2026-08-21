@@ -1,5 +1,5 @@
 import { chance, pick } from '../generator/rng.js';
-import { BRIGHT_POWER, CLAUSE_SEP, CROSS_SEP, DREAD_POWER, ELDRITCH_CLOSE, ELDRITCH_OPEN_FULL, ELDRITCH_OPEN_SHORT, FIELDS, INVOCATION_COME, INVOCATION_T2, RC1, RC2, RC3, RO1, RO2, RO3_FIRST_AETT, RO3_FULL_ROW, RUNE_MAP, SEAL_GLOSS, SEAL_GLYPHS, SEAL_WORDS, WORD_SEP, } from './runic-data.js';
+import { BRIGHT_POWER, CLAUSE_SEP, CROSS_SEP, DREAD_POWER, ELDRITCH_CLOSE, ELDRITCH_OPEN_FULL, ELDRITCH_OPEN_SHORT, FIELDS, INVOCATION_COME, RC1, RC2, RC3, RO1, RO2, RO3_FIRST_AETT, RO3_FULL_ROW, RUNE_MAP, SEAL_GLOSS, SEAL_GLYPHS, SEAL_WORDS, WORD_SEP, } from './runic-data.js';
 export { tokenizeRunic, runesFor, nounForm, verbForm, adjectiveForm, adverbForm, eldritchRoot };
 const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
 function isVowelToken(token) {
@@ -87,6 +87,9 @@ function nounsOf(field) {
 }
 function verbsOf(field) {
     return FIELDS[field].filter((r) => r.verb !== undefined);
+}
+function transitiveVerbsOf(field) {
+    return verbsOf(field).filter((r) => r.intransitive !== true);
 }
 function adjectivesOf(field) {
     return FIELDS[field].filter((r) => r.adj !== undefined);
@@ -247,14 +250,7 @@ function realizeTierTwo(plan, rng) {
         throw new Error('tier 2 plan has no clause');
     const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
     const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
-    let verbPool;
-    if (plan.school === 'protection' || plan.school === 'curse') {
-        verbPool = verbsOf(intentField);
-    }
-    else {
-        verbPool = byNames(INVOCATION_T2);
-    }
-    const intent = pick(rng, verbPool);
+    const intent = pick(rng, transitiveVerbsOf(intentField));
     const target = pick(rng, nounsOf(targetField));
     const words = [verbForm(distort(intent.root), 'bare'), nounForm(distort(target.root), 'an')];
     return {

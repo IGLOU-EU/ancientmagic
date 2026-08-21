@@ -5,8 +5,9 @@ import { runic } from './gen.js';
 // A seed whose difficulty 5 Protection draws reproduce the shared plan of
 // genomes.md section 5 exactly: opener RO1, agent ward, intent bind, target
 // thurs, no modifier, closing RC1. Found by search, then pinned. The same
-// seed must keep producing this rendering forever.
-const SECTION5_SEED = 1578;
+// seed must keep producing this rendering forever. Re-pinned after the
+// arbitrated lexicon widened the draw pools.
+const SECTION5_SEED = 66238;
 
 test('section 5 fixture: the corrected site sample, byte for byte', () => {
   const out = runic('protection', 5, SECTION5_SEED);
