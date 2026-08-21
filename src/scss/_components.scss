@@ -571,9 +571,13 @@ a:focus-visible {
   letter-spacing: 0.06em;
   overflow-wrap: anywhere;
   text-shadow: $glow-glyph-rest;
+
+  // The sway is delayed by the flare duration and both meet on the resting
+  // shadow, so the handover between the two is invisible.
   animation:
     am-reveal $dur-reveal $ease-emerge both,
-    am-glyph-flare $dur-flare $ease-emerge both;
+    am-glyph-flare $dur-flare $ease-emerge both,
+    am-glow-sway $dur-glow-sway ease-in-out $dur-flare infinite;
 }
 
 // The vapor twin, design revision 1. The same text blurred behind the real
