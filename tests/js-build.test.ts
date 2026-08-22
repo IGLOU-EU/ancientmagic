@@ -54,21 +54,30 @@ test('js build: every import specifier in pub/js points at a file that ships', (
   }
 });
 
-// The whole loading contract rests on this one property of the entry module.
+// The whole loading contract rests on the entry module: what it imports is
+// what an idle page pays for, what it defers is what a conjuration pays for.
 // Inlining, bundling or hoisting a dynamic import would leave every other test
 // green while the idle page went back to carrying the generator.
-test('js build: the entry module defers the generator, the genomes and the glosses', () => {
+//
+// Both lists are spelled out so the test fails closed. An import moving from
+// one side to the other, or a new one appearing on either, is a change to the
+// contract in docs/i18n.md and has to be made on purpose.
+test('js build: the entry module loads the idle page and defers the rest', () => {
   const main = readFileSync(join(jsRoot, 'main.js'), 'utf8');
 
-  for (const specifier of specifiers(main, STATIC_IMPORT)) {
-    assert.doesNotMatch(
-      specifier,
-      /generator|languages|glosses/u,
-      `${specifier} is fetched at page load`,
-    );
-  }
-  assert.ok(
-    specifiers(main, DYNAMIC_IMPORT).length > 0,
-    'the entry module fetches everything up front',
+  assert.deepStrictEqual(
+    specifiers(main, STATIC_IMPORT).sort(),
+    ['./strings/index.js', './ui/manifestation.js'],
+    'the idle page carries something new, or lost something',
+  );
+  assert.deepStrictEqual(
+    specifiers(main, DYNAMIC_IMPORT).sort(),
+    [
+      './generator/pipeline.js',
+      './glosses/index.js',
+      './languages/index.js',
+      './share.js',
+    ],
+    'a conjuration fetches something new, or fetches it too early',
   );
 });

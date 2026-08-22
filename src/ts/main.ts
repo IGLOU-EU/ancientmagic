@@ -189,8 +189,15 @@ async function loadConjurer(id: LanguageId): Promise<Conjurer> {
 }
 
 async function conjure(settings: Settings): Promise<void> {
-  const write = await loadConjurer(settings.language);
-  const output = write(settings, freshSeed());
+  // The formula's name is only wanted once a formula exists, so it rides the
+  // same wave as the generation code rather than the idle page.
+  const [write, share] = await Promise.all([
+    loadConjurer(settings.language),
+    import('./share.js'),
+  ]);
+
+  const seed = freshSeed();
+  const output = write(settings, seed);
   const languageLabel = optionLabel('language', settings.language);
   const schoolLabel = optionLabel('school', settings.school);
   renderFormula(output, {
@@ -198,6 +205,11 @@ async function conjure(settings: Settings): Promise<void> {
     glyphLabel: strings.glyphLineLabel(languageLabel),
     printCaption: strings.printCaption(languageLabel, schoolLabel, settings.difficulty),
   });
+
+  // The formula that was just written, named in the address so it can be
+  // handed to someone else. Replaced and never pushed: a conjuration is not a
+  // place to go back to, and Back must still leave the page.
+  history.replaceState(null, '', `#${share.encode(settings, seed)}`);
 }
 
 function wireGenerator(): void {

@@ -1,0 +1,76 @@
+// What a link says about a conjuration.
+//
+// Four words name everything the generator needs to write the same formula
+// again: the script, the school, the level of power, and the seed. The page's
+// own address already says which language the interface speaks, so the
+// fragment describes the formula and never the page.
+//
+// The reader ships with the writer, before anything reads a link, because the
+// meaning of a link has to be fixed the day the first one is copied. Nothing
+// here touches the DOM or the network: it is a spelling, both ways.
+
+import { clampDifficulty } from './generator/pipeline.js';
+import type { LanguageId, School, Settings } from './generator/types.js';
+
+// What a link may name. Held to the genome registry and to the schools the
+// plan builds by test, so the format cannot outlive or outrun the site.
+export const LANGUAGES: ReadonlyArray<LanguageId> = ['runic', 'egyptian', 'phoenician'];
+export const SCHOOLS: ReadonlyArray<School> = [
+  'protection',
+  'curse',
+  'invocation',
+  'eldritch',
+];
+
+export interface SharedFormula {
+  readonly settings: Settings;
+  readonly seed: number;
+}
+
+// A dot: legal in a fragment, so nothing is ever percent-encoded, and a link
+// survives being pasted into a message unchanged.
+const SEPARATOR = '.';
+
+// The widest seed the rng takes, an unsigned 32 bit number.
+const MAX_SEED = 4294967295;
+
+// Exactly the decimal spelling a number gets from String(): no sign, no
+// leading zero, no exponent, no hex. Anything else is a different format
+// wearing this one's clothes.
+const DECIMAL = /^(?:0|[1-9][0-9]*)$/u;
+
+function wholeNumber(text: string): number | null {
+  if (!DECIMAL.test(text)) return null;
+  const value = Number(text);
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+export function encode(settings: Settings, seed: number): string {
+  // Both numbers are read the way the pipeline reads them before it plans and
+  // seeds, so a link can never name a formula that was not the one written.
+  return [
+    settings.language,
+    settings.school,
+    clampDifficulty(settings.difficulty),
+    seed >>> 0,
+  ].join(SEPARATOR);
+}
+
+export function decode(text: string): SharedFormula | null {
+  // The one liberty taken with the input: a location hands its fragment over
+  // with the hash still on it.
+  const parts = (text.startsWith('#') ? text.slice(1) : text).split(SEPARATOR);
+  if (parts.length !== 4) return null;
+
+  const [languageText, schoolText, difficultyText, seedText] = parts;
+  const language = LANGUAGES.find((id) => id === languageText);
+  const school = SCHOOLS.find((id) => id === schoolText);
+  const difficulty = wholeNumber(difficultyText);
+  const seed = wholeNumber(seedText);
+
+  if (language === undefined || school === undefined) return null;
+  if (difficulty === null || difficulty < 1 || difficulty > 9) return null;
+  if (seed === null || seed > MAX_SEED) return null;
+
+  return { settings: { language, school, difficulty }, seed };
+}
