@@ -17,7 +17,13 @@
 
   // Browsers ship with background graphics off for printing, so the default
   // sheet is ink on white and the parchment leaf is opt-in. Both pass AA.
+  // The root height is the anchor for the bottom footer. A box sized to
+  // exactly the page area sits on a knife edge where one sub-pixel of
+  // engine rounding spills a phantom parchment sheet, so the root keeps
+  // 4mm of slack that no rounding regime can cross. Viewport units are
+  // not an option here, their print reference varies by engine pipeline.
   html {
+    height: calc(100% - 4mm);
     background-color: $parchment;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
@@ -25,13 +31,20 @@
 
   html,
   body {
-    height: 100%;
     overflow-x: visible;
   }
 
+  // The footer anchor rests on min-height, never on a fixed height, so a
+  // long formula grows the boxes in normal flow instead of overflowing a
+  // fixed-height body, which print engines may clip.
   body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
     margin: 0;
-    padding: 0;
+    // Interior breathing room so no text touches the parchment edges.
+    // border-box keeps it inside the min-height, preserving the 4mm slack.
+    padding: 10mm;
     background: none;
     color: $ink-primary;
     font-family: $font-serif;
@@ -62,7 +75,7 @@
   .page {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+    flex-grow: 1;
     max-width: none;
   }
 
@@ -150,6 +163,7 @@
     margin-top: auto;
     padding-top: 8mm;
     color: $ink-secondary;
+    break-inside: avoid;
   }
 
   .disclaimer,
