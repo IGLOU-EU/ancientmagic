@@ -47,6 +47,15 @@
 }
 </script>
 
+<!-- First-paint skeleton, so a cold load opens on the dark page instead of the
+     white canvas. Every value here is the one css/main.css sets. Keep it above
+     the stylesheet link: a media query adds no specificity, so from below it
+     would outrank the print rule that drops the .page width cap. -->
+<style>
+html { color-scheme: dark; background-color: #171029; }
+.page { max-width: 760px; margin-inline: auto; }
+</style>
+
 <link rel="stylesheet" href="css/main.css">
 <script type="module" src="js/main.js"></script>
 </head>
