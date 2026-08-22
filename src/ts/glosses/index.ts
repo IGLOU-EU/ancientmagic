@@ -1,10 +1,11 @@
 import { baseLanguage } from '../locale.js';
 import type { GlossPack } from './types.js';
 import { enGlosses } from './en/index.js';
+import { frGlosses } from './fr/index.js';
 
 // Every pack that ships. The completeness tests sweep this list, so a pack
 // added here is checked against all three genomes without touching the tests.
-export const GLOSS_PACKS: ReadonlyArray<GlossPack> = [enGlosses];
+export const GLOSS_PACKS: ReadonlyArray<GlossPack> = [enGlosses, frGlosses];
 
 const REGISTRY = new Map<string, GlossPack>(GLOSS_PACKS.map((pack) => [pack.language, pack]));
 

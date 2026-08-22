@@ -18,10 +18,21 @@
 // these it offers; the pack must supply exactly those and no others.
 export type RootForm = 'noun' | 'plural' | 'verb' | 'pp' | 'adj' | 'adv';
 
+// Agreement data for the packs whose articles, adjectives and participles bend
+// to a head word. A pack that needs none of it sets none of it, which is why
+// every field below is optional: English never mentions them.
+export type Gender = 'm' | 'f';
+
 export interface RootGloss {
   // Dictionary gloss of the root, as docs/genomes.md lists it.
   readonly gloss: string;
   readonly forms: Readonly<Partial<Record<RootForm, string>>>;
+  // Gender of the noun and plural wordings, so a clause can choose an article
+  // and agree what it hangs on them.
+  readonly gender?: Gender;
+  // Wordings a clause may attach to a feminine head, keyed like `forms`. A
+  // form absent here is invariable, the masculine wording serves both.
+  readonly feminine?: Readonly<Partial<Record<RootForm, string>>>;
 }
 
 export type RootGlossTable = Readonly<Record<string, RootGloss>>;
@@ -32,6 +43,8 @@ export type GlossTable = Readonly<Record<string, string>>;
 export interface NamedPower {
   readonly name: string;
   readonly gloss: string;
+  // Set where a clause addresses the bearer by a title of its own gender.
+  readonly gender?: Gender;
 }
 
 export type NamedPowerTable = Readonly<Record<string, NamedPower>>;

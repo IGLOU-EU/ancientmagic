@@ -13,15 +13,20 @@ import * as assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generate } from '../src/ts/generator/pipeline.js';
+import { resolveGlosses } from '../src/ts/glosses/index.js';
 import { en } from '../src/ts/strings/en.js';
 import { fr } from '../src/ts/strings/fr.js';
 import { resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-function pageStrings(language: string): Record<string, string> {
+// The seed behind the sample formula the page ships, pinned in tests/fixture.
+const SAMPLE_SEED = 66238;
+
+function pageStrings(name: string): Record<string, string> {
   return JSON.parse(
-    readFileSync(join(root, 'src', 'strings', `${language}.json`), 'utf8'),
+    readFileSync(join(root, 'src', 'strings', `${name}.json`), 'utf8'),
   ) as Record<string, string>;
 }
 
@@ -42,6 +47,22 @@ test('strings: an unknown tag falls back to the default language', () => {
 
 test('strings: more than one language is registered', () => {
   assert.ok(UI_STRINGS.size >= 2, 'the site is down to a single language');
+});
+
+// The sample formula is one output of one seed. Its glyphs and its
+// transliteration are the same in every language, so they stay shared; its
+// gloss is written by whichever pack the language resolves to, so it cannot be.
+test('strings: the sample glyph and translit lines stay shared, the gloss does not', () => {
+  const shared = pageStrings('common');
+  assert.ok('sample.glyphs' in shared, 'the sample glyphs left the shared file');
+  assert.ok(
+    'sample.transliteration' in shared,
+    'the sample transliteration left the shared file',
+  );
+  assert.ok(
+    !('sample.gloss' in shared),
+    'the sample gloss is shared, so one language would show another one’s pack',
+  );
 });
 
 for (const [language, strings] of UI_STRINGS) {
@@ -65,6 +86,17 @@ for (const [language, strings] of UI_STRINGS) {
         strings.difficultyTiers.mid,
       ),
       page['difficulty.initialValueText'],
+    );
+  });
+
+  test(`strings (${language}): the sample gloss is this language’s own pack`, () => {
+    assert.strictEqual(
+      generate(
+        { language: 'runic', school: 'protection', difficulty: 5 },
+        SAMPLE_SEED,
+        resolveGlosses(language),
+      ).gloss,
+      page['sample.gloss'],
     );
   });
 

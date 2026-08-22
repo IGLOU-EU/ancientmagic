@@ -158,7 +158,11 @@ for (const pack of GLOSS_PACKS) {
             // A slot that renders empty leaves its spacing behind. Those three
             // shapes are what the residue looks like, and each is a hole.
             assert.doesNotMatch(gloss, /^[,.!?]/u, `opens on punctuation: ${where}`);
-            assert.doesNotMatch(gloss, /\s[,.!?]/u, `space before punctuation: ${where}`);
+            // An ordinary space, not any whitespace: the residue a pack leaves
+            // behind always comes from its own joins, while a language whose
+            // typography sets a narrow no-break space before a mark is right
+            // to put one there.
+            assert.doesNotMatch(gloss, / [,.!?]/u, `space before punctuation: ${where}`);
             assert.match(gloss, /[.!?]$/u, `ends mid-sentence: ${where}`);
           }
         }
