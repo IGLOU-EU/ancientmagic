@@ -20,7 +20,6 @@ import type {
   SemanticField,
 } from '../generator/types.js';
 import type {
-  GlossPack,
   GlossRef,
   PhoenicianGlosses,
   RootForm,
@@ -828,8 +827,8 @@ function composePhoenician(
   return { words, gloss: glosses.sentences(glossParts) };
 }
 
-function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOutput {
-  const { words, gloss } = composePhoenician(plan, rng, pack.phoenician);
+function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses): FormulaOutput {
+  const { words, gloss } = composePhoenician(plan, rng, glosses);
   // Continuous writing below tier 3, the word separator above (spec 4.2).
   const separator = plan.difficulty <= 2 ? '' : WORD_SEP;
   return {
@@ -839,7 +838,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOu
   };
 }
 
-export const phoenicianGenome: Genome = {
+export const phoenicianGenome: Genome<PhoenicianGlosses> = {
   id: 'phoenician',
   realize: realizeFormula,
 };

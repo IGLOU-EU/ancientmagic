@@ -132,11 +132,8 @@ async function loadConjurer(id) {
         import('./languages/index.js'),
         import('./glosses/index.js'),
     ]);
-    const [genome, pack] = await Promise.all([
-        languages.loadGenome(id),
-        glosses.resolveGlosses(language),
-    ]);
-    return (settings, seed) => pipeline.generate(genome, settings, seed, pack);
+    const genome = await languages.loadGenome(id, await glosses.resolveGlosses(language));
+    return (settings, seed) => pipeline.generate(genome, settings, seed);
 }
 async function conjure(settings) {
     const write = await loadConjurer(settings.language);

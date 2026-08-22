@@ -8,24 +8,36 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
-import type { Genome, School } from '../src/ts/generator/types.js';
+import type { BoundGenome, School } from '../src/ts/generator/types.js';
 import { GLOSS_PACKS, resolveGlosses } from '../src/ts/glosses/index.js';
 import { enGlosses } from '../src/ts/glosses/en/index.js';
 import type { GlossPack, GlossTable, NamedPowerTable, RootGlossTable } from '../src/ts/glosses/types.js';
 import * as runicData from '../src/ts/languages/runic-data.js';
 import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
+import { bindGenome } from '../src/ts/languages/index.js';
 import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 
 const SCHOOLS: ReadonlyArray<School> = ['protection', 'curse', 'invocation', 'eldritch'];
 
-const GENOMES: ReadonlyArray<Genome> = [runicGenome, egyptianGenome, phoenicianGenome];
+interface GenomeGlossTables {
+  roots: RootGlossTable;
+  idioms: GlossTable;
+  seals: GlossTable;
+  powers: GlossTable | NamedPowerTable;
+  epithets?: GlossTable;
+}
 
-// What one genome expects a pack to cover, read off the genome's own data.
+// What one genome expects of a language, read off the genome's own data, plus
+// the two ways to reach that language's answer: the slice of glosses alone,
+// for the coverage checks, and the genome bound to it, for the sweep. Both are
+// per genome, because that is the grain a pack is loaded at.
 interface Inventory {
   genome: string;
+  slice: (pack: GlossPack) => Promise<GenomeGlossTables>;
+  bind: (pack: GlossPack) => Promise<BoundGenome>;
   roots: ReadonlyArray<{ id: string; forms: ReadonlyArray<string> }>;
   powers: ReadonlyArray<string>;
   epithets: ReadonlyArray<string>;
@@ -45,6 +57,8 @@ function rootsOf(
 const INVENTORIES: ReadonlyArray<Inventory> = [
   {
     genome: 'runic',
+    slice: (pack) => pack.runic(),
+    bind: async (pack) => bindGenome(runicGenome, await pack.runic()),
     roots: rootsOf(runicData.FIELDS, (r: { root: string }) => r.root),
     // Runic keeps bright words and dread epithets in one table, they are all
     // power words of the same shape.
@@ -55,6 +69,8 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
   },
   {
     genome: 'egyptian',
+    slice: (pack) => pack.egyptian(),
+    bind: async (pack) => bindGenome(egyptianGenome, await pack.egyptian()),
     roots: rootsOf(egyptianData.FIELDS, (r: { skeleton: string }) => r.skeleton),
     powers: egyptianData.BRIGHT_POWER.map((p) => p.skeleton),
     epithets: egyptianData.DREAD_POWER.map((p) => p.skeleton),
@@ -63,6 +79,8 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
   },
   {
     genome: 'phoenician',
+    slice: (pack) => pack.phoenician(),
+    bind: async (pack) => bindGenome(phoenicianGenome, await pack.phoenician()),
     roots: rootsOf(phoenicianData.FIELDS, (r: { root: string }) => r.root),
     powers: phoenicianData.ALL_NAMES.map((n) => n.skeleton),
     epithets: phoenicianData.DREAD_POWER.map((p) => p.skeleton),
@@ -70,20 +88,6 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     seals: [...phoenicianData.SEAL_COUNTS],
   },
 ];
-
-interface GenomeGlossTables {
-  roots: RootGlossTable;
-  idioms: GlossTable;
-  seals: GlossTable;
-  powers: GlossTable | NamedPowerTable;
-  epithets?: GlossTable;
-}
-
-function tablesOf(pack: GlossPack, genome: string): GenomeGlossTables {
-  if (genome === 'runic') return pack.runic;
-  if (genome === 'egyptian') return pack.egyptian;
-  return pack.phoenician;
-}
 
 function sorted(values: Iterable<string>): string[] {
   return Array.from(values).sort();
@@ -94,7 +98,7 @@ for (const [language, loadPack] of GLOSS_PACKS) {
     const where = `${language}/${inventory.genome}`;
 
     test(`${where}: covers exactly the roots the genome declares`, async () => {
-      const tables = tablesOf(await loadPack(), inventory.genome);
+      const tables = await inventory.slice(await loadPack());
       assert.deepStrictEqual(
         sorted(Object.keys(tables.roots)),
         sorted(inventory.roots.map((r) => r.id)),
@@ -103,7 +107,7 @@ for (const [language, loadPack] of GLOSS_PACKS) {
     });
 
     test(`${where}: covers exactly the forms each root declares`, async () => {
-      const tables = tablesOf(await loadPack(), inventory.genome);
+      const tables = await inventory.slice(await loadPack());
       for (const root of inventory.roots) {
         const entry = tables.roots[root.id];
         assert.ok(entry !== undefined, `${root.id} is missing`);
@@ -116,7 +120,7 @@ for (const [language, loadPack] of GLOSS_PACKS) {
     });
 
     test(`${where}: every root wording is real text`, async () => {
-      const tables = tablesOf(await loadPack(), inventory.genome);
+      const tables = await inventory.slice(await loadPack());
       for (const [id, entry] of Object.entries(tables.roots)) {
         assert.ok(entry.gloss.trim().length > 0, `${id} has a blank gloss`);
         for (const [form, word] of Object.entries(entry.forms)) {
@@ -126,7 +130,7 @@ for (const [language, loadPack] of GLOSS_PACKS) {
     });
 
     test(`${where}: covers exactly the named powers, epithets, idioms and seals`, async () => {
-      const tables = tablesOf(await loadPack(), inventory.genome);
+      const tables = await inventory.slice(await loadPack());
       assert.deepStrictEqual(
         sorted(Object.keys(tables.powers)),
         sorted(inventory.powers),
@@ -154,17 +158,14 @@ for (const [language, loadPack] of GLOSS_PACKS) {
   // clause shape is driven through real plans and the result read back.
   test(`${language}: writes a whole gloss at every tier of every school`, async () => {
     const pack = await loadPack();
-    for (const genome of GENOMES) {
+    for (const inventory of INVENTORIES) {
+      const genome = await inventory.bind(pack);
       for (const school of SCHOOLS) {
         for (let difficulty = 1; difficulty <= 9; difficulty += 1) {
           for (let seed = 0; seed < 12; seed += 1) {
             const where = `${language} ${genome.id} ${school} d${difficulty} seed ${seed}`;
-            const gloss = generate(
-              genome,
-              { language: genome.id, school, difficulty },
-              seed,
-              pack,
-            ).gloss;
+            const gloss = generate(genome, { language: genome.id, school, difficulty }, seed)
+              .gloss;
 
             assert.ok(gloss.length > 0, `empty gloss: ${where}`);
             assert.doesNotMatch(gloss, /undefined|null|\[object/u, `hole in the gloss: ${where}`);

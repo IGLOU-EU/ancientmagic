@@ -14,7 +14,7 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
-import type { GlossPack, GlossRef, RunicGlosses } from '../glosses/types.js';
+import type { GlossRef, RunicGlosses } from '../glosses/types.js';
 import {
   BRIGHT_POWER,
   CLAUSE_SEP,
@@ -374,8 +374,7 @@ function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
   };
 }
 
-function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOutput {
-  const glosses = pack.runic;
+function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): FormulaOutput {
   if (plan.difficulty === 1) return realizeTierOne(plan, rng, glosses);
   if (plan.difficulty === 2) return realizeTierTwo(plan, rng, glosses);
 
@@ -446,7 +445,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOu
   return { glyphs, transliteration, gloss: glosses.sentences(glossParts) };
 }
 
-export const runicGenome: Genome = {
+export const runicGenome: Genome<RunicGlosses> = {
   id: 'runic',
   realize: realizeFormula,
 };

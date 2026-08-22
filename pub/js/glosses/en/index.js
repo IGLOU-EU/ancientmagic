@@ -1,9 +1,6 @@
-import { egyptianGlosses } from './egyptian.js';
-import { phoenicianGlosses } from './phoenician.js';
-import { runicGlosses } from './runic.js';
 export const enGlosses = {
     language: 'en',
-    runic: runicGlosses,
-    egyptian: egyptianGlosses,
-    phoenician: phoenicianGlosses,
+    runic: () => import('./runic.js').then((m) => m.runicGlosses),
+    egyptian: () => import('./egyptian.js').then((m) => m.egyptianGlosses),
+    phoenician: () => import('./phoenician.js').then((m) => m.phoenicianGlosses),
 };

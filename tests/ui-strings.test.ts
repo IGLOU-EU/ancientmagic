@@ -16,6 +16,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generate } from '../src/ts/generator/pipeline.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
+import { bindGenome } from '../src/ts/languages/index.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import { en } from '../src/ts/strings/en.js';
 import { fr } from '../src/ts/strings/fr.js';
@@ -102,12 +103,12 @@ for (const [language, loadStrings] of UI_STRINGS) {
   });
 
   test(`strings (${language}): the sample gloss is this language’s own pack`, async () => {
+    const glosses = await (await resolveGlosses(language)).runic();
     assert.strictEqual(
       generate(
-        runicGenome,
+        bindGenome(runicGenome, glosses),
         { language: 'runic', school: 'protection', difficulty: 5 },
         SAMPLE_SEED,
-        await resolveGlosses(language),
       ).gloss,
       page['sample.gloss'],
     );

@@ -171,9 +171,11 @@ function readSettings(): Settings {
 }
 
 // Writes one formula in one script. Nothing the idle page shows needs the
-// generator, a genome or a pack of glosses, so none of the three is fetched
-// until a conjuration asks for them. The browser's module map keeps what it
-// fetched: conjuring again costs nothing, changing script costs that script.
+// generator, a genome or a gloss, so none of the three is fetched until a
+// conjuration asks for them, and what is fetched then is one pair: the
+// selected script, and its wordings in the page's language. The browser's
+// module map keeps what it fetched, so conjuring again costs nothing and
+// changing script costs that script.
 type Conjurer = (settings: Settings, seed: number) => FormulaOutput;
 
 async function loadConjurer(id: LanguageId): Promise<Conjurer> {
@@ -182,11 +184,8 @@ async function loadConjurer(id: LanguageId): Promise<Conjurer> {
     import('./languages/index.js'),
     import('./glosses/index.js'),
   ]);
-  const [genome, pack] = await Promise.all([
-    languages.loadGenome(id),
-    glosses.resolveGlosses(language),
-  ]);
-  return (settings, seed) => pipeline.generate(genome, settings, seed, pack);
+  const genome = await languages.loadGenome(id, await glosses.resolveGlosses(language));
+  return (settings, seed) => pipeline.generate(genome, settings, seed);
 }
 
 async function conjure(settings: Settings): Promise<void> {

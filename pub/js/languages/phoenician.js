@@ -551,8 +551,8 @@ function composePhoenician(plan, rng, glosses) {
     }
     return { words, gloss: glosses.sentences(glossParts) };
 }
-function realizeFormula(plan, rng, pack) {
-    const { words, gloss } = composePhoenician(plan, rng, pack.phoenician);
+function realizeFormula(plan, rng, glosses) {
+    const { words, gloss } = composePhoenician(plan, rng, glosses);
     const separator = plan.difficulty <= 2 ? '' : WORD_SEP;
     return {
         glyphs: words.map((word) => word.glyphs).join(separator),

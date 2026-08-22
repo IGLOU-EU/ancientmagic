@@ -204,11 +204,17 @@ export interface PhoenicianGlosses extends GenomeGlosses {
 
 // --- The pack --------------------------------------------------------------
 
-// One UI language's glosses for every genome. A genome added later adds its
-// key here, which breaks every pack until each one covers it.
+// One UI language's glosses for every genome, one loader per genome. A genome
+// added later adds its key here, which breaks every pack until each one covers
+// it: the language is still the unit that must be whole, and a translator
+// still copies a whole directory.
+//
+// The loading grain is finer than the guarantee on purpose. A conjuration in
+// one script wants that script's wordings in the page's language, so that is
+// what it fetches. Twelve genomes must not cost twelve gloss files a click.
 export interface GlossPack {
   readonly language: string;
-  readonly runic: RunicGlosses;
-  readonly egyptian: EgyptianGlosses;
-  readonly phoenician: PhoenicianGlosses;
+  readonly runic: () => Promise<RunicGlosses>;
+  readonly egyptian: () => Promise<EgyptianGlosses>;
+  readonly phoenician: () => Promise<PhoenicianGlosses>;
 }

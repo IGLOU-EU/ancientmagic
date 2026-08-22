@@ -18,7 +18,6 @@ import type {
 import type {
   EgyptianAddress,
   EgyptianGlosses,
-  GlossPack,
   GlossRef,
   RootForm,
 } from '../glosses/types.js';
@@ -826,8 +825,8 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses):
   return { words, gloss: glosses.sentences(glossParts) };
 }
 
-function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOutput {
-  const { words, gloss } = composeEgyptian(plan, rng, pack.egyptian);
+function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): FormulaOutput {
+  const { words, gloss } = composeEgyptian(plan, rng, glosses);
   return {
     // The script runs continuous at every difficulty, word boundaries show
     // only through the determinatives (spec 3.2).
@@ -837,7 +836,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOu
   };
 }
 
-export const egyptianGenome: Genome = {
+export const egyptianGenome: Genome<EgyptianGlosses> = {
   id: 'egyptian',
   realize: realizeFormula,
 };

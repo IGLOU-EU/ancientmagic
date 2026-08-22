@@ -2,7 +2,6 @@
 // independent, genomes turn a plan into the three aligned output lines.
 
 import type { Rng } from './rng.js';
-import type { GlossPack } from '../glosses/types.js';
 
 export type LanguageId = 'runic' | 'egyptian' | 'phoenician';
 
@@ -69,9 +68,21 @@ export interface Settings {
   difficulty: number;
 }
 
-export interface Genome {
-  id: LanguageId;
-  // The pack is passed in rather than imported, so the language displayed is
-  // the caller's decision and a genome never reaches for a wording of its own.
-  realize(plan: FormulaPlan, rng: Rng, glosses: GlossPack): FormulaOutput;
+// What a genome module exports: the rules of one script, still waiting for the
+// wordings of one language. The glosses are passed in rather than imported, so
+// the language displayed is the caller's decision and a genome never reaches
+// for a wording of its own. It asks for its own slice and nothing wider: a
+// runic conjuration must not carry the Egyptian glosses of any language.
+export interface Genome<Glosses> {
+  readonly id: LanguageId;
+  realize(plan: FormulaPlan, rng: Rng, glosses: Glosses): FormulaOutput;
+}
+
+// A genome once a language's slice is bound to it, which is what the pipeline
+// realizes. The binding erases the slice type on purpose: every genome wants a
+// different one, so only the place that names both can pair them, and one
+// bound shape is what a loader can hand back.
+export interface BoundGenome {
+  readonly id: LanguageId;
+  realize(plan: FormulaPlan, rng: Rng): FormulaOutput;
 }

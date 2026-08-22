@@ -579,8 +579,8 @@ function composeEgyptian(plan, rng, glosses) {
     }
     return { words, gloss: glosses.sentences(glossParts) };
 }
-function realizeFormula(plan, rng, pack) {
-    const { words, gloss } = composeEgyptian(plan, rng, pack.egyptian);
+function realizeFormula(plan, rng, glosses) {
+    const { words, gloss } = composeEgyptian(plan, rng, glosses);
     return {
         glyphs: words.map((word) => word.glyphs).join(''),
         transliteration: words.map((word) => word.spoken).join(' '),

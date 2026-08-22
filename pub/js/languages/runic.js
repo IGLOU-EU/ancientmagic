@@ -273,8 +273,7 @@ function realizeTierTwo(plan, rng, glosses) {
         gloss: glosses.tierTwo(intent.root, target.root),
     };
 }
-function realizeFormula(plan, rng, pack) {
-    const glosses = pack.runic;
+function realizeFormula(plan, rng, glosses) {
     if (plan.difficulty === 1)
         return realizeTierOne(plan, rng, glosses);
     if (plan.difficulty === 2)
