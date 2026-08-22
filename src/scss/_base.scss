@@ -92,6 +92,9 @@ p {
 }
 
 .page {
+  // The anchor of the language pill, which rides on the wordmark's line at the
+  // top right of the column rather than taking a row of its own.
+  position: relative;
   width: 100%;
   max-width: 760px;
   margin-inline: auto;

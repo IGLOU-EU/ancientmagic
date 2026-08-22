@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ancient Magic, des incantations en véritables écritures anciennes</title>
+<meta name="description" content="Choisissez une écriture, une école de magie et une difficulté, puis lisez une incantation fictive tracée en véritables glyphes anciens, avec sa translittération et sa glose.">
+<link rel="canonical" href="https://ancientmagic.iglou.eu/fr.html">
+<link rel="alternate" hreflang="en" href="https://ancientmagic.iglou.eu/">
+<link rel="alternate" hreflang="fr" href="https://ancientmagic.iglou.eu/fr.html">
+<!-- The default language is written to index.html, which is what the site root
+     serves, so the root is both the English page and the fallback. -->
+<link rel="alternate" hreflang="x-default" href="https://ancientmagic.iglou.eu/">
+<meta name="theme-color" content="#0B0714">
+
+<meta property="og:site_name" content="Ancient Magic">
+<meta property="og:title" content="Ancient Magic, des incantations en véritables écritures anciennes">
+<meta property="og:description" content="Choisissez une écriture, une école de magie et une difficulté, puis lisez une incantation fictive tracée en véritables glyphes anciens, avec sa translittération et sa glose.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ancientmagic.iglou.eu/fr.html">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:image" content="https://ancientmagic.iglou.eu/media/og-fr.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:alt" content="Le logotype Ancient Magic en or sur un ciel étoilé violet sombre, au-dessus d’une incantation runique lumineuse et de sa translittération.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ancient Magic, des incantations en véritables écritures anciennes">
+<meta name="twitter:description" content="Choisissez une écriture, une école de magie et une difficulté, puis lisez une incantation fictive tracée en véritables glyphes anciens, avec sa translittération et sa glose.">
+<meta name="twitter:image" content="https://ancientmagic.iglou.eu/media/og-fr.png">
+<meta name="twitter:image:alt" content="Le logotype Ancient Magic en or sur un ciel étoilé violet sombre, au-dessus d’une incantation runique lumineuse et de sa translittération.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Ancient Magic",
+  "url": "https://ancientmagic.iglou.eu/fr.html",
+  "description": "Un générateur d’incantations fictives, sur une seule page, tracées en véritables écritures anciennes, avec translittération et glose.",
+  "applicationCategory": "EntertainmentApplication",
+  "operatingSystem": "Tout navigateur web moderne",
+  "browserRequirements": "Nécessite JavaScript",
+  "inLanguage": "fr",
+  "isAccessibleForFree": true,
+  "license": "https://unlicense.org/",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  }
+}
+</script>
+
+<!-- First-paint skeleton, so a cold load opens on the dark page instead of the
+     white canvas. Every value here is the one css/main.css sets. Keep it above
+     the stylesheet link: a media query adds no specificity, so from below it
+     would outrank the print rule that drops the .page width cap. -->
+<style>
+html { color-scheme: dark; background-color: #171029; }
+.page { max-width: 760px; margin-inline: auto; }
+</style>
+
+<link rel="stylesheet" href="css/main.css">
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <!-- A disclosure, not a menu. Every entry is a link to a static page, so the
+       switcher navigates with the script gone and with the stylesheet gone. -->
+  <nav class="lang-switch" aria-label="Langue du site">
+    <details class="lang-fold">
+      <summary class="lang-current">
+        <span aria-hidden="true">FR</span>
+        <span class="visually-hidden">Français</span>
+      </summary>
+      <ul class="lang-list">
+        <li><a class="lang-link" href="index.html" hreflang="en" lang="en">English</a></li>
+      </ul>
+    </details>
+  </nav>
+
+  <header class="site-header">
+    <h1 class="wordmark">Ancient Magic</h1>
+    <p class="promise">Des incantations invoquées, tracées en véritables écritures anciennes.</p>
+  </header>
+
+  <main class="main">
+
+    <div class="sigil-band" aria-hidden="true"></div>
+
+    <section class="altar" aria-labelledby="altar-title">
+      <h2 class="eyebrow" id="altar-title">L’Autel</h2>
+
+      <div class="altar-grid">
+        <div class="field">
+          <label class="control-label" for="language">Langue</label>
+          <span class="select-shell">
+            <select class="select" id="language" name="language">
+              <option value="runic" selected>Runes</option>
+              <option value="egyptian">Hiéroglyphes égyptiens</option>
+              <option value="phoenician">Phénicien</option>
+              <option value="greek" disabled>Grec (bientôt)</option>
+              <option value="ogham" disabled>Ogham (bientôt)</option>
+              <option value="gothic" disabled>Gotique (bientôt)</option>
+              <option value="alchemical" disabled>Symboles alchimiques (bientôt)</option>
+              <option value="old-italic" disabled>Italique ancien (bientôt)</option>
+              <option value="glagolitic" disabled>Glagolitique (bientôt)</option>
+              <option value="coptic" disabled>Copte (bientôt)</option>
+              <option value="old-turkic" disabled>Vieux turc (bientôt)</option>
+              <option value="lydian" disabled>Lydien (bientôt)</option>
+              <option value="samaritan" disabled>Samaritain (bientôt)</option>
+              <option value="meroitic" disabled>Hiéroglyphes méroïtiques (bientôt)</option>
+              <option value="aegean-numbers" disabled>Nombres égéens (bientôt)</option>
+            </select>
+          </span>
+        </div>
+
+        <div class="field">
+          <label class="control-label" for="school">École de magie</label>
+          <span class="select-shell">
+            <select class="select" id="school" name="school">
+              <option value="protection" selected>Protection</option>
+              <option value="curse">Malédiction</option>
+              <option value="invocation">Invocation</option>
+              <option value="eldritch">Indicible</option>
+              <option value="divination" disabled>Divination (bientôt)</option>
+              <option value="chronomancy" disabled>Chronomancie (bientôt)</option>
+            </select>
+          </span>
+        </div>
+      </div>
+
+      <div class="field field--difficulty">
+        <div class="difficulty-head">
+          <label class="control-label" for="difficulty">Difficulté</label>
+          <span class="difficulty-readout">
+            <span class="difficulty-value" id="difficulty-value">5</span>
+            <span class="difficulty-tier" id="difficulty-tier">Rite</span>
+          </span>
+        </div>
+        <input class="slider" type="range" id="difficulty" name="difficulty"
+               min="1" max="9" step="1" value="5"
+               aria-valuetext="5, Rite">
+        <div class="ticks" id="difficulty-ticks" aria-hidden="true">
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick tick--current"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+          <span class="tick"></span>
+        </div>
+      </div>
+
+      <div class="altar-action">
+        <button class="btn btn--primary" type="button" id="generate">Invoquer</button>
+      </div>
+    </section>
+
+    <div class="sigil-band" aria-hidden="true"></div>
+
+    <section class="manifestation" aria-labelledby="manifestation-title">
+      <h2 class="eyebrow" id="manifestation-title">La Manifestation</h2>
+
+      <div class="well-stage">
+        <div class="magic-circle" aria-hidden="true">
+          <span class="mc-bloom"></span>
+          <span class="mc-rings"></span>
+          <span class="mc-ticks"></span>
+          <span class="mc-spokes"></span>
+        </div>
+
+        <div class="well">
+          <div class="output" id="output" data-script="runic" data-size="medium" aria-live="polite" aria-atomic="true">
+            <div class="glyph-stack">
+              <p class="glyph-line glyph-line--vapor" aria-hidden="true">ᚨᛚᚢ᛫<wbr>ᚹᚨᚱᛞᚨᛉ᛫<wbr>ᚹᛁᚦᚱᚨ᛫<wbr>ᚦᚢᚱᛊᚨᚾ᛫<wbr>ᛒᛁᚾᛞᛟ᛬<wbr>ᚱᚢᚾᛟᛉ᛫<wbr>ᚠᚨᛁᚺᛁᛞᛟ</p>
+              <p class="glyph-line" id="glyph-line" role="img" aria-label="Incantation en Runes">ᚨᛚᚢ᛫<wbr>ᚹᚨᚱᛞᚨᛉ᛫<wbr>ᚹᛁᚦᚱᚨ᛫<wbr>ᚦᚢᚱᛊᚨᚾ᛫<wbr>ᛒᛁᚾᛞᛟ᛬<wbr>ᚱᚢᚾᛟᛉ᛫<wbr>ᚠᚨᛁᚺᛁᛞᛟ</p>
+            </div>
+            <p class="translit" dir="ltr">alu wardaz withra thursan bindo runoz faihido</p>
+            <p class="gloss">Alu! I, the warder, bind against the hostile wight. I painted these runes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="output-actions">
+        <button class="btn btn--secondary" type="button" id="reroll">Relancer</button>
+        <button class="btn btn--small copy" type="button" id="copy" data-state="idle">
+          <span class="copy-labels">
+            <span class="copy-label" data-label="idle">Copier les glyphes</span>
+            <span class="copy-label" data-label="copied" aria-hidden="true">Copié</span>
+            <span class="copy-label" data-label="failed" aria-hidden="true">Échec de la copie</span>
+          </span>
+        </button>
+      </div>
+
+      <p class="visually-hidden" id="copy-status" role="status"></p>
+
+      <p class="print-caption print-only">Runes · Protection · Difficulté 5</p>
+    </section>
+
+    <div class="sigil-band" aria-hidden="true"></div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-line">
+      <span class="footer-item">Domaine public (Unlicense)</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <a class="footer-item" href="https://iglou.eu">Source</a>
+    </p>
+    <p class="disclaimer">Chaque formule est une fiction générée. Elle ne traduit rien et n’enseigne rien.</p>
+    <p class="print-url print-only">ancientmagic.iglou.eu</p>
+  </footer>
+
+</div>
+</body>
+</html>

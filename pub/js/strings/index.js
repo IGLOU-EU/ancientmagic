@@ -1,6 +1,10 @@
 import { baseLanguage } from '../locale.js';
 import { en } from './en.js';
-const REGISTRY = new Map([['en', en]]);
+import { fr } from './fr.js';
+export const UI_STRINGS = new Map([
+    ['en', en],
+    ['fr', fr],
+]);
 export function resolveStrings(tag) {
-    return REGISTRY.get(baseLanguage(tag)) ?? en;
+    return UI_STRINGS.get(baseLanguage(tag)) ?? en;
 }

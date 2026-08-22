@@ -29,6 +29,143 @@ a:focus-visible {
   @include focus-ring;
 }
 
+// -------------------------------------------------------- language switch
+// A native disclosure holding plain links to the other static pages. Nothing
+// here needs script: the open state is the browser's, and every entry is a
+// href. Lifted above the altar, which raises itself over the magic circle,
+// so the unfolded list is never cut by the panel below it.
+//
+// Out of flow, so it costs the header not one pixel: the wordmark keeps the
+// page-top rhythm of design 5.3 and the pill rides on its line.
+.lang-switch {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  animation: am-reveal $dur-enter $ease-emerge both;
+}
+
+.lang-fold {
+  position: relative;
+}
+
+.lang-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  // The trailing letter spacing of the code is dead space on the right, so the
+  // padding is cut by that much to keep the label optically centered.
+  padding: 0 10px 0 12px;
+  border: 1px solid $panel-edge;
+  border-radius: 2px;
+  background-color: a($surface, 0.7);
+  color: $text-secondary;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background-color $dur-color $ease-settle,
+    border-color $dur-color $ease-settle,
+    color $dur-color $ease-settle;
+}
+
+// Safari still draws its own triangle from a pseudo-element rather than from
+// list-style, and drops the whole rule if the two selectors are merged.
+.lang-current::-webkit-details-marker {
+  display: none;
+}
+
+// The caret of the selects, drawn the same way, so the two controls read as
+// one family, design 7.2.
+.lang-current::after {
+  content: '';
+  width: 8px;
+  height: 5px;
+  background-color: $gold;
+  transition: background-color $dur-color $ease-settle;
+
+  @include mask(
+    (
+      linear-gradient(to bottom left, #000 0 50%, transparent 50%),
+      linear-gradient(to bottom right, #000 0 50%, transparent 50%)
+    ),
+    (4px 5px, 4px 5px),
+    (left top, right top)
+  );
+}
+
+.lang-current:hover {
+  border-color: $control-border;
+  background-color: $raised-hover;
+  color: $text-primary;
+}
+
+.lang-current:hover::after {
+  background-color: $gold-bright;
+}
+
+.lang-current:focus-visible {
+  box-shadow: 0 0 12px a($gold, 0.4);
+
+  @include focus-ring;
+}
+
+.lang-fold[open] .lang-current::after {
+  scale: 1 -1;
+}
+
+// Overlays the header instead of pushing it down, so unfolding moves nothing.
+.lang-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid $panel-edge;
+  border-radius: 4px;
+  // Opaque: it is read over the wordmark and its glow.
+  background-color: $surface;
+  box-shadow: 0 0 24px a($abyss, 0.7);
+  list-style: none;
+  animation: am-reveal $dur-swap $ease-emerge both;
+}
+
+// An entry in a bordered list, not a link in a sentence: the panel already
+// says these are choices, so the underline would only add noise.
+.lang-link {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  color: $gold;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    background-color $dur-color $ease-settle,
+    color $dur-color $ease-settle;
+}
+
+.lang-link:hover {
+  background-color: $raised-hover;
+  color: $gold-bright;
+  text-decoration: none;
+}
+
+.lang-link:active {
+  background-color: $raised;
+  color: $gold-deep;
+}
+
 // ------------------------------------------------------------------ header
 .site-header {
   text-align: center;
@@ -36,6 +173,11 @@ a:focus-visible {
 }
 
 .wordmark {
+  // A gutter the width of the language pill, kept on both sides so the title
+  // stays centered. The pill overlays this line, so below roughly 340px the
+  // title wraps instead of running under it. In rem, because the pill is sized
+  // from the root font too and both have to grow together.
+  padding-inline: 4rem;
   // Painted first so a browser that cannot clip a gradient to text still
   // shows gold rather than nothing.
   color: $gold;
@@ -738,6 +880,14 @@ a:focus-visible {
 // --------------------------------------------------------- reduced motion
 // Movement and loops go, feedback stays, design 9.6.
 @media (prefers-reduced-motion: reduce) {
+  .lang-switch {
+    animation: am-fade $dur-enter $ease-emerge both;
+  }
+
+  .lang-list {
+    animation: am-fade $dur-reveal-reduced $ease-emerge both;
+  }
+
   .site-header {
     animation: am-fade $dur-enter $ease-emerge both;
   }

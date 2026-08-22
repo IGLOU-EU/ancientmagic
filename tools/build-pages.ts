@@ -5,7 +5,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { renderLanguage, type PageStrings } from './render-page.js';
+import { renderSite, type LanguagePage, type PageStrings } from './render-page.js';
 
 const DEFAULT_LANGUAGE = 'en';
 const SHARED_FILE = 'common.json';
@@ -20,16 +20,25 @@ function readJson(file: string): PageStrings {
   return JSON.parse(readFileSync(file, 'utf8')) as PageStrings;
 }
 
+// The strings directory is the register of languages. A file appearing there is
+// a language of the site, listed by every other page's switcher and by every
+// page's alternates, with no second place to remember to edit.
+function readLanguages(): LanguagePage[] {
+  return readdirSync(stringsDir)
+    .sort()
+    .filter((file) => file !== SHARED_FILE && file.endsWith(SUFFIX))
+    .map((file) => ({
+      name: file.slice(0, -SUFFIX.length),
+      strings: readJson(join(stringsDir, file)),
+    }));
+}
+
 function buildPages(): void {
   const template = readFileSync(templateFile, 'utf8');
   const shared = readJson(join(stringsDir, SHARED_FILE));
 
-  for (const file of readdirSync(stringsDir).sort()) {
-    if (file === SHARED_FILE || !file.endsWith(SUFFIX)) continue;
-
-    const name = file.slice(0, -SUFFIX.length);
-    const page = renderLanguage(template, shared, readJson(join(stringsDir, file)), name);
-    writeFileSync(join(outDir, name === DEFAULT_LANGUAGE ? 'index.html' : `${name}.html`), page);
+  for (const [file, page] of renderSite(template, shared, readLanguages(), DEFAULT_LANGUAGE)) {
+    writeFileSync(join(outDir, file), page);
   }
 }
 

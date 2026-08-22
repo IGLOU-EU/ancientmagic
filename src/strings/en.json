@@ -1,6 +1,9 @@
 {
   "brand.name": "Ancient Magic",
 
+  "lang.name": "English",
+  "lang.navLabel": "Site language",
+
   "meta.title": "Ancient Magic, conjured incantations in real ancient scripts",
   "meta.description": "Pick a script, a school of magic and a difficulty, then read a fictional incantation written in real ancient glyphs, with its transliteration and a plain-language gloss.",
   "meta.ogLocale": "en_GB",

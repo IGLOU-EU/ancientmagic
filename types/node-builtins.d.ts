@@ -19,6 +19,7 @@ declare module 'node:assert/strict' {
   export function match(value: string, regExp: RegExp, message?: string): void;
   export function doesNotMatch(value: string, regExp: RegExp, message?: string): void;
   export function throws(fn: () => unknown, expected?: RegExp | string, message?: string): void;
+  export function doesNotThrow(fn: () => unknown, message?: string): void;
   export function fail(message?: string): never;
 }
 
@@ -26,6 +27,7 @@ declare module 'node:fs' {
   export function readFileSync(path: string, encoding: 'utf8'): string;
   export function writeFileSync(path: string, data: string): void;
   export function readdirSync(path: string): string[];
+  export function mkdirSync(path: string, options?: { recursive?: boolean }): void;
 }
 
 declare module 'node:path' {

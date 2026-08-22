@@ -1,0 +1,66 @@
+{
+  "brand.name": "Ancient Magic",
+
+  "lang.name": "Français",
+  "lang.navLabel": "Langue du site",
+
+  "meta.title": "Ancient Magic, des incantations en véritables écritures anciennes",
+  "meta.description": "Choisissez une écriture, une école de magie et une difficulté, puis lisez une incantation fictive tracée en véritables glyphes anciens, avec sa translittération et sa glose.",
+  "meta.ogLocale": "fr_FR",
+  "meta.imageAlt": "Le logotype Ancient Magic en or sur un ciel étoilé violet sombre, au-dessus d’une incantation runique lumineuse et de sa translittération.",
+
+  "jsonld.description": "Un générateur d’incantations fictives, sur une seule page, tracées en véritables écritures anciennes, avec translittération et glose.",
+  "jsonld.operatingSystem": "Tout navigateur web moderne",
+  "jsonld.browserRequirements": "Nécessite JavaScript",
+
+  "header.promise": "Des incantations invoquées, tracées en véritables écritures anciennes.",
+
+  "altar.title": "L’Autel",
+  "altar.languageLabel": "Langue",
+  "altar.schoolLabel": "École de magie",
+  "altar.difficultyLabel": "Difficulté",
+
+  "language.runic": "Runes",
+  "language.egyptian": "Hiéroglyphes égyptiens",
+  "language.phoenician": "Phénicien",
+  "language.greek": "Grec (bientôt)",
+  "language.ogham": "Ogham (bientôt)",
+  "language.gothic": "Gotique (bientôt)",
+  "language.alchemical": "Symboles alchimiques (bientôt)",
+  "language.old-italic": "Italique ancien (bientôt)",
+  "language.glagolitic": "Glagolitique (bientôt)",
+  "language.coptic": "Copte (bientôt)",
+  "language.old-turkic": "Vieux turc (bientôt)",
+  "language.lydian": "Lydien (bientôt)",
+  "language.samaritan": "Samaritain (bientôt)",
+  "language.meroitic": "Hiéroglyphes méroïtiques (bientôt)",
+  "language.aegean-numbers": "Nombres égéens (bientôt)",
+
+  "school.protection": "Protection",
+  "school.curse": "Malédiction",
+  "school.invocation": "Invocation",
+  "school.eldritch": "Indicible",
+  "school.divination": "Divination (bientôt)",
+  "school.chronomancy": "Chronomancie (bientôt)",
+
+  "difficulty.initialValue": "5",
+  "difficulty.initialTier": "Rite",
+  "difficulty.initialValueText": "5, Rite",
+
+  "action.conjure": "Invoquer",
+  "action.reroll": "Relancer",
+
+  "manifestation.title": "La Manifestation",
+  "sample.glyphLabel": "Incantation en Runes",
+
+  "copy.idle": "Copier les glyphes",
+  "copy.copied": "Copié",
+  "copy.failed": "Échec de la copie",
+
+  "print.caption": "Runes · Protection · Difficulté 5",
+
+  "footer.license": "Domaine public (Unlicense)",
+  "footer.separator": "·",
+  "footer.source": "Source",
+  "footer.disclaimer": "Chaque formule est une fiction générée. Elle ne traduit rien et n’enseigne rien."
+}

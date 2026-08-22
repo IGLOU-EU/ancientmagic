@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="{{html.lang}}">
+<head>
+<meta charset="utf-8">
+<title>Social preview</title>
+<style>
+/* The composition of pub/media/og-<lang>.png, one image per UI language,
+   rendered by tools/og-images.sh. The copy comes from src/strings, so the
+   image says in each language what its page says. */
+
+/* Tokens lifted from pub/css/main.css, retuned for a fixed 1200x630 canvas.
+   Violet carries the mass, gold is spent only on the wordmark and the runes. */
+:root{
+  --ink: #0b0714;
+  --ink-deep: #07040e;
+  --gold: #e8c46a;
+  --gold-hi: #f4dfa4;
+  --gold-lo: #c9a24f;
+  --violet-soft: #7b62be;
+  --lilac-text: #c3b6e0;
+  --paper: #efe9fb;
+  color-scheme: dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html,body{width:1200px;height:630px;margin:0;padding:0;overflow:hidden}
+
+body{
+  position:relative;
+  background-color:var(--ink);
+  color:var(--paper);
+  font-family:system-ui,"Segoe UI",roboto,"Helvetica Neue",arial,sans-serif;
+  line-height:1.5;
+}
+
+/* Starfield plus nebula blooms, kept dark so the glyph glow stays the brightest thing. */
+body::before{
+  content:"";
+  position:absolute;z-index:0;inset:0;pointer-events:none;
+  background-color:var(--ink);
+  background-image:
+    radial-gradient(farthest-corner at 50% 46%, rgba(7,4,14,0) 0, rgba(7,4,14,0) 30%, rgba(7,4,14,.55) 68%, rgba(7,4,14,.96) 100%),
+    radial-gradient(circle 1.6px at 33% 37%, rgba(232,196,106,.3) 0, rgba(232,196,106,.3) 45%, rgba(232,196,106,0) 100%),
+    radial-gradient(circle 1.6px at 88% 79%, rgba(232,196,106,.3) 0, rgba(232,196,106,.3) 45%, rgba(232,196,106,0) 100%),
+    radial-gradient(circle 1.1px at 77% 18%, rgba(239,233,251,.42) 0, rgba(239,233,251,.42) 45%, rgba(239,233,251,0) 100%),
+    radial-gradient(circle 1.1px at 21% 62%, rgba(239,233,251,.42) 0, rgba(239,233,251,.42) 45%, rgba(239,233,251,0) 100%),
+    radial-gradient(circle 1.1px at 49% 89%, rgba(239,233,251,.42) 0, rgba(239,233,251,.42) 45%, rgba(239,233,251,0) 100%),
+    radial-gradient(circle .6px at 12% 24%, rgba(201,184,240,.28) 0, rgba(201,184,240,.28) 45%, rgba(201,184,240,0) 100%),
+    radial-gradient(circle .6px at 63% 8%, rgba(201,184,240,.28) 0, rgba(201,184,240,.28) 45%, rgba(201,184,240,0) 100%),
+    radial-gradient(circle .6px at 86% 54%, rgba(201,184,240,.28) 0, rgba(201,184,240,.28) 45%, rgba(201,184,240,0) 100%),
+    radial-gradient(ellipse 40% 34% at 50% 104%, rgba(42,30,94,.34) 0, rgba(42,30,94,.12) 55%, rgba(42,30,94,0) 100%),
+    radial-gradient(ellipse 34% 40% at 100% 52%, rgba(92,60,163,.18) 0, rgba(92,60,163,.06) 55%, rgba(92,60,163,0) 100%),
+    radial-gradient(ellipse 32% 40% at 2% 22%, rgba(74,47,134,.24) 0, rgba(74,47,134,.08) 55%, rgba(74,47,134,0) 100%);
+  background-position:0 0;
+  background-size:
+    100% 100%,
+    520px 460px,520px 460px,
+    340px 300px,340px 300px,340px 300px,
+    263px 211px,263px 211px,263px 211px,
+    100% 100%,100% 100%,100% 100%;
+  background-repeat:
+    no-repeat,
+    repeat,repeat,repeat,repeat,repeat,repeat,repeat,repeat,
+    no-repeat,no-repeat,no-repeat;
+  background-blend-mode:
+    normal,normal,normal,normal,normal,normal,normal,normal,normal,
+    screen,screen,screen;
+}
+
+/* Milky way, a rotated band of denser stars. */
+body::after{
+  content:"";
+  position:absolute;z-index:0;inset:-45%;rotate:-32deg;pointer-events:none;
+  background-image:
+    radial-gradient(circle 1.6px at 37% 63%, rgba(239,233,251,.8) 0, rgba(239,233,251,.8) 45%, rgba(239,233,251,0) 100%),
+    radial-gradient(circle 1.3px at 71% 23%, rgba(201,184,240,.6) 0, rgba(201,184,240,.6) 45%, rgba(201,184,240,0) 100%),
+    radial-gradient(circle 1.1px at 13% 41%, rgba(201,184,240,.55) 0, rgba(201,184,240,.55) 45%, rgba(201,184,240,0) 100%),
+    radial-gradient(circle 1.1px at 59% 87%, rgba(201,184,240,.5) 0, rgba(201,184,240,.5) 45%, rgba(201,184,240,0) 100%),
+    radial-gradient(circle .8px at 89% 9%, rgba(201,184,240,.45) 0, rgba(201,184,240,.45) 45%, rgba(201,184,240,0) 100%),
+    radial-gradient(ellipse 12% 8% at 58% 55%, rgba(92,60,163,.34) 0, rgba(92,60,163,0) 100%),
+    radial-gradient(ellipse 8% 5% at 82% 44%, rgba(201,184,240,.2) 0, rgba(201,184,240,0) 100%),
+    linear-gradient(to bottom, rgba(201,184,240,0) 41%, rgba(201,184,240,.08) 50%, rgba(201,184,240,0) 59%),
+    linear-gradient(to bottom, rgba(201,184,240,0) 0, rgba(201,184,240,.02) 30%, rgba(201,184,240,.06) 44%, rgba(201,184,240,.09) 50%, rgba(201,184,240,.06) 56%, rgba(201,184,240,.02) 70%, rgba(201,184,240,0) 100%);
+  background-position:0 0,83px 47px,151px 101px,211px 173px,271px 229px,0 0,0 0,0 0,0 0;
+  background-size:263px 227px,311px 269px,359px 313px,401px 347px,449px 383px,100% 100%,100% 100%,100% 100%,100% 100%;
+  background-repeat:repeat,repeat,repeat,repeat,repeat,no-repeat,no-repeat,no-repeat,no-repeat;
+  mix-blend-mode:screen;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 30%, #000 44% 56%, transparent 70%);
+  mask-image:linear-gradient(to bottom, transparent 30%, #000 44% 56%, transparent 70%);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+}
+
+.card{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:1200px;height:630px;
+  padding:48px 72px;
+  text-align:center;
+}
+
+/* Magic circle, a whisper of structure behind the incantation, not an object in itself. */
+.circle{
+  position:absolute;z-index:1;
+  top:432px;left:600px;
+  width:720px;height:720px;
+  margin-top:-360px;margin-left:-360px;
+  pointer-events:none;
+}
+.circle>span{display:block;position:absolute;inset:0}
+.mc-bloom{
+  opacity:.1;
+  background-image:radial-gradient(ellipse 100% 100% at 50% 50%, var(--gold) 0, rgba(232,196,106,0) 60%);
+  mix-blend-mode:screen;
+}
+.mc-rings{
+  background-image:
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 calc(50% - 1px), rgba(123,98,190,.3) calc(50% - 1px) 50%, transparent 50%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 calc(33% - 1px), rgba(232,196,106,.14) calc(33% - 1px) 33%, transparent 33%);
+}
+.mc-ticks{
+  background-image:repeating-conic-gradient(from 0deg, rgba(232,196,106,.16) 0deg 1deg, transparent 1deg 6deg);
+  rotate:8deg;
+  -webkit-mask-image:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 30%, #000 31% 33%, transparent 34%);
+  mask-image:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 30%, #000 31% 33%, transparent 34%);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+}
+.mc-spokes{
+  background-image:repeating-conic-gradient(from 0deg, rgba(123,98,190,.34) 0deg .9deg, transparent .9deg 15deg);
+  -webkit-mask-image:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 36%, #000 40% 47%, transparent 50%);
+  mask-image:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0 36%, #000 40% 47%, transparent 50%);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+}
+
+.head{position:relative;z-index:2}
+
+.wordmark{
+  margin:0;
+  color:var(--gold);
+  font-family:"Iowan Old Style","Palatino Linotype",palatino,georgia,"Times New Roman",serif;
+  font-size:88px;font-weight:600;line-height:1.1;letter-spacing:.02em;
+  background-image:linear-gradient(to bottom, var(--gold-hi), var(--gold-lo));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 0 44px rgba(232,196,106,.24);
+}
+
+.promise{
+  margin:20px 0 0;
+  color:var(--lilac-text);
+  font-size:25px;line-height:1.45;letter-spacing:.01em;
+}
+
+.sigil-band{
+  position:relative;z-index:2;
+  width:880px;height:12px;
+  margin:34px 0 0;
+  background-image:
+    linear-gradient(#33265a, #33265a),
+    repeating-linear-gradient(-45deg, rgba(232,196,106,.24) 0 1px, transparent 1px 30px),
+    repeating-linear-gradient(45deg, rgba(123,98,190,.26) 0 1px, transparent 1px 15px);
+  background-position:center,0 0,0 0;
+  background-size:100% 1px,auto,auto;
+  background-repeat:no-repeat,repeat,repeat;
+  -webkit-mask-image:linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%);
+  mask-image:linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+}
+
+.spell{position:relative;z-index:2;margin-top:36px}
+
+.glyph-stack{position:relative}
+
+.glyph-line{
+  position:relative;z-index:1;
+  margin:0;
+  color:var(--gold);
+  font-family:"Noto Sans Runic","Segoe UI Historic",junicode,"Iowan Old Style",palatino,georgia,serif;
+  font-size:66px;font-weight:400;line-height:1.38;letter-spacing:.1em;
+  text-shadow:
+    0 0 3px rgba(242,214,143,.9),
+    0 0 16px rgba(232,196,106,.6),
+    0 0 44px rgba(232,196,106,.34),
+    0 0 92px rgba(92,60,163,.55);
+}
+.glyph-line--vapor{
+  position:absolute;z-index:0;inset:0;
+  color:rgba(242,214,143,.9);
+  text-shadow:none;
+  filter:blur(11px);
+  opacity:.48;
+}
+
+.translit{
+  margin:30px 0 0;
+  color:var(--lilac-text);
+  font-size:23px;font-style:italic;line-height:1.5;letter-spacing:.06em;
+}
+</style>
+</head>
+<body>
+
+<div class="circle" aria-hidden="true">
+  <span class="mc-bloom"></span>
+  <span class="mc-rings"></span>
+  <span class="mc-ticks"></span>
+  <span class="mc-spokes"></span>
+</div>
+
+<div class="card">
+
+  <div class="head">
+    <p class="wordmark">{{brand.name}}</p>
+    <p class="promise">{{header.promise}}</p>
+  </div>
+
+  <div class="sigil-band" aria-hidden="true"></div>
+
+  <!-- The glyph run is the one text held here rather than pulled from
+       src/strings: its line break is tuned to this 1200x630 canvas, where the
+       soft hints of sample.glyphs would reflow to three lines. A test holds it
+       equal to sample.glyphs once both break hints are stripped, so the two
+       cannot drift apart in silence. -->
+  <div class="spell">
+    <div class="glyph-stack">
+      <p class="glyph-line glyph-line--vapor" aria-hidden="true">ᚨᛚᚢ᛫ᚹᚨᚱᛞᚨᛉ᛫ᚹᛁᚦᚱᚨ᛫ᚦᚢᚱᛊᚨᚾ᛫<br>ᛒᛁᚾᛞᛟ᛬ᚱᚢᚾᛟᛉ᛫ᚠᚨᛁᚺᛁᛞᛟ</p>
+      <p class="glyph-line">ᚨᛚᚢ᛫ᚹᚨᚱᛞᚨᛉ᛫ᚹᛁᚦᚱᚨ᛫ᚦᚢᚱᛊᚨᚾ᛫<br>ᛒᛁᚾᛞᛟ᛬ᚱᚢᚾᛟᛉ᛫ᚠᚨᛁᚺᛁᛞᛟ</p>
+    </div>
+    <p class="translit">{{sample.transliteration}}</p>
+  </div>
+
+</div>
+
+</body>
+</html>
