@@ -1,4 +1,4 @@
-// The self-hosted script fonts, subsets of Noto under the SIL Open Font
+// The self-hosted script faces, subsets of Noto under the SIL Open Font
 // License 1.1. See pub/fonts/OFL.txt for the notice and tools/subset-fonts.sh
 // for how the files are rebuilt from the official releases.
 //
@@ -7,42 +7,63 @@
 // as a row of tofu without these. Runic is better supported but travels with
 // the site too, so the three scripts render the same everywhere.
 //
+// The four files register under one family name. Each face claims its own block
+// through unicode-range, so the browser routes every codepoint to the file that
+// covers it and the page never has to name a script to get its glyphs. A file
+// that fails to load takes down its own block alone: the other three keep
+// drawing, and the orphaned block falls through to the tail of the stack.
+//
 // Paths are relative to pub/css/main.css, the only file that ships this.
+@use 'sass:math';
 
-@font-face {
-  font-family: 'Noto Sans Runic';
-  src: url('../fonts/noto-sans-runic-subset.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: u+16a0-16f8;
+// Runic is the reference for the whole family, because it is the script the
+// site was drawn around. Every letter of the block draws exactly 0.72em above
+// the baseline, and the face declares 1.07em of ascent over 0.29em of descent
+// with no line gap. Every other face is brought onto those three numbers.
+$glyph-ink: 0.72;
+$glyph-ascent: 1.07;
+$glyph-descent: 0.29;
+
+// Two decimals is finer than any engine renders, and it keeps ten digits of
+// Sass division out of the compressed stylesheet.
+@function pct($ratio) {
+  @return math.div(math.round($ratio * 10000), 100) * 1%;
 }
 
-@font-face {
-  font-family: 'Noto Sans Egyptian Hieroglyphs';
-  src: url('../fonts/noto-sans-egyptian-hieroglyphs-subset.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: u+13000-1342f;
+// $ink is the height this face gives its full-height glyph, in em, measured in
+// the browser rather than guessed. size-adjust brings that height down onto the
+// runic stave so the scripts look the same size at the same font-size. The
+// metric overrides then give every face runic's line metrics, so the baseline
+// falls in the same place whatever the script. Both overrides are divided by
+// the scale because css-fonts-5 scales the overrides by size-adjust as well.
+@mixin glyph-face($file, $range, $ink) {
+  $scale: math.div($glyph-ink, $ink);
+
+  @font-face {
+    font-family: 'Ancient Glyphs';
+    src: url('../fonts/#{$file}.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: #{$range};
+    size-adjust: pct($scale);
+    ascent-override: pct(math.div($glyph-ascent, $scale));
+    descent-override: pct(math.div($glyph-descent, $scale));
+    line-gap-override: 0%;
+  }
 }
 
-@font-face {
-  font-family: 'Noto Sans Phoenician';
-  src: url('../fonts/noto-sans-phoenician-subset.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: u+10900-1091f;
-}
+// The reference, so it scales by nothing.
+@include glyph-face('noto-sans-runic-subset', 'u+16a0-16f8', 0.72);
+
+// Hieroglyphs are drawn to fill the em, a full-height sign standing at 1.00em,
+// which is why untouched they tower over the runes at the same font-size.
+@include glyph-face('noto-sans-egyptian-hieroglyphs-subset', 'u+13000-1342f', 1);
+
+// Phoenician letters stand at 0.73em, a hair over the rune.
+@include glyph-face('noto-sans-phoenician-subset', 'u+10900-1091f', 0.73);
 
 // Runic numeric seals are written in Aegean Numbers, which Noto covers here
-// rather than in Noto Sans Runic. The file holds only the four seal glyphs.
-@font-face {
-  font-family: 'Noto Sans Linear B';
-  src: url('../fonts/noto-sans-linear-b-subset.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: u+10100-1013f;
-}
+// rather than in Noto Sans Runic. The file holds only the four seal glyphs, and
+// they are cut a little short of the runes they close, so this one grows.
+@include glyph-face('noto-sans-linear-b-subset', 'u+10100-1013f', 0.68);

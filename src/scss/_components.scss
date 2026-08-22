@@ -722,6 +722,9 @@ a:focus-visible {
   position: relative;
   z-index: 1;
   color: $gold;
+  // One stack for the three scripts, on the visible line and on its vapor twin
+  // alike. The routing is the family's own business, see _fonts.
+  font-family: $font-glyph;
   font-weight: 400;
   line-height: 1.45;
   letter-spacing: 0.06em;
@@ -767,14 +770,12 @@ a:focus-visible {
   font-size: var(--fs-glyph-s);
 }
 
+// What is left on data-script is what the script itself asks for, never the
+// font: the family sorts its own files out by codepoint.
+
 // Runic staves collide below 0.10em, design 4.3.
 .output[data-script='runic'] .glyph-line {
-  font-family: $font-runic;
   letter-spacing: 0.1em;
-}
-
-.output[data-script='egyptian'] .glyph-line {
-  font-family: $font-egyptian;
 }
 
 // Direction and isolation live on the glyph block alone so the lines below
@@ -782,7 +783,6 @@ a:focus-visible {
 .output[data-script='phoenician'] .glyph-line {
   direction: rtl;
   unicode-bidi: isolate;
-  font-family: $font-phoenician;
 }
 
 .translit {

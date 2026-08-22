@@ -20,6 +20,12 @@
 #   Noto Sans Phoenician          v2.001  https://github.com/notofonts/phoenician
 #   Noto Sans Linear B            v2.002  https://github.com/notofonts/linear-b
 #
+# The stylesheet registers all four under a single CSS family and routes each
+# codepoint to the right file by unicode-range, then calibrates every face onto
+# the height of the runic stave with size-adjust. Those calibration numbers were
+# measured on these exact releases, so the file names below are a contract with
+# src/scss/_fonts.scss, and moving a version means measuring again.
+#
 # Requires curl, unzip and python3. fonttools and brotli are installed into a
 # throwaway virtualenv under the work directory when pyftsubset is missing, so
 # nothing has to be present on the machine beforehand.

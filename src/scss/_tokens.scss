@@ -68,15 +68,14 @@ $dur-vapor-breathe: 6500ms;
 $dur-vapor-drift: 11s;
 $dur-glow-sway: 7s;
 
-// Font stacks. Glyph chains end in the serif stack so a missing script font
-// degrades to something rather than to tofu.
+// Font stacks.
 $font-sans: system-ui, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif;
 $font-serif: 'Iowan Old Style', 'Palatino Linotype', palatino, georgia, 'Times New Roman', serif;
-// Noto Sans Linear B carries the Aegean Numbers of the seal, which Noto Sans
-// Runic does not cover.
-$font-runic: 'Noto Sans Runic', 'Noto Sans Linear B', 'Segoe UI Historic', junicode, $font-serif;
-$font-egyptian: 'Noto Sans Egyptian Hieroglyphs', 'Segoe UI Historic', $font-serif;
-$font-phoenician: 'Noto Sans Phoenician', 'Segoe UI Historic', $font-serif;
+// One stack for every script. The self-hosted subsets all register under
+// Ancient Glyphs and sort themselves out by unicode-range, see _fonts. The tail
+// is shared, and it is what a block whose file went missing degrades to: the
+// loss stays inside that one script instead of taking the whole line to tofu.
+$font-glyph: 'Ancient Glyphs', 'Segoe UI Historic', junicode, $font-serif;
 
 // Single breakpoint, design section 5.2. There is no tablet layout.
 $bp: 720px;
