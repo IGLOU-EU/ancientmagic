@@ -2,20 +2,26 @@
 //
 // A pack that misses one form, one epithet or one idiom must fail here rather
 // than reach a reader as a hole in a sentence. The sweep runs every registered
-// pack, so adding a language adds no test: it is checked the moment it is
-// registered, against all three genomes.
+// pack, awaiting its loader, so adding a language adds no test: it is checked
+// the moment it is registered, against all three genomes.
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
-import type { School } from '../src/ts/generator/types.js';
-import { GLOSS_PACKS } from '../src/ts/glosses/index.js';
+import type { Genome, School } from '../src/ts/generator/types.js';
+import { GLOSS_PACKS, resolveGlosses } from '../src/ts/glosses/index.js';
+import { enGlosses } from '../src/ts/glosses/en/index.js';
 import type { GlossPack, GlossTable, NamedPowerTable, RootGlossTable } from '../src/ts/glosses/types.js';
 import * as runicData from '../src/ts/languages/runic-data.js';
 import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
+import { egyptianGenome } from '../src/ts/languages/egyptian.js';
+import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
+import { runicGenome } from '../src/ts/languages/runic.js';
 
 const SCHOOLS: ReadonlyArray<School> = ['protection', 'curse', 'invocation', 'eldritch'];
+
+const GENOMES: ReadonlyArray<Genome> = [runicGenome, egyptianGenome, phoenicianGenome];
 
 // What one genome expects a pack to cover, read off the genome's own data.
 interface Inventory {
@@ -83,12 +89,12 @@ function sorted(values: Iterable<string>): string[] {
   return Array.from(values).sort();
 }
 
-for (const pack of GLOSS_PACKS) {
+for (const [language, loadPack] of GLOSS_PACKS) {
   for (const inventory of INVENTORIES) {
-    const where = `${pack.language}/${inventory.genome}`;
-    const tables = tablesOf(pack, inventory.genome);
+    const where = `${language}/${inventory.genome}`;
 
-    test(`${where}: covers exactly the roots the genome declares`, () => {
+    test(`${where}: covers exactly the roots the genome declares`, async () => {
+      const tables = tablesOf(await loadPack(), inventory.genome);
       assert.deepStrictEqual(
         sorted(Object.keys(tables.roots)),
         sorted(inventory.roots.map((r) => r.id)),
@@ -96,7 +102,8 @@ for (const pack of GLOSS_PACKS) {
       );
     });
 
-    test(`${where}: covers exactly the forms each root declares`, () => {
+    test(`${where}: covers exactly the forms each root declares`, async () => {
+      const tables = tablesOf(await loadPack(), inventory.genome);
       for (const root of inventory.roots) {
         const entry = tables.roots[root.id];
         assert.ok(entry !== undefined, `${root.id} is missing`);
@@ -108,7 +115,8 @@ for (const pack of GLOSS_PACKS) {
       }
     });
 
-    test(`${where}: every root wording is real text`, () => {
+    test(`${where}: every root wording is real text`, async () => {
+      const tables = tablesOf(await loadPack(), inventory.genome);
       for (const [id, entry] of Object.entries(tables.roots)) {
         assert.ok(entry.gloss.trim().length > 0, `${id} has a blank gloss`);
         for (const [form, word] of Object.entries(entry.forms)) {
@@ -117,7 +125,8 @@ for (const pack of GLOSS_PACKS) {
       }
     });
 
-    test(`${where}: covers exactly the named powers, epithets, idioms and seals`, () => {
+    test(`${where}: covers exactly the named powers, epithets, idioms and seals`, async () => {
+      const tables = tablesOf(await loadPack(), inventory.genome);
       assert.deepStrictEqual(
         sorted(Object.keys(tables.powers)),
         sorted(inventory.powers),
@@ -143,13 +152,19 @@ for (const pack of GLOSS_PACKS) {
 
   // The tables can be complete and the grammar still be a stub, so every
   // clause shape is driven through real plans and the result read back.
-  test(`${pack.language}: writes a whole gloss at every tier of every school`, () => {
-    for (const language of ['runic', 'egyptian', 'phoenician'] as const) {
+  test(`${language}: writes a whole gloss at every tier of every school`, async () => {
+    const pack = await loadPack();
+    for (const genome of GENOMES) {
       for (const school of SCHOOLS) {
         for (let difficulty = 1; difficulty <= 9; difficulty += 1) {
           for (let seed = 0; seed < 12; seed += 1) {
-            const where = `${pack.language} ${language} ${school} d${difficulty} seed ${seed}`;
-            const gloss = generate({ language, school, difficulty }, seed, pack).gloss;
+            const where = `${language} ${genome.id} ${school} d${difficulty} seed ${seed}`;
+            const gloss = generate(
+              genome,
+              { language: genome.id, school, difficulty },
+              seed,
+              pack,
+            ).gloss;
 
             assert.ok(gloss.length > 0, `empty gloss: ${where}`);
             assert.doesNotMatch(gloss, /undefined|null|\[object/u, `hole in the gloss: ${where}`);
@@ -171,11 +186,32 @@ for (const pack of GLOSS_PACKS) {
   });
 }
 
-test('every registered pack declares the language it is registered under', () => {
-  assert.ok(GLOSS_PACKS.length > 0, 'no pack registered');
-  const languages = GLOSS_PACKS.map((pack) => pack.language);
-  assert.deepStrictEqual(sorted(languages), sorted(new Set(languages)), 'duplicate language');
-  for (const language of languages) {
-    assert.ok(language.length > 0, 'a pack declares no language');
+// Loading a pack on demand must not loosen what resolution promises: a
+// language without a pack of its own still gets the English one entire, and a
+// language with one never gets a mixture.
+test('a language with no pack of its own falls back to the whole English pack', async () => {
+  assert.strictEqual(await resolveGlosses('zz'), enGlosses);
+  assert.strictEqual(await resolveGlosses(''), enGlosses);
+  assert.strictEqual(await resolveGlosses('en-GB'), enGlosses);
+});
+
+test('every registered pack resolves to itself, whole', async () => {
+  for (const [language, loadPack] of GLOSS_PACKS) {
+    const pack = await loadPack();
+    assert.strictEqual(await resolveGlosses(language), pack, `${language} resolves elsewhere`);
+    assert.strictEqual(
+      await resolveGlosses(`${language}-ZZ`),
+      pack,
+      `${language}-ZZ leaves its base language`,
+    );
+  }
+});
+
+test('every registered pack declares the language it is registered under', async () => {
+  assert.ok(GLOSS_PACKS.size > 0, 'no pack registered');
+  for (const [language, loadPack] of GLOSS_PACKS) {
+    assert.ok(language.length > 0, 'a pack is registered under no language');
+    const pack = await loadPack();
+    assert.strictEqual(pack.language, language, `the ${language} loader answers another pack`);
   }
 });

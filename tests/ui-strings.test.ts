@@ -5,8 +5,9 @@
 // then recomputes the same text. These tests hold the two sides equal, so the
 // duplication the pre-rendering forces cannot drift in silence.
 //
-// The sweep runs every registered language against its own page strings, so a
-// translation is checked the moment it is registered, without a test edit.
+// The sweep runs every registered language against its own page strings,
+// awaiting its loader, so a translation is checked the moment it is
+// registered, without a test edit.
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
@@ -15,6 +16,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generate } from '../src/ts/generator/pipeline.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
+import { runicGenome } from '../src/ts/languages/runic.js';
 import { en } from '../src/ts/strings/en.js';
 import { fr } from '../src/ts/strings/fr.js';
 import { resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
@@ -30,19 +32,26 @@ function pageStrings(name: string): Record<string, string> {
   ) as Record<string, string>;
 }
 
-test('strings: a language tag resolves to its strings', () => {
-  assert.strictEqual(resolveStrings('en'), en);
-  assert.strictEqual(resolveStrings('fr'), fr);
+test('strings: a language tag resolves to its strings', async () => {
+  assert.strictEqual(await resolveStrings('en'), en);
+  assert.strictEqual(await resolveStrings('fr'), fr);
 });
 
-test('strings: a regional tag resolves to its base language', () => {
-  assert.strictEqual(resolveStrings('en-GB'), en);
-  assert.strictEqual(resolveStrings('fr-CA'), fr);
+test('strings: a regional tag resolves to its base language', async () => {
+  assert.strictEqual(await resolveStrings('en-GB'), en);
+  assert.strictEqual(await resolveStrings('fr-CA'), fr);
 });
 
-test('strings: an unknown tag falls back to the default language', () => {
-  assert.strictEqual(resolveStrings('zz'), en);
-  assert.strictEqual(resolveStrings(''), en);
+test('strings: an unknown tag falls back to the default language', async () => {
+  assert.strictEqual(await resolveStrings('zz'), en);
+  assert.strictEqual(await resolveStrings(''), en);
+});
+
+// Lazy loading must not turn one language into two objects: every route to a
+// language has to end on the module the page would have imported statically.
+test('strings: every route to a language reaches the same module', async () => {
+  assert.strictEqual(await resolveStrings('fr'), await resolveStrings('fr-BE'));
+  assert.strictEqual(await resolveStrings('zz'), await resolveStrings('en'));
 });
 
 test('strings: more than one language is registered', () => {
@@ -65,21 +74,24 @@ test('strings: the sample glyph and translit lines stay shared, the gloss does n
   );
 });
 
-for (const [language, strings] of UI_STRINGS) {
+for (const [language, loadStrings] of UI_STRINGS) {
   const page = pageStrings(language);
 
-  test(`strings (${language}): the tiers cover the whole difficulty range`, () => {
+  test(`strings (${language}): the tiers cover the whole difficulty range`, async () => {
+    const strings = await loadStrings();
     const tiers = Object.values(strings.difficultyTiers);
     assert.strictEqual(tiers.length, 4);
     assert.strictEqual(new Set(tiers).size, 4, 'two tiers share a word');
     for (const tier of tiers) assert.ok(tier.length > 0);
   });
 
-  test(`strings (${language}): the runtime tier matches the one the page ships`, () => {
+  test(`strings (${language}): the runtime tier matches the one the page ships`, async () => {
+    const strings = await loadStrings();
     assert.strictEqual(strings.difficultyTiers.mid, page['difficulty.initialTier']);
   });
 
-  test(`strings (${language}): the runtime slider text matches the one the page ships`, () => {
+  test(`strings (${language}): the runtime slider text matches the one the page ships`, async () => {
+    const strings = await loadStrings();
     assert.strictEqual(
       strings.difficultyValueText(
         Number(page['difficulty.initialValue']),
@@ -89,22 +101,25 @@ for (const [language, strings] of UI_STRINGS) {
     );
   });
 
-  test(`strings (${language}): the sample gloss is this language’s own pack`, () => {
+  test(`strings (${language}): the sample gloss is this language’s own pack`, async () => {
     assert.strictEqual(
       generate(
+        runicGenome,
         { language: 'runic', school: 'protection', difficulty: 5 },
         SAMPLE_SEED,
-        resolveGlosses(language),
+        await resolveGlosses(language),
       ).gloss,
       page['sample.gloss'],
     );
   });
 
-  test(`strings (${language}): the runtime glyph label matches the one the page ships`, () => {
+  test(`strings (${language}): the runtime glyph label matches the one the page ships`, async () => {
+    const strings = await loadStrings();
     assert.strictEqual(strings.glyphLineLabel(page['language.runic']), page['sample.glyphLabel']);
   });
 
-  test(`strings (${language}): the runtime print caption matches the one the page ships`, () => {
+  test(`strings (${language}): the runtime print caption matches the one the page ships`, async () => {
+    const strings = await loadStrings();
     assert.strictEqual(
       strings.printCaption(
         page['language.runic'],

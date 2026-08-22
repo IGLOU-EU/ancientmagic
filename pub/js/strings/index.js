@@ -1,10 +1,9 @@
 import { baseLanguage } from '../locale.js';
-import { en } from './en.js';
-import { fr } from './fr.js';
+const enStrings = () => import('./en.js').then((m) => m.en);
 export const UI_STRINGS = new Map([
-    ['en', en],
-    ['fr', fr],
+    ['en', enStrings],
+    ['fr', () => import('./fr.js').then((m) => m.fr)],
 ]);
-export function resolveStrings(tag) {
-    return UI_STRINGS.get(baseLanguage(tag)) ?? en;
+export async function resolveStrings(tag) {
+    return (UI_STRINGS.get(baseLanguage(tag)) ?? enStrings)();
 }

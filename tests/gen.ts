@@ -4,8 +4,13 @@ import { generate } from '../src/ts/generator/pipeline.js';
 import { enGlosses } from '../src/ts/glosses/en/index.js';
 import { buildPlan } from '../src/ts/generator/plan.js';
 import { mulberry32 } from '../src/ts/generator/rng.js';
-import { composeEgyptian, type EgyptianWord } from '../src/ts/languages/egyptian.js';
-import { composePhoenician, type PhoenicianWord } from '../src/ts/languages/phoenician.js';
+import { composeEgyptian, egyptianGenome, type EgyptianWord } from '../src/ts/languages/egyptian.js';
+import {
+  composePhoenician,
+  phoenicianGenome,
+  type PhoenicianWord,
+} from '../src/ts/languages/phoenician.js';
+import { runicGenome } from '../src/ts/languages/runic.js';
 import type { FormulaOutput, School } from '../src/ts/generator/types.js';
 import { parseGlyphs } from './spec.js';
 
@@ -27,17 +32,24 @@ export const DIFFICULTIES: ReadonlyArray<number> = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 export const SEEDS: ReadonlyArray<number> = [7, 1234, 987654321];
 
 // The contract tests read the English gloss, so they generate against the
-// English pack explicitly. Nothing here falls back to a default language.
+// English pack explicitly. Nothing here falls back to a default language. They
+// name their genome the same way, statically: the page loads genomes on demand,
+// a test bench has no reason to.
 export function runic(school: School, difficulty: number, seed: number): FormulaOutput {
-  return generate({ language: 'runic', school, difficulty }, seed, enGlosses);
+  return generate(runicGenome, { language: 'runic', school, difficulty }, seed, enGlosses);
 }
 
 export function egyptian(school: School, difficulty: number, seed: number): FormulaOutput {
-  return generate({ language: 'egyptian', school, difficulty }, seed, enGlosses);
+  return generate(egyptianGenome, { language: 'egyptian', school, difficulty }, seed, enGlosses);
 }
 
 export function phoenician(school: School, difficulty: number, seed: number): FormulaOutput {
-  return generate({ language: 'phoenician', school, difficulty }, seed, enGlosses);
+  return generate(
+    phoenicianGenome,
+    { language: 'phoenician', school, difficulty },
+    seed,
+    enGlosses,
+  );
 }
 
 export function sweep(

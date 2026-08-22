@@ -19,6 +19,11 @@ declare module 'node:assert/strict' {
   export function match(value: string, regExp: RegExp, message?: string): void;
   export function doesNotMatch(value: string, regExp: RegExp, message?: string): void;
   export function throws(fn: () => unknown, expected?: RegExp | string, message?: string): void;
+  export function rejects(
+    promise: Promise<unknown> | (() => Promise<unknown>),
+    expected?: RegExp | string,
+    message?: string,
+  ): Promise<void>;
   export function doesNotThrow(fn: () => unknown, message?: string): void;
   export function fail(message?: string): never;
 }

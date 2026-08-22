@@ -1,11 +1,8 @@
-import { generate } from './generator/pipeline.js';
-import { resolveGlosses } from './glosses/index.js';
 import { resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 const COPY_HOLD_MS = 1600;
 const language = document.documentElement.lang;
-const strings = resolveStrings(language);
-const glosses = resolveGlosses(language);
+const strings = await resolveStrings(language);
 const SHIPPED_LANGUAGES = ['runic', 'egyptian', 'phoenician'];
 const SHIPPED_SCHOOLS = [
     'protection',
@@ -129,8 +126,21 @@ function readSettings() {
     const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
     return { language: languageValue, school: schoolValue, difficulty: level };
 }
-function conjure(settings) {
-    const output = generate(settings, freshSeed(), glosses);
+async function loadConjurer(id) {
+    const [pipeline, languages, glosses] = await Promise.all([
+        import('./generator/pipeline.js'),
+        import('./languages/index.js'),
+        import('./glosses/index.js'),
+    ]);
+    const [genome, pack] = await Promise.all([
+        languages.loadGenome(id),
+        glosses.resolveGlosses(language),
+    ]);
+    return (settings, seed) => pipeline.generate(genome, settings, seed, pack);
+}
+async function conjure(settings) {
+    const write = await loadConjurer(settings.language);
+    const output = write(settings, freshSeed());
     const languageLabel = optionLabel('language', settings.language);
     const schoolLabel = optionLabel('school', settings.school);
     renderFormula(output, {
@@ -143,15 +153,24 @@ function wireGenerator() {
     const generateButton = document.getElementById('generate');
     const rerollButton = document.getElementById('reroll');
     let lastSettings = null;
+    let conjuring = false;
+    const request = (settings) => {
+        if (conjuring)
+            return;
+        conjuring = true;
+        void conjure(settings).finally(() => {
+            conjuring = false;
+        });
+    };
     if (generateButton !== null) {
         generateButton.addEventListener('click', () => {
             lastSettings = readSettings();
-            conjure(lastSettings);
+            request(lastSettings);
         });
     }
     if (rerollButton !== null) {
         rerollButton.addEventListener('click', () => {
-            conjure(lastSettings ?? readSettings());
+            request(lastSettings ?? readSettings());
         });
     }
 }

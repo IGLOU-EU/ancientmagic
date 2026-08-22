@@ -1,6 +1,4 @@
-import { generate } from './generator/pipeline.js';
-import type { LanguageId, School, Settings } from './generator/types.js';
-import { resolveGlosses } from './glosses/index.js';
+import type { FormulaOutput, LanguageId, School, Settings } from './generator/types.js';
 import { resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 
@@ -9,8 +7,7 @@ const COPY_HOLD_MS = 1600;
 // One static page per language, so the page itself says which one it is. The
 // same declaration picks the UI strings and the glosses the generator writes.
 const language = document.documentElement.lang;
-const strings = resolveStrings(language);
-const glosses = resolveGlosses(language);
+const strings = await resolveStrings(language);
 
 // Only the genomes that ship are selectable, the other options of the selects
 // stay disabled in the markup.
@@ -173,8 +170,28 @@ function readSettings(): Settings {
   return { language: languageValue, school: schoolValue, difficulty: level };
 }
 
-function conjure(settings: Settings): void {
-  const output = generate(settings, freshSeed(), glosses);
+// Writes one formula in one script. Nothing the idle page shows needs the
+// generator, a genome or a pack of glosses, so none of the three is fetched
+// until a conjuration asks for them. The browser's module map keeps what it
+// fetched: conjuring again costs nothing, changing script costs that script.
+type Conjurer = (settings: Settings, seed: number) => FormulaOutput;
+
+async function loadConjurer(id: LanguageId): Promise<Conjurer> {
+  const [pipeline, languages, glosses] = await Promise.all([
+    import('./generator/pipeline.js'),
+    import('./languages/index.js'),
+    import('./glosses/index.js'),
+  ]);
+  const [genome, pack] = await Promise.all([
+    languages.loadGenome(id),
+    glosses.resolveGlosses(language),
+  ]);
+  return (settings, seed) => pipeline.generate(genome, settings, seed, pack);
+}
+
+async function conjure(settings: Settings): Promise<void> {
+  const write = await loadConjurer(settings.language);
+  const output = write(settings, freshSeed());
   const languageLabel = optionLabel('language', settings.language);
   const schoolLabel = optionLabel('school', settings.school);
   renderFormula(output, {
@@ -192,15 +209,28 @@ function wireGenerator(): void {
   // Before any conjuration it reads the altar like Conjure does.
   let lastSettings: Settings | null = null;
 
+  // The well is one atomic live region and the first click has modules to
+  // fetch, so an impatient second click would race the first: two formulas
+  // written over each other and announced twice. One conjuration at a time.
+  let conjuring = false;
+
+  const request = (settings: Settings): void => {
+    if (conjuring) return;
+    conjuring = true;
+    void conjure(settings).finally(() => {
+      conjuring = false;
+    });
+  };
+
   if (generateButton !== null) {
     generateButton.addEventListener('click', () => {
       lastSettings = readSettings();
-      conjure(lastSettings);
+      request(lastSettings);
     });
   }
   if (rerollButton !== null) {
     rerollButton.addEventListener('click', () => {
-      conjure(lastSettings ?? readSettings());
+      request(lastSettings ?? readSettings());
     });
   }
 }

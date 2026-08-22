@@ -1,8 +1,12 @@
-import { egyptianGenome } from './egyptian.js';
-import { phoenicianGenome } from './phoenician.js';
-import { runicGenome } from './runic.js';
-export const genomes = {
-    runic: runicGenome,
-    egyptian: egyptianGenome,
-    phoenician: phoenicianGenome,
+export const GENOME_LOADERS = {
+    runic: () => import('./runic.js').then((m) => m.runicGenome),
+    egyptian: () => import('./egyptian.js').then((m) => m.egyptianGenome),
+    phoenician: () => import('./phoenician.js').then((m) => m.phoenicianGenome),
 };
+export async function loadGenome(id) {
+    const load = GENOME_LOADERS[id];
+    if (load === undefined) {
+        throw new Error(`genome not available yet: ${id}`);
+    }
+    return load();
+}

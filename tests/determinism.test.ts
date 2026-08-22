@@ -1,8 +1,6 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { generate } from '../src/ts/generator/pipeline.js';
-import { enGlosses } from '../src/ts/glosses/en/index.js';
-import { genomes } from '../src/ts/languages/index.js';
+import { GENOME_LOADERS, loadGenome } from '../src/ts/languages/index.js';
 import type { LanguageId } from '../src/ts/generator/types.js';
 import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, phoenician, runic } from './gen.js';
 
@@ -41,14 +39,26 @@ test('the three shipped genomes render one plan differently', () => {
   }
 });
 
-test('the registry carries the three mvp genomes and nothing else', () => {
-  assert.deepStrictEqual(Object.keys(genomes).sort(), ['egyptian', 'phoenician', 'runic']);
-  for (const [id, genome] of Object.entries(genomes)) {
-    assert.strictEqual(genome?.id, id, `registry key ${id} points elsewhere`);
+test('the registry carries the three mvp genomes and nothing else', async () => {
+  assert.deepStrictEqual(Object.keys(GENOME_LOADERS).sort(), ['egyptian', 'phoenician', 'runic']);
+  for (const [id, load] of Object.entries(GENOME_LOADERS)) {
+    assert.ok(load !== undefined, `registry key ${id} carries no loader`);
+    const genome = await load();
+    assert.strictEqual(genome.id, id, `registry key ${id} points elsewhere`);
   }
 });
 
-test('a language the registry does not carry is rejected', () => {
+test('every registered loader answers with a distinct genome', async () => {
+  const loaded = await Promise.all(
+    Object.values(GENOME_LOADERS).map((load) => {
+      assert.ok(load !== undefined);
+      return load();
+    }),
+  );
+  assert.strictEqual(new Set(loaded.map((g) => g.id)).size, loaded.length, 'two keys, one genome');
+});
+
+test('a language the registry does not carry is rejected', async () => {
   const unshipped = 'greek' as unknown as LanguageId;
-  assert.throws(() => generate({ language: unshipped, school: 'curse', difficulty: 5 }, 1, enGlosses));
+  await assert.rejects(loadGenome(unshipped), /genome not available yet: greek/u);
 });
