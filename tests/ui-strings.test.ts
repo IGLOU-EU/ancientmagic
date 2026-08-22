@@ -18,6 +18,7 @@ import { generate } from '../src/ts/generator/pipeline.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
 import { bindGenome } from '../src/ts/languages/index.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
+import { decode } from '../src/ts/share.js';
 import { en } from '../src/ts/strings/en.js';
 import { fr } from '../src/ts/strings/fr.js';
 import { resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
@@ -26,6 +27,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // The seed behind the sample formula the page ships, pinned in tests/fixture.
 const SAMPLE_SEED = 66238;
+
+// The link that names that same formula. A visitor arriving on it is served
+// the pre-rendered page and then replays it, so the two renderings meet.
+const SAMPLE_LINK = '#runic.protection.5.66238';
 
 function pageStrings(name: string): Record<string, string> {
   return JSON.parse(
@@ -112,6 +117,25 @@ for (const [language, loadStrings] of UI_STRINGS) {
       ).gloss,
       page['sample.gloss'],
     );
+  });
+
+  // The strongest statement the arrival can make about itself: a page opened
+  // on the sample's own link replays it into the very lines the page was
+  // served with, glyph for glyph, and in this language's own gloss. Held here
+  // rather than in a browser, so it is checked on every run.
+  test(`strings (${language}): the sample link replays the formula the page ships`, async () => {
+    const formula = decode(SAMPLE_LINK);
+    if (formula === null) assert.fail('the sample link is not a formula');
+
+    const glosses = await (await resolveGlosses(language)).runic();
+    const out = generate(bindGenome(runicGenome, glosses), formula.settings, formula.seed);
+    const shared = pageStrings('common');
+
+    // The page marks the glyph run with soft break hints, which are markup
+    // around the text rather than part of it.
+    assert.strictEqual(out.glyphs, shared['sample.glyphs'].replaceAll('<wbr>', ''));
+    assert.strictEqual(out.transliteration, shared['sample.transliteration']);
+    assert.strictEqual(out.gloss, page['sample.gloss']);
   });
 
   test(`strings (${language}): the runtime glyph label matches the one the page ships`, async () => {

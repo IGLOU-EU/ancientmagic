@@ -1,4 +1,5 @@
 import type { FormulaOutput, LanguageId, School, Settings } from './generator/types.js';
+import type { SharedFormula } from './share.js';
 import { resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 
@@ -98,9 +99,11 @@ async function writeToClipboard(text: string): Promise<boolean> {
   }
 }
 
-function wireDifficulty(): void {
+// Hands back the readout sync, because the slider is moved from two places:
+// by the reader, and by a link that already names a level of power.
+function wireDifficulty(): () => void {
   const slider = document.getElementById('difficulty');
-  if (!(slider instanceof HTMLInputElement)) return;
+  if (!(slider instanceof HTMLInputElement)) return () => undefined;
 
   const valueOut = document.getElementById('difficulty-value');
   const tierOut = document.getElementById('difficulty-tier');
@@ -110,6 +113,7 @@ function wireDifficulty(): void {
 
   update();
   slider.addEventListener('input', update);
+  return update;
 }
 
 function wireCopy(): void {
@@ -170,6 +174,21 @@ function readSettings(): Settings {
   return { language: languageValue, school: schoolValue, difficulty: level };
 }
 
+// The altar is set to what a link names before its formula is written, so the
+// dials show what produced what is on screen, and a reroll starts from there.
+function applySettings(settings: Settings, syncSlider: () => void): void {
+  const language = document.getElementById('language');
+  const school = document.getElementById('school');
+  const difficulty = document.getElementById('difficulty');
+
+  if (language instanceof HTMLSelectElement) language.value = settings.language;
+  if (school instanceof HTMLSelectElement) school.value = settings.school;
+  if (difficulty instanceof HTMLInputElement) {
+    difficulty.value = String(settings.difficulty);
+    syncSlider();
+  }
+}
+
 // Writes one formula in one script. Nothing the idle page shows needs the
 // generator, a genome or a gloss, so none of the three is fetched until a
 // conjuration asks for them, and what is fetched then is one pair: the
@@ -188,7 +207,9 @@ async function loadConjurer(id: LanguageId): Promise<Conjurer> {
   return (settings, seed) => pipeline.generate(genome, settings, seed);
 }
 
-async function conjure(settings: Settings): Promise<void> {
+// The seed is the caller's: a click draws a fresh one, a link brings its own,
+// and everything after this point is the same for both.
+async function conjure(settings: Settings, seed: number): Promise<void> {
   // The formula's name is only wanted once a formula exists, so it rides the
   // same wave as the generation code rather than the idle page. The share row
   // rides with it: its links are complete in the served page, and what they
@@ -199,7 +220,6 @@ async function conjure(settings: Settings): Promise<void> {
     import('./ui/share-links.js'),
   ]);
 
-  const seed = freshSeed();
   const output = write(settings, seed);
   const languageLabel = optionLabel('language', settings.language);
   const schoolLabel = optionLabel('school', settings.school);
@@ -219,7 +239,21 @@ async function conjure(settings: Settings): Promise<void> {
   shareLinks.sealShareLinks(fragment);
 }
 
-function wireGenerator(): void {
+// A page can be opened on a formula. The link names the script, the school,
+// the level of power and the seed, which is everything a conjuration takes, so
+// arriving on one is not a flow of its own: it is the click's flow with the
+// seed already chosen.
+//
+// The fragment is read only when there is one, so a page opened without it
+// fetches nothing here. A fragment that is not a formula is left alone, in
+// silence: that page is the page anyone else gets.
+async function arrivingFormula(): Promise<SharedFormula | null> {
+  if (location.hash.length <= 1) return null;
+  const share = await import('./share.js');
+  return share.decode(location.hash);
+}
+
+function wireGenerator(syncSlider: () => void): void {
   const generateButton = document.getElementById('generate');
   const rerollButton = document.getElementById('reroll');
 
@@ -229,59 +263,39 @@ function wireGenerator(): void {
 
   // The well is one atomic live region and the first click has modules to
   // fetch, so an impatient second click would race the first: two formulas
-  // written over each other and announced twice. One conjuration at a time.
+  // written over each other and announced twice. One conjuration at a time,
+  // arrivals included.
   let conjuring = false;
 
-  const request = (settings: Settings): void => {
+  const request = (settings: Settings, seed: number): void => {
     if (conjuring) return;
     conjuring = true;
-    void conjure(settings).finally(() => {
+    lastSettings = settings;
+    void conjure(settings, seed).finally(() => {
       conjuring = false;
     });
   };
 
   if (generateButton !== null) {
-    generateButton.addEventListener('click', () => {
-      lastSettings = readSettings();
-      request(lastSettings);
-    });
+    generateButton.addEventListener('click', () => request(readSettings(), freshSeed()));
   }
   if (rerollButton !== null) {
-    rerollButton.addEventListener('click', () => {
-      request(lastSettings ?? readSettings());
-    });
+    rerollButton.addEventListener('click', () =>
+      request(lastSettings ?? readSettings(), freshSeed()),
+    );
   }
+
+  // Through the same guarded path as a click, so a visitor who conjures while
+  // the link is on its way is served their own formula and not overruled by
+  // it, and a reroll afterwards rerolls what the link named.
+  void arrivingFormula().then((formula) => {
+    if (formula === null) return;
+    applySettings(formula.settings, syncSlider);
+    request(formula.settings, formula.seed);
+  });
 }
 
-// A visitor who followed a shared link must be able to hand that same link on,
-// so the formula in the address joins the share links. Only the links: the
-// page shows what it was served, the formula is not replayed, and the address
-// is left exactly as it arrived.
-//
-// The two modules this takes are fetched only when there is something in the
-// fragment at all. The raw hash is the cheap gate, so a page opened without
-// one costs nothing, and decode is the real reading, done inside the modules
-// just fetched. A fragment it does not recognize seals nothing and says
-// nothing: the page behaves as though it arrived bare.
-async function sealArrival(): Promise<void> {
-  if (location.hash.length <= 1) return;
-
-  const [share, shareLinks] = await Promise.all([
-    import('./share.js'),
-    import('./ui/share-links.js'),
-  ]);
-
-  const seal = share.arrivingSeal(location.hash);
-  if (seal !== null) shareLinks.sealShareLinks(seal);
-}
-
-wireDifficulty();
 wireCopy();
-wireGenerator();
-
-// Not awaited: nothing the reader can do is waiting on it, and a conjuration
-// started in the meantime seals last by construction, since it fetches these
-// two modules and eleven more before it writes.
-void sealArrival();
+wireGenerator(wireDifficulty());
 
 export {};

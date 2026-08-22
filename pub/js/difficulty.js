@@ -1,1 +1,0 @@
-export function clampDifficulty(t){return Math.min(9,Math.max(1,Math.trunc(t)))}

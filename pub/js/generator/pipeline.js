@@ -1,1 +1,1 @@
-import{clampDifficulty as r}from"../difficulty.js";import{mulberry32 as o}from"./rng.js";import{buildPlan as t}from"./plan.js";export function generate(i,f,e){const n=r(f.difficulty),m=o(e>>>0),c=t(f.school,n,m);return i.realize(c,m)}
+import{mulberry32 as t}from"./rng.js";import{buildPlan as r}from"./plan.js";export function clampDifficulty(t){return Math.min(9,Math.max(1,Math.trunc(t)))}export function generate(i,n,o){const c=clampDifficulty(n.difficulty),f=t(o>>>0),a=r(n.school,c,f);return i.realize(a,f)}

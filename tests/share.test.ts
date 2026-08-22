@@ -12,7 +12,7 @@
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { arrivingSeal, decode, encode, LANGUAGES, SCHOOLS, sealLink } from '../src/ts/share.js';
+import { decode, encode, LANGUAGES, SCHOOLS, sealLink } from '../src/ts/share.js';
 import { GENOME_LOADERS } from '../src/ts/languages/index.js';
 import { ALL_SCHOOLS } from './gen.js';
 
@@ -166,53 +166,6 @@ test('share: surrounding whitespace is not trimmed away', () => {
   for (const text of [' runic.protection.5.1', 'runic.protection.5.1 ', '\nrunic.protection.5.1']) {
     assert.strictEqual(decode(text), null, `accepted ${JSON.stringify(text)}`);
   }
-});
-
-// --- arriving on a formula --------------------------------------------------
-// Someone who follows a shared link must be able to hand it on, so the formula
-// in the address becomes the formula the share links carry. Nothing else moves:
-// the page still shows what it was served, this is the seal and only the seal.
-
-test('share: a page opened on a formula arrives with its seal', () => {
-  assert.strictEqual(arrivingSeal('#runic.protection.5.66238'), 'runic.protection.5.66238');
-});
-
-test('share: the seal is the text a link carries again, spelled the same', () => {
-  for (const language of LANGUAGES) {
-    for (const school of SCHOOLS) {
-      const text = encode({ language, school, difficulty: 7 }, 66238);
-      assert.strictEqual(arrivingSeal(`#${text}`), text);
-    }
-  }
-});
-
-test('share: a page opened on nothing arrives with no seal', () => {
-  for (const hash of ['', '#']) assert.strictEqual(arrivingSeal(hash), null, hash);
-});
-
-// Everything decode refuses is refused here, because it is the same refusal.
-// A fragment nobody wrote must leave the links exactly as they were served.
-test('share: a fragment that is not a formula is not a seal', () => {
-  for (const hash of [
-    '#foo',
-    '#runic.protection.99.1',
-    '#runic.protection.0.1',
-    '#greek.protection.5.1',
-    '#runic.divination.5.1',
-    '#runic.protection.5.4294967296',
-    '#runic.protection.5.66238.7',
-    '##runic.protection.5.66238',
-    '#RUNIC.PROTECTION.5.66238',
-    '# runic.protection.5.66238',
-  ]) {
-    assert.strictEqual(arrivingSeal(hash), null, `sealed on ${JSON.stringify(hash)}`);
-  }
-});
-
-// A location hands its fragment over with the hash on it, and everything else
-// that names a formula hands it over without. Both are the same arrival.
-test('share: the leading hash of a location is optional here too', () => {
-  assert.strictEqual(arrivingSeal('runic.protection.5.66238'), 'runic.protection.5.66238');
 });
 
 // --- sealing the formula into a share link ----------------------------------

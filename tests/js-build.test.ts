@@ -89,21 +89,19 @@ test('js build: the entry module loads the idle page and defers the rest', () =>
   );
 });
 
-// The seal is the one deferred pair that a conjuration does not pay for: a
-// visitor arriving on a shared link has to be able to hand it on, so the two
-// modules that do it are fetched when a fragment is there to read. That is a
-// second call site for the same pair, and it is gated on the raw hash, which
-// is why a page opened without one still fetches nothing for it.
-test('js build: the seal is fetched on an arriving fragment as well as on a conjuration', () => {
+// A page opened on a formula reads the link before it can replay it, which is
+// the format's second call site in the entry module: once to read an arriving
+// formula, once to write the one just conjured. It is gated on the raw hash,
+// which is why a page opened without one fetches nothing for it, and the
+// replay itself goes through the conjuration, so nothing else is deferred.
+test('js build: the entry module reads an arriving formula before it writes one', () => {
   const main = readFileSync(join(jsRoot, 'main.js'), 'utf8');
   const asked = specifiers(main, DYNAMIC_IMPORT);
 
-  for (const module of ['./share.js', './ui/share-links.js']) {
-    assert.strictEqual(
-      asked.filter((specifier) => specifier === module).length,
-      2,
-      `${module} is no longer fetched by both the arrival and the conjuration`,
-    );
-  }
+  assert.strictEqual(
+    asked.filter((specifier) => specifier === './share.js').length,
+    2,
+    'the arrival and the conjuration no longer share the format',
+  );
   assert.match(main, /location\.hash/, 'the arrival no longer reads the fragment it is gated on');
 });

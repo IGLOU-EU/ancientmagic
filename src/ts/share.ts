@@ -9,7 +9,7 @@
 // meaning of a link has to be fixed the day the first one is copied. Nothing
 // here touches the DOM or the network: it is a spelling, both ways.
 
-import { clampDifficulty } from './difficulty.js';
+import { clampDifficulty } from './generator/pipeline.js';
 import type { LanguageId, School, Settings } from './generator/types.js';
 
 // What a link may name. Held to the genome registry and to the schools the
@@ -54,18 +54,6 @@ export function encode(settings: Settings, seed: number): string {
     clampDifficulty(settings.difficulty),
     seed >>> 0,
   ].join(SEPARATOR);
-}
-
-// The seal a page was opened on, if it was opened on one.
-//
-// A visitor who follows a shared link has to be able to hand that same link
-// on, so the formula in the address becomes the formula the share links carry.
-// Validation comes first and the answer is the text itself: decode accepts
-// exactly what encode writes, so a fragment it recognizes is already spelled
-// the way a link spells it, and anything else is not a formula at all.
-export function arrivingSeal(hash: string): string | null {
-  if (decode(hash) === null) return null;
-  return hash.startsWith('#') ? hash.slice(1) : hash;
 }
 
 // A share link is addressed at build time with the page's own address, so it
