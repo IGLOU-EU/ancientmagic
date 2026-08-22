@@ -1,11 +1,1 @@
-export const en = {
-    difficultyTiers: {
-        low: 'Whisper',
-        mid: 'Rite',
-        high: 'Invocation',
-        peak: 'Great Work',
-    },
-    difficultyValueText: (value, tier) => `${value}, ${tier}`,
-    glyphLineLabel: (languageLabel) => `Incantation in ${languageLabel}`,
-    printCaption: (languageLabel, schoolLabel, difficulty) => `${languageLabel} · ${schoolLabel} · Power ${difficulty}`,
-};
+export const en={difficultyTiers:{low:"Whisper",mid:"Rite",high:"Invocation",peak:"Great Work"},difficultyValueText:(i,e)=>`${i}, ${e}`,glyphLineLabel:i=>`Incantation in ${i}`,printCaption:(i,e,t)=>`${i} · ${e} · Power ${t}`};

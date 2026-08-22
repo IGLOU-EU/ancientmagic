@@ -1,8 +1,1 @@
-import { mulberry32 } from './rng.js';
-import { buildPlan } from './plan.js';
-export function generate(genome, settings, seed) {
-    const difficulty = Math.min(9, Math.max(1, Math.trunc(settings.difficulty)));
-    const rng = mulberry32(seed >>> 0);
-    const plan = buildPlan(settings.school, difficulty, rng);
-    return genome.realize(plan, rng);
-}
+import{mulberry32 as t}from"./rng.js";import{buildPlan as r}from"./plan.js";export function generate(n,o,a){const e=Math.min(9,Math.max(1,Math.trunc(o.difficulty))),i=t(a>>>0),m=r(o.school,e,i);return n.realize(m,i)}

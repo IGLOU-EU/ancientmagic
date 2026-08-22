@@ -1,3 +1,1 @@
-export function baseLanguage(tag) {
-    return tag.toLowerCase().split('-')[0];
-}
+export function baseLanguage(e){return e.toLowerCase().split("-")[0]}

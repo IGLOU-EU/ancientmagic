@@ -1,9 +1,1 @@
-import { baseLanguage } from '../locale.js';
-const enPack = () => import('./en/index.js').then((m) => m.enGlosses);
-export const GLOSS_PACKS = new Map([
-    ['en', enPack],
-    ['fr', () => import('./fr/index.js').then((m) => m.frGlosses)],
-]);
-export async function resolveGlosses(tag) {
-    return (GLOSS_PACKS.get(baseLanguage(tag)) ?? enPack)();
-}
+import{baseLanguage as e}from"../locale.js";const s=()=>import("./en/index.js").then(e=>e.enGlosses);export const GLOSS_PACKS=new Map([["en",s],["fr",()=>import("./fr/index.js").then(e=>e.frGlosses)]]);export async function resolveGlosses(n){return(GLOSS_PACKS.get(e(n))??s)()}
