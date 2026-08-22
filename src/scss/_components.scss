@@ -76,11 +76,20 @@ a:focus-visible {
 // ------------------------------------------------------------------- altar
 .altar {
   position: relative;
+
+  // The magic circle follows in tree order and reaches this panel on tall
+  // desktop viewports, so the altar is lifted above it like the well and the
+  // eyebrows already are. The circle itself stays at z-index auto because any
+  // stacking context on its branch would cut the bloom blend off from the
+  // page atmosphere.
+  z-index: 1;
   padding: var(--sp-altar-pad);
   border: 1px solid $panel-edge;
   border-radius: 4px;
-  background-color: $surface;
-  background-image: linear-gradient(#1e1533, #140e24);
+  // Translucent toward the bottom so the magic circle breathes through the
+  // panel instead of being cut dead by it.
+  background-color: #171029aa;
+  background-image: linear-gradient(#1e1533, #140e24aa);
   box-shadow:
     inset 0 1px 0 a($control-border, 0.22),
     inset 0 -1px 0 a($abyss, 0.6),
