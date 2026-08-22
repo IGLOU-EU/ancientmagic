@@ -13,6 +13,7 @@ import {
   renderLanguage,
   renderPage,
   renderSite,
+  sitemap,
   type LanguagePage,
 } from '../tools/render-page.js';
 
@@ -249,21 +250,40 @@ test('page build: fails when the shared file declares no site url', () => {
   assert.throws(() => renderSite(MINI, {}, MINI_LANGUAGES, 'en'), /site\.url/);
 });
 
+// ------------------------------------------------------------------ sitemap
+// Hand-maintained before, so it would have rotted at the third language. Now
+// derived from the language set like everything else, and loc-only so the
+// build output is byte-stable (no lastmod churn in git).
+
+test('sitemap: lists the root for the default language and flat files for the rest', () => {
+  const xml = sitemap(MINI_LANGUAGES, 'en', 'https://example.test/');
+  assert.match(xml, /<loc>https:\/\/example\.test\/<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/example\.test\/fr\.html<\/loc>/);
+});
+
+test('sitemap: one url per language and nothing volatile', () => {
+  const xml = sitemap(MINI_LANGUAGES, 'en', 'https://example.test/');
+  assert.strictEqual([...xml.matchAll(/<url>/g)].length, MINI_LANGUAGES.length);
+  assert.doesNotMatch(xml, /lastmod|changefreq|priority/);
+});
+
 // --------------------------------------------------------- the real pages
 
-function site(): Map<string, string> {
-  const stringsDir = join(root, 'src', 'strings');
-  const languages = readdirSync(stringsDir)
+function realLanguages(): LanguagePage[] {
+  return readdirSync(join(root, 'src', 'strings'))
     .sort()
     .filter((file) => file !== 'common.json' && file.endsWith('.json'))
     .map((file) => ({
       name: file.slice(0, -'.json'.length),
       strings: readJson('src', 'strings', file),
     }));
+}
+
+function site(): Map<string, string> {
   return renderSite(
     read('src', 'html', 'index.html'),
     readJson('src', 'strings', 'common.json'),
-    languages,
+    realLanguages(),
     'en',
   );
 }
@@ -272,6 +292,14 @@ test('page build: every published page is what the template and its strings rend
   const rendered = site();
   assert.ok(rendered.size >= 2, 'the site is down to a single language');
   for (const [file, page] of rendered) assert.strictEqual(page, read('pub', file), file);
+});
+
+test('page build: the published sitemap is what the language set derives', () => {
+  const shared = readJson('src', 'strings', 'common.json');
+  assert.strictEqual(
+    read('pub', 'sitemap.xml'),
+    sitemap(realLanguages(), 'en', shared['site.url'] ?? ''),
+  );
 });
 
 test('page build: every language ships the social preview its page points at', () => {

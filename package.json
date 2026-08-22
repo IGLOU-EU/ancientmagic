@@ -12,6 +12,7 @@
     "build:js": "tsc",
     "build:html": "tsc -p tsconfig.tools.json && node .tools-build/tools/build-pages.js",
     "watch:css": "sass --watch --style=compressed --no-source-map src/scss/main.scss pub/css/main.css",
+    "watch:html": "tsc -p tsconfig.tools.json && node .tools-build/tools/watch-pages.js",
     "watch:js": "tsc --watch"
   },
   "devDependencies": {

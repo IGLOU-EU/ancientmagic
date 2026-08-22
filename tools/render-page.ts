@@ -152,6 +152,20 @@ function pageUrl(name: string, defaultLanguage: string, siteUrl: string): string
   return name === defaultLanguage ? siteUrl : `${siteUrl}${pageFile(name, defaultLanguage)}`;
 }
 
+// Derived from the language set like the selector and the alternates, and
+// loc-only: anything volatile (lastmod) would dirty the versioned build on
+// every run without informing a crawler of anything real.
+export function sitemap(
+  languages: ReadonlyArray<LanguagePage>,
+  defaultLanguage: string,
+  siteUrl: string,
+): string {
+  const urls = languages
+    .map((page) => `  <url><loc>${pageUrl(page.name, defaultLanguage, siteUrl)}</loc></url>`)
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
 // One social preview per language, since the image bakes the promise line in.
 // The default language takes no privilege here: every page names its own file,
 // so the set of images is the set of languages with nothing to remember.

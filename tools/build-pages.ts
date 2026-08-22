@@ -5,7 +5,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { renderSite, type LanguagePage, type PageStrings } from './render-page.js';
+import { renderSite, sitemap, type LanguagePage, type PageStrings } from './render-page.js';
 
 const DEFAULT_LANGUAGE = 'en';
 const SHARED_FILE = 'common.json';
@@ -36,10 +36,15 @@ function readLanguages(): LanguagePage[] {
 function buildPages(): void {
   const template = readFileSync(templateFile, 'utf8');
   const shared = readJson(join(stringsDir, SHARED_FILE));
+  const languages = readLanguages();
 
-  for (const [file, page] of renderSite(template, shared, readLanguages(), DEFAULT_LANGUAGE)) {
+  for (const [file, page] of renderSite(template, shared, languages, DEFAULT_LANGUAGE)) {
     writeFileSync(join(outDir, file), page);
   }
+
+  const siteUrl = shared['site.url'];
+  if (siteUrl === undefined) throw new Error('common: no site.url');
+  writeFileSync(join(outDir, 'sitemap.xml'), sitemap(languages, DEFAULT_LANGUAGE, siteUrl));
 }
 
 buildPages();

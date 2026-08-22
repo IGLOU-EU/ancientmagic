@@ -28,6 +28,22 @@ declare module 'node:fs' {
   export function writeFileSync(path: string, data: string): void;
   export function readdirSync(path: string): string[];
   export function mkdirSync(path: string, options?: { recursive?: boolean }): void;
+  export function watch(path: string, listener: () => void): void;
+}
+
+declare module 'node:child_process' {
+  export function spawn(
+    command: string,
+    args: string[],
+    options: { stdio: 'inherit' },
+  ): { on(event: 'exit', listener: () => void): void };
+}
+
+// Module form rather than globals, so nothing collides with the DOM lib of
+// the client tsconfig when the IDE projects this file into it.
+declare module 'node:timers' {
+  export function setTimeout(listener: () => void, ms: number): object;
+  export function clearTimeout(id: object | undefined): void;
 }
 
 declare module 'node:path' {
