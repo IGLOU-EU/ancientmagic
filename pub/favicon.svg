@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" color-interpolation-filters="sRGB" role="img" aria-label="Ancient Magic">
+<title>Ancient Magic</title>
+<defs>
+<!-- The violet aura of the resting glyph glow and the well's own centre light, as
+     one gradient: a blur at that radius would cost far more than it shows. -->
+<radialGradient id="aura" cx="52%" cy="44%" r="54%">
+<stop offset="0" stop-color="#5C3CA3" stop-opacity=".38"/>
+<stop offset="1" stop-color="#5C3CA3" stop-opacity="0"/>
+</radialGradient>
+<filter id="halo" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4"/></filter>
+<filter id="vapor" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+<!-- Ansuz, the first rune of alu. Drawn as strokes because a favicon cannot load
+     a font. The two arms sit further apart than the type design has them, so the
+     gap between them survives a 16px raster. -->
+<path id="rune" d="M24 13v38M24 13l18.5 11.5M24 29l18.5 11.5"/>
+</defs>
+<rect width="64" height="64" rx="14" fill="#0D0819"/>
+<rect width="64" height="64" rx="14" fill="url(#aura)"/>
+<g fill="none" stroke-linecap="round">
+<!-- The vapor twin: blurred, offset, low opacity, behind the sharp rune. -->
+<use href="#rune" stroke="#F2D68F" stroke-width="8" opacity=".4" filter="url(#vapor)" transform="translate(-1.5 -2)"/>
+<use href="#rune" stroke="#E8C46A" stroke-width="7.5" opacity=".62" filter="url(#halo)"/>
+<use href="#rune" stroke="#E8C46A" stroke-width="7"/>
+<use href="#rune" stroke="#F2D68F" stroke-width="2.6" opacity=".9"/>
+</g>
+<rect x=".75" y=".75" width="62.5" height="62.5" rx="13.25" fill="none" stroke="#3E2E68" stroke-width="1.5"/>
+</svg>
