@@ -35,6 +35,12 @@ function specifiers(source: string, pattern: RegExp): string[] {
   return Array.from(source.matchAll(pattern), (match) => match[1]);
 }
 
+// A module can be asked for from two places, and which modules are deferred is
+// a different question from how many places ask for them. One test each.
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values));
+}
+
 test('js build: pub/js holds one module per source file, no more and no fewer', () => {
   assert.deepStrictEqual(modules(jsRoot, '.js'), modules(tsRoot, '.ts'));
 });
@@ -71,7 +77,7 @@ test('js build: the entry module loads the idle page and defers the rest', () =>
     'the idle page carries something new, or lost something',
   );
   assert.deepStrictEqual(
-    specifiers(main, DYNAMIC_IMPORT).sort(),
+    unique(specifiers(main, DYNAMIC_IMPORT)).sort(),
     [
       './generator/pipeline.js',
       './glosses/index.js',
@@ -81,4 +87,23 @@ test('js build: the entry module loads the idle page and defers the rest', () =>
     ],
     'a conjuration fetches something new, or fetches it too early',
   );
+});
+
+// The seal is the one deferred pair that a conjuration does not pay for: a
+// visitor arriving on a shared link has to be able to hand it on, so the two
+// modules that do it are fetched when a fragment is there to read. That is a
+// second call site for the same pair, and it is gated on the raw hash, which
+// is why a page opened without one still fetches nothing for it.
+test('js build: the seal is fetched on an arriving fragment as well as on a conjuration', () => {
+  const main = readFileSync(join(jsRoot, 'main.js'), 'utf8');
+  const asked = specifiers(main, DYNAMIC_IMPORT);
+
+  for (const module of ['./share.js', './ui/share-links.js']) {
+    assert.strictEqual(
+      asked.filter((specifier) => specifier === module).length,
+      2,
+      `${module} is no longer fetched by both the arrival and the conjuration`,
+    );
+  }
+  assert.match(main, /location\.hash/, 'the arrival no longer reads the fragment it is gated on');
 });

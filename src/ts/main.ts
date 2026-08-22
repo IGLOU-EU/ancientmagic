@@ -253,8 +253,35 @@ function wireGenerator(): void {
   }
 }
 
+// A visitor who followed a shared link must be able to hand that same link on,
+// so the formula in the address joins the share links. Only the links: the
+// page shows what it was served, the formula is not replayed, and the address
+// is left exactly as it arrived.
+//
+// The two modules this takes are fetched only when there is something in the
+// fragment at all. The raw hash is the cheap gate, so a page opened without
+// one costs nothing, and decode is the real reading, done inside the modules
+// just fetched. A fragment it does not recognize seals nothing and says
+// nothing: the page behaves as though it arrived bare.
+async function sealArrival(): Promise<void> {
+  if (location.hash.length <= 1) return;
+
+  const [share, shareLinks] = await Promise.all([
+    import('./share.js'),
+    import('./ui/share-links.js'),
+  ]);
+
+  const seal = share.arrivingSeal(location.hash);
+  if (seal !== null) shareLinks.sealShareLinks(seal);
+}
+
 wireDifficulty();
 wireCopy();
 wireGenerator();
+
+// Not awaited: nothing the reader can do is waiting on it, and a conjuration
+// started in the meantime seals last by construction, since it fetches these
+// two modules and eleven more before it writes.
+void sealArrival();
 
 export {};
