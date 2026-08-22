@@ -2,5 +2,6 @@
 node_modules/
 .sass-cache/
 .test-build/
+.tools-build/
 *.log
 *.map

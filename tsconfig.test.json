@@ -5,5 +5,12 @@
     "outDir": ".test-build",
     "lib": ["ES2022"]
   },
-  "include": ["src/ts/generator/**/*", "src/ts/languages/**/*", "tests/**/*"]
+  "include": [
+    "src/ts/generator/**/*",
+    "src/ts/languages/**/*",
+    "src/ts/strings/**/*",
+    "tools/**/*",
+    "tests/**/*",
+    "types/**/*"
+  ]
 }

@@ -1,39 +1,40 @@
 import { generate } from './generator/pipeline.js';
 import type { LanguageId, School, Settings } from './generator/types.js';
+import { resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 
 const COPY_HOLD_MS = 1600;
 
-const SCHOOL_LABELS: Record<School, string> = {
-  protection: 'Protection',
-  curse: 'Curse',
-  invocation: 'Invocation',
-  eldritch: 'Eldritch',
-};
+// One static page per language, so the page itself says which one it is.
+const strings = resolveStrings(document.documentElement.lang);
 
-const LANGUAGE_LABELS: Record<LanguageId, string> = {
-  runic: 'Runic',
-  egyptian: 'Egyptian Hieroglyphs',
-  phoenician: 'Phoenician',
-};
-
-// Only the genomes that ship are selectable, the other options of the select
+// Only the genomes that ship are selectable, the other options of the selects
 // stay disabled in the markup.
 const SHIPPED_LANGUAGES: ReadonlyArray<LanguageId> = ['runic', 'egyptian', 'phoenician'];
+const SHIPPED_SCHOOLS: ReadonlyArray<School> = [
+  'protection',
+  'curse',
+  'invocation',
+  'eldritch',
+];
 
 type CopyState = 'idle' | 'copied' | 'failed';
 
-const COPY_ANNOUNCEMENT: Record<CopyState, string> = {
-  idle: '',
-  copied: 'Copied',
-  failed: 'Copy failed',
-};
-
 function tierWord(value: number): string {
-  if (value <= 2) return 'Whisper';
-  if (value <= 5) return 'Rite';
-  if (value <= 7) return 'Invocation';
-  return 'Great Work';
+  const tiers = strings.difficultyTiers;
+  if (value <= 2) return tiers.low;
+  if (value <= 5) return tiers.mid;
+  if (value <= 7) return tiers.high;
+  return tiers.peak;
+}
+
+// The page already displays every option name, so reading it back keeps one
+// source per name instead of a second copy in the strings module.
+function optionLabel(selectId: string, value: string): string {
+  const select = document.getElementById(selectId);
+  if (!(select instanceof HTMLSelectElement)) return value;
+  const option = select.querySelector(`option[value="${value}"]`);
+  return option?.textContent?.trim() ?? value;
 }
 
 function syncDifficulty(
@@ -53,7 +54,7 @@ function syncDifficulty(
   // The tier is part of the value, not a description of the control: a
   // description is spoken once on focus, so it would go stale as soon as the
   // reader moved the slider across a tier boundary.
-  slider.setAttribute('aria-valuetext', `${value}, ${tier}`);
+  slider.setAttribute('aria-valuetext', strings.difficultyValueText(value, tier));
 
   if (valueOut !== null) valueOut.textContent = String(value);
   if (tierOut !== null) tierOut.textContent = tier;
@@ -73,6 +74,14 @@ function syncDifficulty(
 // and make every reader that reports a name change say the word twice.
 function setCopyState(button: HTMLElement, state: CopyState): void {
   button.dataset.state = state;
+}
+
+// The outcome words are the button's own labels, so the status region borrows
+// them rather than holding a second wording that could drift.
+function copyAnnouncement(button: HTMLElement, state: CopyState): string {
+  if (state === 'idle') return '';
+  const label = button.querySelector(`.copy-label[data-label="${state}"]`);
+  return label?.textContent?.trim() ?? '';
 }
 
 async function writeToClipboard(text: string): Promise<boolean> {
@@ -111,7 +120,7 @@ function wireCopy(): void {
   let resetTimer = 0;
 
   const announce = (state: CopyState): void => {
-    if (status !== null) status.textContent = COPY_ANNOUNCEMENT[state];
+    if (status !== null) status.textContent = copyAnnouncement(button, state);
   };
 
   const finish = (state: CopyState): void => {
@@ -133,7 +142,7 @@ function wireCopy(): void {
 }
 
 function isSchool(value: string): value is School {
-  return value in SCHOOL_LABELS;
+  return SHIPPED_SCHOOLS.some((id) => id === value);
 }
 
 function isLanguage(value: string): value is LanguageId {
@@ -162,11 +171,12 @@ function readSettings(): Settings {
 
 function conjure(settings: Settings): void {
   const output = generate(settings, freshSeed());
+  const languageLabel = optionLabel('language', settings.language);
+  const schoolLabel = optionLabel('school', settings.school);
   renderFormula(output, {
     languageId: settings.language,
-    languageLabel: LANGUAGE_LABELS[settings.language],
-    schoolLabel: SCHOOL_LABELS[settings.school],
-    difficulty: settings.difficulty,
+    glyphLabel: strings.glyphLineLabel(languageLabel),
+    printCaption: strings.printCaption(languageLabel, schoolLabel, settings.difficulty),
   });
 }
 

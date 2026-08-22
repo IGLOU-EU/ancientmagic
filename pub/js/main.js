@@ -1,31 +1,31 @@
 import { generate } from './generator/pipeline.js';
+import { resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 const COPY_HOLD_MS = 1600;
-const SCHOOL_LABELS = {
-    protection: 'Protection',
-    curse: 'Curse',
-    invocation: 'Invocation',
-    eldritch: 'Eldritch',
-};
-const LANGUAGE_LABELS = {
-    runic: 'Runic',
-    egyptian: 'Egyptian Hieroglyphs',
-    phoenician: 'Phoenician',
-};
+const strings = resolveStrings(document.documentElement.lang);
 const SHIPPED_LANGUAGES = ['runic', 'egyptian', 'phoenician'];
-const COPY_ANNOUNCEMENT = {
-    idle: '',
-    copied: 'Copied',
-    failed: 'Copy failed',
-};
+const SHIPPED_SCHOOLS = [
+    'protection',
+    'curse',
+    'invocation',
+    'eldritch',
+];
 function tierWord(value) {
+    const tiers = strings.difficultyTiers;
     if (value <= 2)
-        return 'Whisper';
+        return tiers.low;
     if (value <= 5)
-        return 'Rite';
+        return tiers.mid;
     if (value <= 7)
-        return 'Invocation';
-    return 'Great Work';
+        return tiers.high;
+    return tiers.peak;
+}
+function optionLabel(selectId, value) {
+    const select = document.getElementById(selectId);
+    if (!(select instanceof HTMLSelectElement))
+        return value;
+    const option = select.querySelector(`option[value="${value}"]`);
+    return option?.textContent?.trim() ?? value;
 }
 function syncDifficulty(slider, valueOut, tierOut, ticks) {
     const value = Number(slider.value);
@@ -34,7 +34,7 @@ function syncDifficulty(slider, valueOut, tierOut, ticks) {
     const ratio = max > min ? (value - min) / (max - min) : 0;
     const tier = tierWord(value);
     slider.style.setProperty('--fill-ratio', ratio.toFixed(4));
-    slider.setAttribute('aria-valuetext', `${value}, ${tier}`);
+    slider.setAttribute('aria-valuetext', strings.difficultyValueText(value, tier));
     if (valueOut !== null)
         valueOut.textContent = String(value);
     if (tierOut !== null)
@@ -48,6 +48,12 @@ function syncDifficulty(slider, valueOut, tierOut, ticks) {
 }
 function setCopyState(button, state) {
     button.dataset.state = state;
+}
+function copyAnnouncement(button, state) {
+    if (state === 'idle')
+        return '';
+    const label = button.querySelector(`.copy-label[data-label="${state}"]`);
+    return label?.textContent?.trim() ?? '';
 }
 async function writeToClipboard(text) {
     const clipboard = navigator.clipboard;
@@ -81,7 +87,7 @@ function wireCopy() {
     let resetTimer = 0;
     const announce = (state) => {
         if (status !== null)
-            status.textContent = COPY_ANNOUNCEMENT[state];
+            status.textContent = copyAnnouncement(button, state);
     };
     const finish = (state) => {
         setCopyState(button, state);
@@ -99,7 +105,7 @@ function wireCopy() {
     });
 }
 function isSchool(value) {
-    return value in SCHOOL_LABELS;
+    return SHIPPED_SCHOOLS.some((id) => id === value);
 }
 function isLanguage(value) {
     return SHIPPED_LANGUAGES.some((id) => id === value);
@@ -122,11 +128,12 @@ function readSettings() {
 }
 function conjure(settings) {
     const output = generate(settings, freshSeed());
+    const languageLabel = optionLabel('language', settings.language);
+    const schoolLabel = optionLabel('school', settings.school);
     renderFormula(output, {
         languageId: settings.language,
-        languageLabel: LANGUAGE_LABELS[settings.language],
-        schoolLabel: SCHOOL_LABELS[settings.school],
-        difficulty: settings.difficulty,
+        glyphLabel: strings.glyphLineLabel(languageLabel),
+        printCaption: strings.printCaption(languageLabel, schoolLabel, settings.difficulty),
     });
 }
 function wireGenerator() {

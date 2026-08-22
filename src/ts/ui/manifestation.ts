@@ -5,9 +5,9 @@ import type { FormulaOutput, LanguageId } from '../generator/types.js';
 export interface FormulaMeta {
   // Drives the font stack the stylesheet picks per script.
   languageId: LanguageId;
-  languageLabel: string;
-  schoolLabel: string;
-  difficulty: number;
+  // Text arrives already localized, so this module holds no wording of its own.
+  glyphLabel: string;
+  printCaption: string;
 }
 
 // Size tiers by glyph count (design 4.2). Counted in codepoints because
@@ -41,7 +41,7 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   // The glyph block is named for what it is, not for what it says: the well is
   // one atomic live region, and naming it with the transliteration made the
   // region announce that same line twice, once here and once below.
-  glyphLine.setAttribute('aria-label', `Incantation in ${meta.languageLabel}`);
+  glyphLine.setAttribute('aria-label', meta.glyphLabel);
   // The vapor twin must stay in text sync with the visible line (design 13.2).
   if (vapor !== null) vapor.textContent = output.glyphs;
   if (translit !== null) translit.textContent = output.transliteration;
@@ -50,9 +50,7 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   well.dataset.script = meta.languageId;
   well.dataset.size = sizeTier(output.glyphs);
 
-  if (caption !== null) {
-    caption.textContent = `${meta.languageLabel} · ${meta.schoolLabel} · Difficulty ${meta.difficulty}`;
-  }
+  if (caption !== null) caption.textContent = meta.printCaption;
 
   replayAnimations(glyphLine);
   if (translit !== null) replayAnimations(translit);

@@ -21,7 +21,7 @@ export function renderFormula(output, meta) {
     const gloss = well.querySelector('.gloss');
     const caption = document.querySelector('.print-caption');
     glyphLine.textContent = output.glyphs;
-    glyphLine.setAttribute('aria-label', `Incantation in ${meta.languageLabel}`);
+    glyphLine.setAttribute('aria-label', meta.glyphLabel);
     if (vapor !== null)
         vapor.textContent = output.glyphs;
     if (translit !== null)
@@ -30,9 +30,8 @@ export function renderFormula(output, meta) {
         gloss.textContent = output.gloss;
     well.dataset.script = meta.languageId;
     well.dataset.size = sizeTier(output.glyphs);
-    if (caption !== null) {
-        caption.textContent = `${meta.languageLabel} · ${meta.schoolLabel} · Difficulty ${meta.difficulty}`;
-    }
+    if (caption !== null)
+        caption.textContent = meta.printCaption;
     replayAnimations(glyphLine);
     if (translit !== null)
         replayAnimations(translit);

@@ -7,9 +7,10 @@
   "type": "module",
   "scripts": {
     "test": "tsc -p tsconfig.test.json && node --test .test-build/tests",
-    "build": "npm run build:css && npm run build:js",
+    "build": "npm run build:css && npm run build:js && npm run build:html",
     "build:css": "sass --style=compressed --no-source-map src/scss/main.scss pub/css/main.css",
     "build:js": "tsc",
+    "build:html": "tsc -p tsconfig.tools.json && node .tools-build/tools/build-pages.js",
     "watch:css": "sass --watch --style=compressed --no-source-map src/scss/main.scss pub/css/main.css",
     "watch:js": "tsc --watch"
   },

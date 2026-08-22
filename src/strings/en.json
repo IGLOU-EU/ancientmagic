@@ -1,0 +1,63 @@
+{
+  "brand.name": "Ancient Magic",
+
+  "meta.title": "Ancient Magic, conjured incantations in real ancient scripts",
+  "meta.description": "Pick a script, a school of magic and a difficulty, then read a fictional incantation written in real ancient glyphs, with its transliteration and a plain-language gloss.",
+  "meta.ogLocale": "en_GB",
+  "meta.imageAlt": "The Ancient Magic wordmark in gold over a dark violet starfield, above a glowing runic incantation and its transliteration.",
+
+  "jsonld.description": "A single-page generator of fictional incantations written in real ancient scripts, with transliteration and a plain-language gloss.",
+  "jsonld.operatingSystem": "Any modern web browser",
+  "jsonld.browserRequirements": "Requires JavaScript",
+
+  "header.promise": "Conjured incantations, written in real ancient scripts.",
+
+  "altar.title": "The Altar",
+  "altar.languageLabel": "Language",
+  "altar.schoolLabel": "School of magic",
+  "altar.difficultyLabel": "Difficulty",
+
+  "language.runic": "Runic",
+  "language.egyptian": "Egyptian Hieroglyphs",
+  "language.phoenician": "Phoenician",
+  "language.greek": "Greek (soon)",
+  "language.ogham": "Ogham (soon)",
+  "language.gothic": "Gothic (soon)",
+  "language.alchemical": "Alchemical (soon)",
+  "language.old-italic": "Old Italic (soon)",
+  "language.glagolitic": "Glagolitic (soon)",
+  "language.coptic": "Coptic (soon)",
+  "language.old-turkic": "Old Turkic (soon)",
+  "language.lydian": "Lydian (soon)",
+  "language.samaritan": "Samaritan (soon)",
+  "language.meroitic": "Meroitic Hieroglyphs (soon)",
+  "language.aegean-numbers": "Aegean Numbers (soon)",
+
+  "school.protection": "Protection",
+  "school.curse": "Curse",
+  "school.invocation": "Invocation",
+  "school.eldritch": "Eldritch",
+  "school.divination": "Divination (soon)",
+  "school.chronomancy": "Chronomancy (soon)",
+
+  "difficulty.initialValue": "5",
+  "difficulty.initialTier": "Rite",
+  "difficulty.initialValueText": "5, Rite",
+
+  "action.conjure": "Conjure",
+  "action.reroll": "Reroll",
+
+  "manifestation.title": "The Manifestation",
+  "sample.glyphLabel": "Incantation in Runic",
+
+  "copy.idle": "Copy glyphs",
+  "copy.copied": "Copied",
+  "copy.failed": "Copy failed",
+
+  "print.caption": "Runic · Protection · Difficulty 5",
+
+  "footer.license": "Public domain (Unlicense)",
+  "footer.separator": "·",
+  "footer.source": "Source",
+  "footer.disclaimer": "Every formula here is generated fiction. It translates nothing and teaches nothing."
+}
