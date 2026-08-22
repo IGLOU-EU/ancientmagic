@@ -58,6 +58,14 @@
   "copy.copied": "Copied",
   "copy.failed": "Copy failed",
 
+  "share.message": "An incantation traced by the ancient scripts. Pronounce it.",
+  "share.bluesky.label": "Share on Bluesky",
+  "share.facebook.label": "Share on Facebook",
+  "share.x.label": "Share on X",
+  "share.linkedin.label": "Share on LinkedIn",
+  "share.whatsapp.label": "Share on WhatsApp",
+  "share.mail.label": "Share by email",
+
   "print.caption": "Runic · Protection · Power 5",
 
   "footer.license": "Public domain (Unlicense)",

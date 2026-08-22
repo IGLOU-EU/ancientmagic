@@ -37,6 +37,30 @@ const LIST_INDENT = '\n        ';
 // Where the images the pages point at are published.
 const MEDIA_DIR = 'media/';
 
+// The line every share link carries, authored per language.
+const SHARE_MESSAGE = 'share.message';
+
+// The networks the site shares to, and the address each one documents for it.
+// A sharing address holds nothing readable, so these are machine values like
+// an option id: a translator has nothing to say about them, and they stay out
+// of the strings files. What a language writes is the message and the name of
+// each link.
+//
+// {url} is the page, {message} the authored line, {post} the two of them
+// together, which is what a network expects when it offers a single field.
+const SHARE_TARGETS: ReadonlyMap<string, string> = new Map([
+  ['bluesky', 'https://bsky.app/intent/compose?text={post}'],
+  ['facebook', 'https://www.facebook.com/sharer/sharer.php?u={url}'],
+  ['x', 'https://x.com/intent/post?text={message}&url={url}'],
+  ['linkedin', 'https://www.linkedin.com/sharing/share-offsite/?url={url}'],
+  ['whatsapp', 'https://api.whatsapp.com/send?text={post}'],
+  ['mail', 'mailto:?subject={message}&body={url}'],
+]);
+
+export const SHARE_NETWORKS: ReadonlyArray<string> = Array.from(SHARE_TARGETS.keys());
+
+const SHARE_TOKEN = /\{([a-z]+)\}/gu;
+
 function listed(keys: Iterable<string>): string {
   return Array.from(keys).sort().join(', ');
 }
@@ -173,6 +197,45 @@ export function ogImageFile(name: string): string {
   return `og-${name}.png`;
 }
 
+// One share address per network, ready to be dropped into an href.
+//
+// The message is authored, the encoding is derived. A strings file never holds
+// a percent-encoded value: it would be unreadable to the translator who has to
+// write it, and it would carry its straight quotes and its apostrophes past
+// the checks that read authored words.
+export function shareLinks(message: string, url: string): PageStrings {
+  const values: Readonly<Record<string, string>> = {
+    url: encodeURIComponent(url),
+    message: encodeURIComponent(message),
+    post: encodeURIComponent(`${message} ${url}`),
+  };
+
+  const links: Record<string, string> = {};
+  for (const [network, target] of SHARE_TARGETS) {
+    links[`share.${network}.href`] = target
+      .replace(SHARE_TOKEN, (_token, name: string) => {
+        const value = values[name];
+        if (value === undefined) {
+          throw new Error(`share: ${network} asks for {${name}}, which a link does not carry`);
+        }
+        return value;
+      })
+      // The address lands in an attribute of a page inserted verbatim, and its
+      // parameter separator is the one character HTML reads as its own.
+      .replaceAll('&', '&amp;');
+  }
+  return links;
+}
+
+// The message reaches the page inside the addresses the links carry, never as
+// text of its own, so it leaves the set before the render asks which
+// placeholder uses it.
+function without(strings: PageStrings, key: string): PageStrings {
+  const rest: Record<string, string> = { ...strings };
+  delete rest[key];
+  return rest;
+}
+
 function languageName(page: LanguagePage): string {
   const name = page.strings[LANGUAGE_NAME];
   if (name === undefined) {
@@ -234,14 +297,22 @@ export function renderSite(
   for (const page of languages) {
     assertTypographicQuotes(page.strings, page.name);
 
+    const url = pageUrl(page.name, defaultLanguage, siteUrl);
+    const message = page.strings[SHARE_MESSAGE];
+    if (message === undefined) {
+      throw new Error(`${page.name}: no ${SHARE_MESSAGE}, the line its share links carry`);
+    }
+
     // Derived, never authored: every one of these is a fact about where the
     // page sits in the site, and a fact stated twice is a fact that drifts.
+    // A share address is the same kind of fact, once the line is written.
     const derived: PageStrings = {
-      'page.url': pageUrl(page.name, defaultLanguage, siteUrl),
+      'page.url': url,
       'page.ogImage': `${siteUrl}${MEDIA_DIR}${ogImageFile(page.name)}`,
       'page.alternates': alternates,
       'lang.code': page.name.toUpperCase(),
       'lang.links': languageLinks(languages, page.name, defaultLanguage),
+      ...shareLinks(message, url),
     };
 
     pages.set(
@@ -249,7 +320,7 @@ export function renderSite(
       renderLanguage(
         template,
         mergeStrings(shared, derived, page.name),
-        page.strings,
+        without(page.strings, SHARE_MESSAGE),
         page.name,
       ),
     );

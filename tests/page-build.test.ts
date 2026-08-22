@@ -13,11 +13,19 @@ import {
   renderLanguage,
   renderPage,
   renderSite,
+  shareLinks,
   sitemap,
+  SHARE_NETWORKS,
   type LanguagePage,
 } from '../tools/render-page.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+// The share row of the mini template, built from the network set instead of
+// spelled out, so adding a network is one edit in the tool and none here.
+const MINI_SHARE = SHARE_NETWORKS.map(
+  (network) => `<a href="{{share.${network}.href}}">{{share.${network}.label}}</a>`,
+).join('\n');
 
 // A template small enough to read, carrying every value the site render
 // derives, so a failure names the derivation rather than the real page.
@@ -29,13 +37,26 @@ const MINI = [
   '<meta property="og:image" content="{{page.ogImage}}">',
   '<p>{{lang.code}} {{lang.name}}</p>',
   '<ul>{{lang.links}}</ul>',
+  MINI_SHARE,
 ].join('\n');
 
 const MINI_SHARED = { 'site.url': 'https://example.test/' };
 
+const MINI_MESSAGE = 'Pronounce it.';
+
+// What a language has to write for its share links: the line they carry, and
+// the name each one answers to.
+function shareStrings(): Record<string, string> {
+  const strings: Record<string, string> = { 'share.message': MINI_MESSAGE };
+  for (const network of SHARE_NETWORKS) {
+    strings[`share.${network}.label`] = `Share on ${network}`;
+  }
+  return strings;
+}
+
 const MINI_LANGUAGES: ReadonlyArray<LanguagePage> = [
-  { name: 'en', strings: { 'lang.name': 'English' } },
-  { name: 'fr', strings: { 'lang.name': 'Français' } },
+  { name: 'en', strings: { 'lang.name': 'English', ...shareStrings() } },
+  { name: 'fr', strings: { 'lang.name': 'Français', ...shareStrings() } },
 ];
 
 function miniSite(): Map<string, string> {
@@ -177,7 +198,7 @@ test('page build: accepts the markup a value is allowed to carry', () => {
 });
 
 test('page build: the site render rejects a straight double quote in a language file', () => {
-  const languages = [{ name: 'en', strings: { 'lang.name': 'the "old" tongue' } }];
+  const languages = [{ name: 'en', strings: { 'lang.name': 'the "old" tongue', ...shareStrings() } }];
   assert.throws(() => renderSite(MINI, MINI_SHARED, languages, 'en'), /^Error: en: /);
 });
 
@@ -241,13 +262,84 @@ test('page build: the collapsed code comes from the language name', () => {
 
 test('page build: fails when a language file declares no language name', () => {
   assert.throws(
-    () => renderSite(MINI, MINI_SHARED, [{ name: 'en', strings: {} }], 'en'),
+    () => renderSite(MINI, MINI_SHARED, [{ name: 'en', strings: shareStrings() }], 'en'),
     /lang\.name/,
   );
 });
 
 test('page build: fails when the shared file declares no site url', () => {
   assert.throws(() => renderSite(MINI, {}, MINI_LANGUAGES, 'en'), /site\.url/);
+});
+
+// -------------------------------------------------------------- share links
+// A sharing address holds nothing readable, so the networks and their url
+// shapes are machine values like an option id and live in the tool. What a
+// language authors is the line its links carry. Putting that line into an
+// address is percent-encoding, which is derivation work: a strings file that
+// held an encoded value would be unreadable to a translator and would slip
+// straight past the quote checks.
+
+test('share links: one link per network, none missing and none invented', () => {
+  assert.deepStrictEqual(
+    Object.keys(shareLinks(MINI_MESSAGE, 'https://example.test/')).sort(),
+    SHARE_NETWORKS.map((network) => `share.${network}.href`).sort(),
+  );
+});
+
+test('share links: the page address travels percent-encoded', () => {
+  const links = shareLinks(MINI_MESSAGE, 'https://example.test/fr.html');
+  assert.strictEqual(
+    links['share.facebook.href'],
+    'https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.test%2Ffr.html',
+  );
+});
+
+test('share links: a network with one text field takes the line and the address together', () => {
+  const links = shareLinks(MINI_MESSAGE, 'https://example.test/');
+  assert.strictEqual(
+    links['share.bluesky.href'],
+    'https://bsky.app/intent/compose?text=Pronounce%20it.%20https%3A%2F%2Fexample.test%2F',
+  );
+});
+
+test('share links: the authored line is encoded by the derivation, never by hand', () => {
+  const links = shareLinks('L’incantation, dite « ainsi »', 'https://example.test/');
+  const href = links['share.mail.href'] ?? '';
+  assert.match(href, /^mailto:\?subject=L%E2%80%99incantation%2C%20dite%20%C2%AB%20ainsi%20%C2%BB/);
+  assert.doesNotMatch(href, /[ «’]/, 'a character left raw in an address');
+});
+
+test('share links: the parameter separator is written for the attribute it lands in', () => {
+  // Values reach the page verbatim, there is no escaping pass, so a bare
+  // ampersand in an href would hand the parser a character reference to guess.
+  const links = shareLinks(MINI_MESSAGE, 'https://example.test/');
+  for (const href of Object.values(links)) assert.doesNotMatch(href, /&(?!amp;)/, href);
+  assert.match(links['share.x.href'] ?? '', /&amp;url=/);
+});
+
+test('page build: every page seals its own address into its share links', () => {
+  const site = miniSite();
+  assert.match(site.get('index.html') ?? '', /u=https%3A%2F%2Fexample\.test%2F"/);
+  assert.match(site.get('fr.html') ?? '', /u=https%3A%2F%2Fexample\.test%2Ffr\.html"/);
+});
+
+test('page build: the share message reaches the page inside the links, never as text', () => {
+  const page = miniSite().get('index.html') ?? '';
+  assert.ok(!page.includes(MINI_MESSAGE), 'the share message is on the page as readable text');
+  assert.ok(page.includes(encodeURIComponent(MINI_MESSAGE)), 'no link carries the share message');
+});
+
+test('page build: fails when a language writes no share message', () => {
+  const languages = [{ name: 'en', strings: { 'lang.name': 'English' } }];
+  assert.throws(() => renderSite(MINI, MINI_SHARED, languages, 'en'), /share\.message/);
+});
+
+test('page build: the page ships a link for every network the tool knows', () => {
+  const template = read('src', 'html', 'index.html');
+  for (const network of SHARE_NETWORKS) {
+    assert.ok(template.includes(`{{share.${network}.href}}`), `no ${network} link on the page`);
+    assert.ok(template.includes(`{{share.${network}.label}}`), `the ${network} link has no name`);
+  }
 });
 
 // ------------------------------------------------------------------ sitemap
@@ -308,6 +400,23 @@ test('page build: every language ships the social preview its page points at', (
     assert.ok(match !== null, 'no og:image on a page');
     const image = match?.[1] ?? '';
     assert.doesNotThrow(() => read('pub', 'media', image), image);
+  }
+});
+
+// An icon carries no name, so each link states its own, and the drawing is
+// hidden from anything that reads. Both are what makes the row usable without
+// the icons ever being recognized, and neither is visible on screen.
+test('page build: every share link names itself and hides its icon', () => {
+  for (const page of site().values()) {
+    const row = /<div class="share-row">(.*?)<\/div>/s.exec(page)?.[1] ?? '';
+    const links = Array.from(row.matchAll(/<a\b[^>]*>/g));
+    assert.strictEqual(links.length, SHARE_NETWORKS.length, 'the share row lost a link');
+    for (const [tag] of links) assert.match(tag, /aria-label="[^"]+"/, tag);
+    assert.strictEqual(
+      (row.match(/aria-hidden="true"/g) ?? []).length,
+      SHARE_NETWORKS.length,
+      'an icon is exposed to a reader',
+    );
   }
 });
 

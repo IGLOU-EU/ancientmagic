@@ -56,6 +56,19 @@ export function encode(settings: Settings, seed: number): string {
   ].join(SEPARATOR);
 }
 
+// A share link is addressed at build time with the page's own address, so it
+// works with the script gone. A conjuration adds the formula to that address,
+// wherever the link happens to carry it: on its own in one parameter, or
+// inside the message a network composes from a single text field.
+// Percent-encoding maps character by character, so the encoded address is a
+// literal substring of both, and the seal is one substitution.
+//
+// The caller seals the link the build baked, never the one it sealed last, so
+// a formula replaces the one before it instead of nesting behind it.
+export function sealLink(href: string, url: string, fragment: string): string {
+  return href.replaceAll(encodeURIComponent(url), encodeURIComponent(`${url}#${fragment}`));
+}
+
 export function decode(text: string): SharedFormula | null {
   // The one liberty taken with the input: a location hands its fragment over
   // with the hash still on it.

@@ -190,10 +190,13 @@ async function loadConjurer(id: LanguageId): Promise<Conjurer> {
 
 async function conjure(settings: Settings): Promise<void> {
   // The formula's name is only wanted once a formula exists, so it rides the
-  // same wave as the generation code rather than the idle page.
-  const [write, share] = await Promise.all([
+  // same wave as the generation code rather than the idle page. The share row
+  // rides with it: its links are complete in the served page, and what they
+  // are missing until here is a formula to hand over.
+  const [write, share, shareLinks] = await Promise.all([
     loadConjurer(settings.language),
     import('./share.js'),
+    import('./ui/share-links.js'),
   ]);
 
   const seed = freshSeed();
@@ -209,7 +212,11 @@ async function conjure(settings: Settings): Promise<void> {
   // The formula that was just written, named in the address so it can be
   // handed to someone else. Replaced and never pushed: a conjuration is not a
   // place to go back to, and Back must still leave the page.
-  history.replaceState(null, '', `#${share.encode(settings, seed)}`);
+  const fragment = share.encode(settings, seed);
+  history.replaceState(null, '', `#${fragment}`);
+
+  // The same name, in the links that hand it to someone else's timeline.
+  shareLinks.sealShareLinks(fragment);
 }
 
 function wireGenerator(): void {

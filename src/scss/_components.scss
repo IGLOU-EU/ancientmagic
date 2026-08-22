@@ -852,6 +852,63 @@ a:focus-visible {
   box-shadow: 0 0 16px a($gold, 0.45);
 }
 
+// -------------------------------------------------------------- share row
+// Links, not buttons: each one is an address the server already wrote, so the
+// row works before the script runs and a middle click opens it in a tab.
+// Below the actions and quieter than them, since handing the formula on comes
+// after having one. Wraps like the actions row for the same reason.
+.share-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+// The outlined treatment of design 8.5, squared: an icon has no line of text
+// to set the width, so the box is the target, at the 36px of the smallest
+// deliberate one on the page.
+.share-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid $control-border;
+  border-radius: 2px;
+  color: $gold;
+  text-decoration: none;
+  transition:
+    background-color $dur-color $ease-settle,
+    border-color $dur-color $ease-settle,
+    color $dur-color $ease-settle;
+}
+
+.share-link:hover {
+  border-color: $gold;
+  background-color: $raised-hover;
+  color: $gold-bright;
+}
+
+.share-link:active {
+  border-color: $gold-deep;
+  background-color: $raised;
+  color: $gold-deep;
+  transition-duration: $dur-press;
+  transition-timing-function: $ease-press;
+}
+
+// Filled with the color it inherits, so the mark is the button's gold in every
+// state and there is one place that decides what that gold is.
+.share-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentcolor;
+}
+
 // ------------------------------------------------------------------ footer
 .site-footer {
   color: $text-muted;

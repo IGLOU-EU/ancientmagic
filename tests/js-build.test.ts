@@ -77,6 +77,7 @@ test('js build: the entry module loads the idle page and defers the rest', () =>
       './glosses/index.js',
       './languages/index.js',
       './share.js',
+      './ui/share-links.js',
     ],
     'a conjuration fetches something new, or fetches it too early',
   );

@@ -1,0 +1,1 @@
+import{sealLink as e}from"../share.js";const t="href",r=document.querySelector('link[rel="canonical"]')?.getAttribute(t)??"",o=new Map;for(const n of document.querySelectorAll(".share-link"))o.set(n,n.getAttribute(t)??"");export function sealShareLinks(n){if(""!==r)for(const[c,i]of o)c.setAttribute(t,e(i,r,n))}

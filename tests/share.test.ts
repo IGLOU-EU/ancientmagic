@@ -12,7 +12,7 @@
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { decode, encode, LANGUAGES, SCHOOLS } from '../src/ts/share.js';
+import { decode, encode, LANGUAGES, SCHOOLS, sealLink } from '../src/ts/share.js';
 import { GENOME_LOADERS } from '../src/ts/languages/index.js';
 import { ALL_SCHOOLS } from './gen.js';
 
@@ -166,6 +166,65 @@ test('share: surrounding whitespace is not trimmed away', () => {
   for (const text of [' runic.protection.5.1', 'runic.protection.5.1 ', '\nrunic.protection.5.1']) {
     assert.strictEqual(decode(text), null, `accepted ${JSON.stringify(text)}`);
   }
+});
+
+// --- sealing the formula into a share link ----------------------------------
+// The share links are addressed at build time with the page's own address, so
+// they work before any script runs. Once a formula exists, the seal joins that
+// address inside them, and the link hands over the formula on screen.
+
+const PAGE = 'https://ancientmagic.iglou.eu/';
+const FORMULA = 'runic.protection.5.66238';
+const SEALED = `${PAGE}#${FORMULA}`;
+
+test('share: the address a link carries comes back sealed', () => {
+  const href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(PAGE)}`;
+  assert.strictEqual(
+    sealLink(href, PAGE, FORMULA),
+    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SEALED)}`,
+  );
+});
+
+// Percent-encoding maps character by character, so the encoded address is a
+// literal substring of the encoded message that carries it. That is the whole
+// reason one substitution reaches every shape of link.
+test('share: the address inside a composed message is sealed too', () => {
+  const message = 'An incantation traced by the ancient scripts.';
+  const href = `https://bsky.app/intent/compose?text=${encodeURIComponent(`${message} ${PAGE}`)}`;
+  assert.strictEqual(
+    sealLink(href, PAGE, FORMULA),
+    `https://bsky.app/intent/compose?text=${encodeURIComponent(`${message} ${SEALED}`)}`,
+  );
+});
+
+test('share: every copy of the address in one link is sealed', () => {
+  const encoded = encodeURIComponent(PAGE);
+  const href = `mailto:?subject=${encoded}&body=${encoded}`;
+  const sealed = encodeURIComponent(SEALED);
+  assert.strictEqual(sealLink(href, PAGE, FORMULA), `mailto:?subject=${sealed}&body=${sealed}`);
+});
+
+test('share: a link that does not carry the address is left as it is', () => {
+  const href = 'https://bsky.app/intent/compose?text=nothing%20to%20seal';
+  assert.strictEqual(sealLink(href, PAGE, FORMULA), href);
+});
+
+// Every seal is applied to the link the build baked, never to the sealed one,
+// so a second conjuration replaces the formula instead of nesting it behind
+// the first. Sealing a sealed link is what that guards against.
+test('share: a second seal replaces the first, it does not stack behind it', () => {
+  const href = `https://api.whatsapp.com/send?text=${encodeURIComponent(PAGE)}`;
+  const first = sealLink(href, PAGE, FORMULA);
+  const second = sealLink(href, PAGE, 'egyptian.eldritch.9.7');
+  assert.strictEqual(second.includes(encodeURIComponent(FORMULA)), false, second);
+  assert.notStrictEqual(first, second);
+});
+
+test('share: the seal is spelled inside the link the way the address is', () => {
+  const href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(PAGE)}`;
+  // The hash separating the page from its formula is a character of the value,
+  // not of the sharing url, so it travels encoded like the rest of it.
+  assert.match(sealLink(href, PAGE, FORMULA), /%23runic\.protection\.5\.66238$/);
 });
 
 // --- the format cannot drift from what the site ships -----------------------
