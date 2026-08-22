@@ -71,7 +71,7 @@ test('an intransitive root never reaches a slot that takes a direct object', () 
     }
   }
   // The filter removes the flagged roots and keeps the others.
-  const deathVerbs = FIELDS.death.filter((r) => r.verb !== undefined).map((r) => r.root);
+  const deathVerbs = FIELDS.death.filter((r) => r.forms.includes('verb')).map((r) => r.root);
   const deathTransitive = transitiveVerbsOf('death').map((r) => r.root);
   assert.ok(deathVerbs.length > deathTransitive.length, 'the filter removed nothing');
   assert.ok(deathTransitive.includes('krt'), 'a transitive death verb was dropped');

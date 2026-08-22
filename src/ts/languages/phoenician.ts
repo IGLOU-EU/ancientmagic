@@ -6,6 +6,10 @@
 // The glyph line is always built and stored in logical (reading) order. The
 // right-to-left appearance is the bidi algorithm's job inside the isolated
 // block design.md specifies, so the string itself is never reversed.
+//
+// No English lives here. The genome decides which root fills which role and
+// hands those choices to the gloss pack of the displayed language, which
+// writes the sentence.
 
 import { pick, type Rng } from '../generator/rng.js';
 import type {
@@ -15,26 +19,28 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
+import type {
+  GlossPack,
+  GlossRef,
+  PhoenicianGlosses,
+  RootForm,
+} from '../glosses/types.js';
 import {
   ALF,
   BRIGHT_NAMES,
   DARK_NAMES,
   DREAD_POWER,
-  ELDRITCH_CLOSE,
   FIELDS,
+  IDIOM_WORDS,
   INVOCATION_COME,
   LETTER_MAP,
   NUMERAL_GLYPHS,
   NUMERAL_WORDS,
-  PC1,
-  PC2,
-  PC3,
   PLURAL_SPOKEN,
   PO1_HEAD,
   PO2_HEAD,
   PO3_HEAD,
   PROCLITIC_SPOKEN,
-  SEAL_GLOSS,
   SEAL_HEAD,
   THEOPHORIC_SKELETON,
   THEOPHORIC_SPOKEN,
@@ -43,7 +49,7 @@ import {
   type DivineName,
   type DreadEpithet,
   type FixedWord,
-  type Idiom,
+  type PhoenicianIdiomId,
   type PhoenicianRoot,
   type ProcliticId,
   type SealCount,
@@ -181,10 +187,6 @@ function eldritchRoot(root: string): string {
   return `${shifted.join('')}gh`;
 }
 
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 export type PhoenicianKind = 'content' | 'idiom' | 'power' | 'dread';
 
 export type PhoenicianRole =
@@ -319,12 +321,16 @@ function poolOf(field: SemanticField, eldritch: boolean): PhoenicianRoot[] {
   return eldritch ? roots.filter((r) => radicals(r.root).length === 3) : [...roots];
 }
 
+function fills(root: PhoenicianRoot, role: RootForm): boolean {
+  return root.forms.includes(role);
+}
+
 function nounsOf(field: SemanticField, eldritch = false): PhoenicianRoot[] {
-  return poolOf(field, eldritch).filter((r) => r.noun !== undefined);
+  return poolOf(field, eldritch).filter((r) => fills(r, 'noun'));
 }
 
 function verbsOf(field: SemanticField, eldritch = false): PhoenicianRoot[] {
-  return poolOf(field, eldritch).filter((r) => r.verb !== undefined);
+  return poolOf(field, eldritch).filter((r) => fills(r, 'verb'));
 }
 
 // An intransitive root never fills a slot that takes a direct object or an
@@ -334,7 +340,7 @@ function transitiveVerbsOf(field: SemanticField, eldritch = false): PhoenicianRo
 }
 
 function adjectivesOf(field: SemanticField, eldritch = false): PhoenicianRoot[] {
-  return poolOf(field, eldritch).filter((r) => r.adj !== undefined);
+  return poolOf(field, eldritch).filter((r) => fills(r, 'adj'));
 }
 
 function comeVerbsOf(eldritch: boolean): PhoenicianRoot[] {
@@ -363,12 +369,15 @@ function drawModifier(clause: ClausePlan, rng: Rng, eldritch: boolean): Modifier
 }
 
 // The adverbial modifier is b- plus a noun, placed at clause end (spec 4.5).
-function adverbPhrase(modifier: Modifier, eldritch: boolean): Realization {
+function adverbPhrase(
+  modifier: Modifier,
+  eldritch: boolean,
+): { words: PhoenicianWord[]; root: string | null } {
   const root = modifier.adverb;
-  if (root === null) return { words: [], gloss: '' };
+  if (root === null) return { words: [], root: null };
   return {
     words: [nounWord(root, 'adverb', { eldritch, proclitic: 'b' })],
-    gloss: ` In the ${root.noun ?? ''}.`,
+    root: root.root,
   };
 }
 
@@ -390,10 +399,6 @@ function adjectiveWord(
   ];
 }
 
-function adjectiveGloss(modifier: Modifier): string {
-  return modifier.adjective === null ? '' : `${modifier.adjective.adj ?? ''} `;
-}
-
 function chainLength(difficulty: number): number {
   if (difficulty >= 9) return 3;
   if (difficulty >= 8) return 2;
@@ -410,16 +415,16 @@ function genitiveChain(
   rng: Rng,
   eldritch: boolean,
   used: Set<string>,
-): Realization {
+): { words: PhoenicianWord[]; roots: string[] } {
   const words: PhoenicianWord[] = [];
-  const parts: string[] = [];
+  const roots: string[] = [];
   for (let i = 0; i < count; i += 1) {
     const root = pick(rng, nounsOf(field, eldritch).filter((r) => !used.has(r.root)));
     used.add(root.root);
     words.push(nounWord(root, 'agent', { eldritch, plural: true }));
-    parts.push(` of the ${root.plural ?? ''}`);
+    roots.push(root.root);
   }
-  return { words, gloss: parts.join('') };
+  return { words, roots };
 }
 
 function powerPool(plan: FormulaPlan): ReadonlyArray<DivineName> {
@@ -432,6 +437,7 @@ function realizeJussiveClause(
   rng: Rng,
   used: Set<string>,
   consumed: { target: boolean; modifier: Modifier },
+  glosses: PhoenicianGlosses,
 ): Realization {
   const clauseUsed = new Set(used);
   const agent = pick(rng, powerPool(plan).filter((n) => !clauseUsed.has(n.skeleton)));
@@ -449,14 +455,14 @@ function realizeJussiveClause(
     ...chain.words,
   ];
 
-  let objectGloss = '';
+  let targetRoot: string | null = null;
   if (!consumed.target) {
     const targetField = geneField(clause, 'TARGET');
     const target = pick(rng, nounsOf(targetField));
     words.push(fixed(YT, 'marker'));
     words.push(nounWord(target, 'target', { eldritch: false, article: true }));
     words.push(...adjectiveWord(modifier, false, { article: true, plural: false }));
-    objectGloss = ` the ${adjectiveGloss(modifier)}${target.noun ?? ''}`;
+    targetRoot = target.root;
   }
 
   let power: DivineName | null = null;
@@ -469,10 +475,18 @@ function realizeJussiveClause(
   const adverb = adverbPhrase(modifier, false);
   words.push(...adverb.words);
 
-  const vocative = power === null ? '' : ` ${power.name}!`;
   return {
     words,
-    gloss: `May ${agent.name}${chain.gloss} ${intent.verb ?? ''}${objectGloss}.${vocative}${adverb.gloss}`,
+    gloss: glosses.jussiveClause({
+      agentPower: agent.skeleton,
+      chainRoots: chain.roots,
+      intentRoot: intent.root,
+      // The opener already named the target, so the clause does not repeat it.
+      targetRoot,
+      adjectiveRoot: targetRoot === null ? null : modifier.adjective?.root ?? null,
+      freePower: power?.skeleton ?? null,
+      adverbRoot: adverb.root,
+    }),
   };
 }
 
@@ -481,11 +495,12 @@ function realizeInvocationClause(
   clause: ClausePlan,
   rng: Rng,
   used: Set<string>,
+  glosses: PhoenicianGlosses,
 ): Realization {
   const eldritch = plan.eldritch;
   const clauseUsed = new Set(used);
   const words: PhoenicianWord[] = [];
-  const names: string[] = [];
+  const agents: GlossRef[] = [];
   const agentGenes = clause.genes.filter((g) => g.role === 'AGENT');
 
   for (let i = 0; i < chainLength(plan.difficulty); i += 1) {
@@ -493,54 +508,62 @@ function realizeInvocationClause(
       const epithet = pick(rng, DREAD_POWER.filter((e) => !clauseUsed.has(e.skeleton)));
       clauseUsed.add(epithet.skeleton);
       words.push(dreadWord(epithet, 'agent'));
-      names.push(epithet.gloss.replace(/^the /u, ''));
+      agents.push({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken });
       continue;
     }
     const field = requireField(agentGenes[i]?.field ?? agentGenes[0]?.field ?? null);
     const root = pick(rng, nounsOf(field).filter((r) => !clauseUsed.has(r.root)));
     clauseUsed.add(root.root);
     words.push(nounWord(root, 'agent', { eldritch: false, plural: i > 0 }));
-    names.push(i > 0 ? root.plural ?? '' : root.noun ?? '');
+    agents.push({ kind: 'root', id: root.root });
   }
 
   const intent = pick(rng, comeVerbsOf(eldritch));
   words.push(verbWord(intent, 'imperative', { eldritch }));
 
-  let powerGloss: string;
+  let invoked: GlossRef;
   if (eldritch) {
     const epithet = pick(rng, DREAD_POWER.filter((e) => !clauseUsed.has(e.skeleton)));
     clauseUsed.add(epithet.skeleton);
     words.push(dreadWord(epithet, 'power'));
-    powerGloss = capitalize(epithet.spoken);
+    invoked = { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken };
   } else {
     const name = pick(rng, BRIGHT_NAMES.filter((n) => !clauseUsed.has(n.skeleton)));
     clauseUsed.add(name.skeleton);
     words.push(nameWord(name, 'power'));
-    powerGloss = name.name;
+    invoked = { kind: 'power', id: name.skeleton };
   }
 
   const modifier = drawModifier(clause, rng, eldritch);
   const adverb = adverbPhrase(modifier, eldritch);
   words.push(...adverb.words);
 
-  const head = names[0] ?? '';
-  const epithets = names.slice(1).map((name) => ` of the ${name}`).join('');
   return {
     words,
-    gloss: `O ${head}${epithets}, ${intent.verb ?? ''}! ${powerGloss}!${adverb.gloss}`,
+    gloss: glosses.invocationClause({
+      agents,
+      intentRoot: intent.root,
+      power: invoked,
+      adverbRoot: adverb.root,
+    }),
   };
 }
 
 // PO2, the royal self presentation. The caster name is a coined warding root
 // carrying the theophoric element, and a name drops its initial guttural in
 // the spoken line (spec 4.6).
-function selfPresentation(plan: FormulaPlan, rng: Rng, used: Set<string>): Realization {
+function selfPresentation(
+  plan: FormulaPlan,
+  rng: Rng,
+  used: Set<string>,
+  glosses: PhoenicianGlosses,
+): Realization {
   const words: PhoenicianWord[] = [fixed(PO2_HEAD)];
   if (plan.eldritch) {
     const epithet = pick(rng, DREAD_POWER.filter((e) => !used.has(e.skeleton)));
     used.add(epithet.skeleton);
     words.push(dreadWord(epithet, 'idiom', 'l'));
-    return { words, gloss: `I belong to ${epithet.gloss}.` };
+    return { words, gloss: glosses.selfPresentationByEpithet(epithet.skeleton) };
   }
   const root = pick(rng, nounsOf('warding'));
   // A name drops its word-initial guttural in the spoken line. The alf is
@@ -555,13 +578,14 @@ function selfPresentation(plan: FormulaPlan, rng: Rng, used: Set<string>): Reali
     vocalized: null,
     root: null,
   });
-  return { words, gloss: `I am ${capitalize(spoken)}.` };
+  return { words, gloss: glosses.selfPresentationByName(spoken) };
 }
 
 function schoolOpener(
   plan: FormulaPlan,
   rng: Rng,
   used: Set<string>,
+  glosses: PhoenicianGlosses,
 ): Realization & { consumed: { target: boolean; modifier: Modifier } } {
   const clause = plan.clauses[0];
   if (clause === undefined) throw new Error('plan has no clause');
@@ -573,7 +597,7 @@ function schoolOpener(
     used.add(epithet.skeleton);
     return {
       words: [fixed(PO1_HEAD), dreadWord(epithet, 'target', 'b')],
-      gloss: `Incantation by ${epithet.gloss}.`,
+      gloss: glosses.openerByEpithet(epithet.skeleton),
       consumed: { target: false, modifier: NO_MODIFIER },
     };
   }
@@ -583,7 +607,7 @@ function schoolOpener(
     used.add(god.skeleton);
     return {
       words: [fixed(PO3_HEAD), nameWord(god, 'idiom', 'l')],
-      gloss: `To the lord, to ${god.name}.`,
+      gloss: glosses.openerToLord(god.skeleton),
       consumed: { target: false, modifier: NO_MODIFIER },
     };
   }
@@ -598,7 +622,7 @@ function schoolOpener(
   ];
   return {
     words,
-    gloss: `Incantation against the ${adjectiveGloss(modifier)}${target.plural ?? ''}.`,
+    gloss: glosses.openerAgainst(target.root, modifier.adjective?.root ?? null),
     consumed: { target: true, modifier },
   };
 }
@@ -644,7 +668,7 @@ function shrinkPool(plan: FormulaPlan): ReadonlyArray<{ skeleton: string; glyphs
     .map((n) => ({ skeleton: n.skeleton, glyphs: n.glyphs, spoken: n.spoken }));
 }
 
-function litany(plan: FormulaPlan, rng: Rng): Realization | null {
+function litany(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses): Realization | null {
   if (plan.powerWordStyle === 'none') return null;
   if (plan.powerWordStyle === 'triple') {
     if (plan.eldritch) {
@@ -652,27 +676,34 @@ function litany(plan: FormulaPlan, rng: Rng): Realization | null {
       const word = dreadWord(epithet, 'litany');
       return {
         words: [word, word, word],
-        gloss: `${capitalize(epithet.spoken)}, spoken three times.`,
+        gloss: glosses.litanyTriple({
+          kind: 'epithet',
+          id: epithet.skeleton,
+          spoken: epithet.spoken,
+        }),
       };
     }
     const name = pick(rng, powerPool(plan));
     const word = nameWord(name, 'litany');
-    return { words: [word, word, word], gloss: `${name.name}, spoken three times.` };
+    return {
+      words: [word, word, word],
+      gloss: glosses.litanyTriple({ kind: 'power', id: name.skeleton }),
+    };
   }
   const base = pick(rng, shrinkPool(plan));
   return {
     words: shrinkSteps(base.skeleton, base.glyphs, base.spoken, plan.eldritch),
-    gloss: `${capitalize(base.spoken)}, shrinking to a single letter.`,
+    gloss: glosses.litanyTriangle(base.spoken),
   };
 }
 
 // Spec 4.9: the school's closer from tier 5 to 8, that closer plus PC3 at
 // tier 9, none below 5. The register's own closer already ends on the forever
 // word, so it never stacks PC3 behind itself.
-function closingIdioms(plan: FormulaPlan): Idiom[] {
-  if (plan.eldritch) return [ELDRITCH_CLOSE];
-  const own = plan.school === 'curse' ? PC2 : PC1;
-  return plan.difficulty >= 9 ? [own, PC3] : [own];
+function closingIdioms(plan: FormulaPlan): PhoenicianIdiomId[] {
+  if (plan.eldritch) return ['ELDRITCH_CLOSE'];
+  const own = plan.school === 'curse' ? 'PC2' : 'PC1';
+  return plan.difficulty >= 9 ? [own, 'PC3'] : [own];
 }
 
 function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
@@ -682,19 +713,22 @@ function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
   return pick(rng, [9, 12] as const);
 }
 
-function realizeTierOne(plan: FormulaPlan, rng: Rng): Realization {
+function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses): Realization {
   if (plan.eldritch) {
     const epithet = pick(rng, DREAD_POWER);
     return {
       words: [dreadWord(epithet, 'power')],
-      gloss: `${capitalize(epithet.spoken)}, ${epithet.gloss}.`,
+      gloss: glosses.tierOne({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }),
     };
   }
   const name = pick(rng, powerPool(plan));
-  return { words: [nameWord(name, 'power')], gloss: name.gloss };
+  return {
+    words: [nameWord(name, 'power')],
+    gloss: glosses.tierOne({ kind: 'power', id: name.skeleton }),
+  };
 }
 
-function realizeTierTwo(plan: FormulaPlan, rng: Rng): Realization {
+function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses): Realization {
   const clause = plan.clauses[0];
   if (clause === undefined) throw new Error('tier 2 plan has no clause');
   const eldritch = plan.eldritch;
@@ -706,7 +740,7 @@ function realizeTierTwo(plan: FormulaPlan, rng: Rng): Realization {
       verbWord(intent, 'imperative', { eldritch }),
       nounWord(target, 'target', { eldritch }),
     ],
-    gloss: `${capitalize(intent.verb ?? '')} the ${target.noun ?? ''}!`,
+    gloss: glosses.tierTwo(intent.root, target.root),
   };
 }
 
@@ -723,9 +757,13 @@ function joinWithW(word: PhoenicianWord): PhoenicianWord {
   };
 }
 
-function composePhoenician(plan: FormulaPlan, rng: Rng): Realization {
-  if (plan.difficulty === 1) return realizeTierOne(plan, rng);
-  if (plan.difficulty === 2) return realizeTierTwo(plan, rng);
+function composePhoenician(
+  plan: FormulaPlan,
+  rng: Rng,
+  glosses: PhoenicianGlosses,
+): Realization {
+  if (plan.difficulty === 1) return realizeTierOne(plan, rng, glosses);
+  if (plan.difficulty === 2) return realizeTierTwo(plan, rng, glosses);
 
   const words: PhoenicianWord[] = [];
   const glossParts: string[] = [];
@@ -734,12 +772,12 @@ function composePhoenician(plan: FormulaPlan, rng: Rng): Realization {
   const used = new Set<string>();
 
   if (plan.difficulty >= 6) {
-    const presentation = selfPresentation(plan, rng, used);
+    const presentation = selfPresentation(plan, rng, used, glosses);
     words.push(...presentation.words);
     glossParts.push(presentation.gloss);
   }
 
-  const opener = schoolOpener(plan, rng, used);
+  const opener = schoolOpener(plan, rng, used, glosses);
   words.push(...opener.words);
   glossParts.push(opener.gloss);
 
@@ -748,8 +786,8 @@ function composePhoenician(plan: FormulaPlan, rng: Rng): Realization {
     const consumed =
       index === 0 ? opener.consumed : { target: false, modifier: NO_MODIFIER };
     const realized = jussive
-      ? realizeJussiveClause(plan, clause, rng, used, consumed)
-      : realizeInvocationClause(plan, clause, rng, used);
+      ? realizeJussiveClause(plan, clause, rng, used, consumed, glosses)
+      : realizeInvocationClause(plan, clause, rng, used, glosses);
     // Spec 4.9: clauses after the first are joined by the w- proclitic, which
     // rides the first word of the clause with no separator between them.
     const first = realized.words[0];
@@ -760,16 +798,16 @@ function composePhoenician(plan: FormulaPlan, rng: Rng): Realization {
     glossParts.push(realized.gloss);
   });
 
-  const repeated = litany(plan, rng);
+  const repeated = litany(plan, rng, glosses);
   if (repeated !== null) {
     words.push(...repeated.words);
     glossParts.push(repeated.gloss);
   }
 
   if (plan.closing) {
-    for (const idiom of closingIdioms(plan)) {
-      for (const word of idiom.words) words.push(fixed(word));
-      glossParts.push(idiom.gloss);
+    for (const id of closingIdioms(plan)) {
+      for (const word of IDIOM_WORDS[id]) words.push(fixed(word));
+      glossParts.push(glosses.idiom(id));
     }
   }
 
@@ -784,14 +822,14 @@ function composePhoenician(plan: FormulaPlan, rng: Rng): Realization {
       vocalized: null,
       root: null,
     });
-    glossParts.push(SEAL_GLOSS[count]);
+    glossParts.push(glosses.seal(count));
   }
 
-  return { words, gloss: glossParts.join(' ').replace(/\s+/gu, ' ').trim() };
+  return { words, gloss: glosses.sentences(glossParts) };
 }
 
-function realizeFormula(plan: FormulaPlan, rng: Rng): FormulaOutput {
-  const { words, gloss } = composePhoenician(plan, rng);
+function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOutput {
+  const { words, gloss } = composePhoenician(plan, rng, pack.phoenician);
   // Continuous writing below tier 3, the word separator above (spec 4.2).
   const separator = plan.difficulty <= 2 ? '' : WORD_SEP;
   return {

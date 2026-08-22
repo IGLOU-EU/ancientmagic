@@ -3,15 +3,12 @@ import * as assert from 'node:assert/strict';
 import {
   ALL_NAMES,
   DREAD_POWER,
-  ELDRITCH_CLOSE,
   FEMININE_SPOKEN,
   FIELDS,
+  IDIOM_WORDS,
   LETTER_MAP,
   NUMERAL_GLYPHS,
   NUMERAL_WORDS,
-  PC1,
-  PC2,
-  PC3,
   PLURAL_SPOKEN,
   PO1_HEAD,
   PO2_HEAD,
@@ -22,6 +19,7 @@ import {
 } from '../src/ts/languages/phoenician-data.js';
 import { citation, degrade, speak, tokenize } from '../src/ts/languages/phoenician.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
+import { phoenicianGlosses } from '../src/ts/glosses/en/phoenician.js';
 import {
   ARTICLE,
   BICONSONANTAL,
@@ -74,7 +72,11 @@ test('the coined lexicon matches the spec table, skeleton and gloss', () => {
     rows.forEach(([skeleton, gloss], index) => {
       const root = roots[index];
       assert.strictEqual(root?.root, skeleton, `${field} row ${index} skeleton`);
-      assert.strictEqual(root?.gloss, gloss, `${field} row ${index} gloss`);
+      assert.strictEqual(
+        phoenicianGlosses.roots[skeleton]?.gloss,
+        gloss,
+        `${field} row ${index} gloss`,
+      );
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
@@ -108,8 +110,8 @@ test('the biconsonantal roots are exactly the ones the spec allows, and are noun
     for (const root of roots) {
       if (tokenize(root.root).length !== 2) continue;
       found.push(root.root);
-      assert.ok(root.noun !== undefined, `${root.root} is biconsonantal without a noun gloss`);
-      assert.strictEqual(root.verb, undefined, `${root.root} is biconsonantal with a verb gloss`);
+      assert.ok(root.forms.includes('noun'), `${root.root} is biconsonantal without a noun`);
+      assert.ok(!root.forms.includes('verb'), `${root.root} is biconsonantal with a verb`);
     }
   }
   assert.deepStrictEqual(found.sort(), [...BICONSONANTAL].sort());
@@ -127,7 +129,7 @@ test('the intransitive flag sits on exactly the five roots of the spec', () => {
   for (const roots of Object.values(FIELDS)) {
     for (const root of roots) {
       if (root.intransitive !== true) continue;
-      assert.ok(root.verb !== undefined, `${root.root} is flagged but is not a verb`);
+      assert.ok(root.forms.includes('verb'), `${root.root} is flagged but is not a verb`);
     }
   }
 });
@@ -135,27 +137,32 @@ test('the intransitive flag sits on exactly the five roots of the spec', () => {
 test('every root carries the gloss forms of the roles it can fill', () => {
   for (const roots of Object.values(FIELDS)) {
     for (const root of roots) {
-      assert.ok(root.noun !== undefined || root.verb !== undefined, `${root.root} fills no role`);
-      if (root.noun !== undefined) {
-        assert.ok(root.plural !== undefined, `${root.root} is a noun without a plural gloss`);
+      assert.ok(
+        root.forms.includes('noun') || root.forms.includes('verb'),
+        `${root.root} fills no role`,
+      );
+      if (root.forms.includes('noun')) {
+        assert.ok(root.forms.includes('plural'), `${root.root} is a noun without a plural`);
       }
-      if (root.verb !== undefined) {
-        assert.ok(root.pp !== undefined, `${root.root} is a verb without a participle`);
+      if (root.forms.includes('verb')) {
+        assert.ok(root.forms.includes('pp'), `${root.root} is a verb without a participle`);
       }
     }
   }
   // The plan draws verbs from these fields and adjectives from those three.
   for (const field of ['warding', 'binding', 'harm', 'summoning'] as const) {
-    const transitive = FIELDS[field].filter((r) => r.verb !== undefined && r.intransitive !== true);
+    const transitive = FIELDS[field].filter(
+      (r) => r.forms.includes('verb') && r.intransitive !== true,
+    );
     assert.ok(transitive.length >= 3, `thin transitive verbs in ${field}`);
   }
   for (const field of ['night', 'harm', 'death'] as const) {
-    assert.ok(FIELDS[field].some((r) => r.adj !== undefined), `no adjective in ${field}`);
+    assert.ok(FIELDS[field].some((r) => r.forms.includes('adj')), `no adjective in ${field}`);
   }
   // Adverbial b-phrases and eldritch draws need triconsonantal nouns.
   for (const field of ['hidden', 'night', 'harm', 'death', 'fire', 'gates', 'time'] as const) {
     const nouns = FIELDS[field].filter(
-      (r) => r.noun !== undefined && tokenize(r.root).length === 3,
+      (r) => r.forms.includes('noun') && tokenize(r.root).length === 3,
     );
     assert.ok(nouns.length >= 3, `thin triconsonantal nouns in ${field}`);
   }
@@ -180,7 +187,7 @@ test('the dread pool matches the spec table and every skeleton is quadriliteral'
     const epithet = DREAD_POWER[index];
     assert.strictEqual(epithet?.skeleton, skeleton, `dread ${index} skeleton`);
     assert.strictEqual(epithet?.spoken, spoken, `dread ${index} spoken`);
-    assert.strictEqual(epithet?.gloss, gloss, `dread ${index} gloss`);
+    assert.strictEqual(phoenicianGlosses.epithets[skeleton], gloss, `dread ${index} gloss`);
     assert.strictEqual(tokenize(skeleton).length, 4, `dread ${skeleton} is not quadriliteral`);
   });
 });
@@ -201,14 +208,19 @@ test('idioms carry the attested spellings of the spec', () => {
   assert.strictEqual(PO3_HEAD.glyphs, PO3_HEAD_GLYPHS);
   assert.strictEqual(PO3_HEAD.spoken, PO3_HEAD_SPOKEN);
 
-  assert.deepStrictEqual(PC1.words.map((w) => w.spoken), [...PC1_SPOKEN]);
-  assert.deepStrictEqual(PC1.words.map((w) => w.glyphs), [...PC1_GLYPHS]);
-  assert.deepStrictEqual(PC2.words.map((w) => w.spoken), [...PC2_SPOKEN]);
-  assert.deepStrictEqual(PC2.words.map((w) => w.glyphs), [...PC2_GLYPHS]);
-  assert.deepStrictEqual(PC3.words.map((w) => w.spoken), [...PC3_SPOKEN]);
-  assert.deepStrictEqual(PC3.words.map((w) => w.glyphs), [...PC3_GLYPHS]);
-  assert.deepStrictEqual(ELDRITCH_CLOSE.words.map((w) => w.spoken), [...ELDRITCH_CLOSE_SPOKEN]);
-  assert.deepStrictEqual(ELDRITCH_CLOSE.words.map((w) => w.glyphs), [...ELDRITCH_CLOSE_GLYPHS]);
+  const spoken = (id: keyof typeof IDIOM_WORDS): string[] =>
+    IDIOM_WORDS[id].map((w) => w.spoken);
+  const glyphs = (id: keyof typeof IDIOM_WORDS): string[] =>
+    IDIOM_WORDS[id].map((w) => w.glyphs);
+
+  assert.deepStrictEqual(spoken('PC1'), [...PC1_SPOKEN]);
+  assert.deepStrictEqual(glyphs('PC1'), [...PC1_GLYPHS]);
+  assert.deepStrictEqual(spoken('PC2'), [...PC2_SPOKEN]);
+  assert.deepStrictEqual(glyphs('PC2'), [...PC2_GLYPHS]);
+  assert.deepStrictEqual(spoken('PC3'), [...PC3_SPOKEN]);
+  assert.deepStrictEqual(glyphs('PC3'), [...PC3_GLYPHS]);
+  assert.deepStrictEqual(spoken('ELDRITCH_CLOSE'), [...ELDRITCH_CLOSE_SPOKEN]);
+  assert.deepStrictEqual(glyphs('ELDRITCH_CLOSE'), [...ELDRITCH_CLOSE_GLYPHS]);
 
   assert.strictEqual(YT.glyphs, YT_GLYPHS);
   assert.strictEqual(YT.spoken, YT_SPOKEN);

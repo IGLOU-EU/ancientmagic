@@ -1,3 +1,4 @@
+import { baseLanguage } from '../locale.js';
 import type { UiStrings } from './types.js';
 import { en } from './en.js';
 
@@ -8,5 +9,5 @@ const REGISTRY = new Map<string, UiStrings>([['en', en]]);
 // to its base language, and anything unknown falls back to the default rather
 // than leaving the page wordless.
 export function resolveStrings(tag: string): UiStrings {
-  return REGISTRY.get(tag.toLowerCase().split('-')[0]) ?? en;
+  return REGISTRY.get(baseLanguage(tag)) ?? en;
 }

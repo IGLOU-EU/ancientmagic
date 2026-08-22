@@ -1,5 +1,5 @@
 import { pick } from '../generator/rng.js';
-import { ALF, BRIGHT_NAMES, DARK_NAMES, DREAD_POWER, ELDRITCH_CLOSE, FIELDS, INVOCATION_COME, LETTER_MAP, NUMERAL_GLYPHS, NUMERAL_WORDS, PC1, PC2, PC3, PLURAL_SPOKEN, PO1_HEAD, PO2_HEAD, PO3_HEAD, PROCLITIC_SPOKEN, SEAL_GLOSS, SEAL_HEAD, THEOPHORIC_SKELETON, THEOPHORIC_SPOKEN, WORD_SEP, YT, } from './phoenician-data.js';
+import { ALF, BRIGHT_NAMES, DARK_NAMES, DREAD_POWER, FIELDS, IDIOM_WORDS, INVOCATION_COME, LETTER_MAP, NUMERAL_GLYPHS, NUMERAL_WORDS, PLURAL_SPOKEN, PO1_HEAD, PO2_HEAD, PO3_HEAD, PROCLITIC_SPOKEN, SEAL_HEAD, THEOPHORIC_SKELETON, THEOPHORIC_SPOKEN, WORD_SEP, YT, } from './phoenician-data.js';
 export { tokenize, glyphsFor, speak, citation, conjugate, degrade, eldritchRoot, transitiveVerbsOf, composePhoenician, };
 const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
 function tokenize(word) {
@@ -94,9 +94,6 @@ function eldritchRoot(root) {
     const shifted = radicals(root).map((radical) => EMPHATIC[radical] ?? radical);
     return `${shifted.join('')}gh`;
 }
-function capitalize(text) {
-    return text.charAt(0).toUpperCase() + text.slice(1);
-}
 function derived(vocalized, role, root = null) {
     return {
         glyphs: glyphsFor(vocalized),
@@ -166,17 +163,20 @@ function poolOf(field, eldritch) {
     const roots = FIELDS[field];
     return eldritch ? roots.filter((r) => radicals(r.root).length === 3) : [...roots];
 }
+function fills(root, role) {
+    return root.forms.includes(role);
+}
 function nounsOf(field, eldritch = false) {
-    return poolOf(field, eldritch).filter((r) => r.noun !== undefined);
+    return poolOf(field, eldritch).filter((r) => fills(r, 'noun'));
 }
 function verbsOf(field, eldritch = false) {
-    return poolOf(field, eldritch).filter((r) => r.verb !== undefined);
+    return poolOf(field, eldritch).filter((r) => fills(r, 'verb'));
 }
 function transitiveVerbsOf(field, eldritch = false) {
     return verbsOf(field, eldritch).filter((r) => r.intransitive !== true);
 }
 function adjectivesOf(field, eldritch = false) {
-    return poolOf(field, eldritch).filter((r) => r.adj !== undefined);
+    return poolOf(field, eldritch).filter((r) => fills(r, 'adj'));
 }
 function comeVerbsOf(eldritch) {
     return poolOf('summoning', eldritch).filter((r) => INVOCATION_COME.includes(r.root));
@@ -194,10 +194,10 @@ function drawModifier(clause, rng, eldritch) {
 function adverbPhrase(modifier, eldritch) {
     const root = modifier.adverb;
     if (root === null)
-        return { words: [], gloss: '' };
+        return { words: [], root: null };
     return {
         words: [nounWord(root, 'adverb', { eldritch, proclitic: 'b' })],
-        gloss: ` In the ${root.noun ?? ''}.`,
+        root: root.root,
     };
 }
 function adjectiveWord(modifier, eldritch, options) {
@@ -212,9 +212,6 @@ function adjectiveWord(modifier, eldritch, options) {
         }),
     ];
 }
-function adjectiveGloss(modifier) {
-    return modifier.adjective === null ? '' : `${modifier.adjective.adj ?? ''} `;
-}
 function chainLength(difficulty) {
     if (difficulty >= 9)
         return 3;
@@ -224,19 +221,19 @@ function chainLength(difficulty) {
 }
 function genitiveChain(field, count, rng, eldritch, used) {
     const words = [];
-    const parts = [];
+    const roots = [];
     for (let i = 0; i < count; i += 1) {
         const root = pick(rng, nounsOf(field, eldritch).filter((r) => !used.has(r.root)));
         used.add(root.root);
         words.push(nounWord(root, 'agent', { eldritch, plural: true }));
-        parts.push(` of the ${root.plural ?? ''}`);
+        roots.push(root.root);
     }
-    return { words, gloss: parts.join('') };
+    return { words, roots };
 }
 function powerPool(plan) {
     return plan.school === 'curse' ? DARK_NAMES : BRIGHT_NAMES;
 }
-function realizeJussiveClause(plan, clause, rng, used, consumed) {
+function realizeJussiveClause(plan, clause, rng, used, consumed, glosses) {
     const clauseUsed = new Set(used);
     const agent = pick(rng, powerPool(plan).filter((n) => !clauseUsed.has(n.skeleton)));
     clauseUsed.add(agent.skeleton);
@@ -249,14 +246,14 @@ function realizeJussiveClause(plan, clause, rng, used, consumed) {
         nameWord(agent, 'agent'),
         ...chain.words,
     ];
-    let objectGloss = '';
+    let targetRoot = null;
     if (!consumed.target) {
         const targetField = geneField(clause, 'TARGET');
         const target = pick(rng, nounsOf(targetField));
         words.push(fixed(YT, 'marker'));
         words.push(nounWord(target, 'target', { eldritch: false, article: true }));
         words.push(...adjectiveWord(modifier, false, { article: true, plural: false }));
-        objectGloss = ` the ${adjectiveGloss(modifier)}${target.noun ?? ''}`;
+        targetRoot = target.root;
     }
     let power = null;
     if (plan.school === 'protection') {
@@ -266,64 +263,74 @@ function realizeJussiveClause(plan, clause, rng, used, consumed) {
     }
     const adverb = adverbPhrase(modifier, false);
     words.push(...adverb.words);
-    const vocative = power === null ? '' : ` ${power.name}!`;
     return {
         words,
-        gloss: `May ${agent.name}${chain.gloss} ${intent.verb ?? ''}${objectGloss}.${vocative}${adverb.gloss}`,
+        gloss: glosses.jussiveClause({
+            agentPower: agent.skeleton,
+            chainRoots: chain.roots,
+            intentRoot: intent.root,
+            targetRoot,
+            adjectiveRoot: targetRoot === null ? null : modifier.adjective?.root ?? null,
+            freePower: power?.skeleton ?? null,
+            adverbRoot: adverb.root,
+        }),
     };
 }
-function realizeInvocationClause(plan, clause, rng, used) {
+function realizeInvocationClause(plan, clause, rng, used, glosses) {
     const eldritch = plan.eldritch;
     const clauseUsed = new Set(used);
     const words = [];
-    const names = [];
+    const agents = [];
     const agentGenes = clause.genes.filter((g) => g.role === 'AGENT');
     for (let i = 0; i < chainLength(plan.difficulty); i += 1) {
         if (eldritch) {
             const epithet = pick(rng, DREAD_POWER.filter((e) => !clauseUsed.has(e.skeleton)));
             clauseUsed.add(epithet.skeleton);
             words.push(dreadWord(epithet, 'agent'));
-            names.push(epithet.gloss.replace(/^the /u, ''));
+            agents.push({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken });
             continue;
         }
         const field = requireField(agentGenes[i]?.field ?? agentGenes[0]?.field ?? null);
         const root = pick(rng, nounsOf(field).filter((r) => !clauseUsed.has(r.root)));
         clauseUsed.add(root.root);
         words.push(nounWord(root, 'agent', { eldritch: false, plural: i > 0 }));
-        names.push(i > 0 ? root.plural ?? '' : root.noun ?? '');
+        agents.push({ kind: 'root', id: root.root });
     }
     const intent = pick(rng, comeVerbsOf(eldritch));
     words.push(verbWord(intent, 'imperative', { eldritch }));
-    let powerGloss;
+    let invoked;
     if (eldritch) {
         const epithet = pick(rng, DREAD_POWER.filter((e) => !clauseUsed.has(e.skeleton)));
         clauseUsed.add(epithet.skeleton);
         words.push(dreadWord(epithet, 'power'));
-        powerGloss = capitalize(epithet.spoken);
+        invoked = { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken };
     }
     else {
         const name = pick(rng, BRIGHT_NAMES.filter((n) => !clauseUsed.has(n.skeleton)));
         clauseUsed.add(name.skeleton);
         words.push(nameWord(name, 'power'));
-        powerGloss = name.name;
+        invoked = { kind: 'power', id: name.skeleton };
     }
     const modifier = drawModifier(clause, rng, eldritch);
     const adverb = adverbPhrase(modifier, eldritch);
     words.push(...adverb.words);
-    const head = names[0] ?? '';
-    const epithets = names.slice(1).map((name) => ` of the ${name}`).join('');
     return {
         words,
-        gloss: `O ${head}${epithets}, ${intent.verb ?? ''}! ${powerGloss}!${adverb.gloss}`,
+        gloss: glosses.invocationClause({
+            agents,
+            intentRoot: intent.root,
+            power: invoked,
+            adverbRoot: adverb.root,
+        }),
     };
 }
-function selfPresentation(plan, rng, used) {
+function selfPresentation(plan, rng, used, glosses) {
     const words = [fixed(PO2_HEAD)];
     if (plan.eldritch) {
         const epithet = pick(rng, DREAD_POWER.filter((e) => !used.has(e.skeleton)));
         used.add(epithet.skeleton);
         words.push(dreadWord(epithet, 'idiom', 'l'));
-        return { words, gloss: `I belong to ${epithet.gloss}.` };
+        return { words, gloss: glosses.selfPresentationByEpithet(epithet.skeleton) };
     }
     const root = pick(rng, nounsOf('warding'));
     const stem = speak(citation(root.root)).replace(/^gh/u, '');
@@ -336,9 +343,9 @@ function selfPresentation(plan, rng, used) {
         vocalized: null,
         root: null,
     });
-    return { words, gloss: `I am ${capitalize(spoken)}.` };
+    return { words, gloss: glosses.selfPresentationByName(spoken) };
 }
-function schoolOpener(plan, rng, used) {
+function schoolOpener(plan, rng, used, glosses) {
     const clause = plan.clauses[0];
     if (clause === undefined)
         throw new Error('plan has no clause');
@@ -347,7 +354,7 @@ function schoolOpener(plan, rng, used) {
         used.add(epithet.skeleton);
         return {
             words: [fixed(PO1_HEAD), dreadWord(epithet, 'target', 'b')],
-            gloss: `Incantation by ${epithet.gloss}.`,
+            gloss: glosses.openerByEpithet(epithet.skeleton),
             consumed: { target: false, modifier: NO_MODIFIER },
         };
     }
@@ -356,7 +363,7 @@ function schoolOpener(plan, rng, used) {
         used.add(god.skeleton);
         return {
             words: [fixed(PO3_HEAD), nameWord(god, 'idiom', 'l')],
-            gloss: `To the lord, to ${god.name}.`,
+            gloss: glosses.openerToLord(god.skeleton),
             consumed: { target: false, modifier: NO_MODIFIER },
         };
     }
@@ -370,7 +377,7 @@ function schoolOpener(plan, rng, used) {
     ];
     return {
         words,
-        gloss: `Incantation against the ${adjectiveGloss(modifier)}${target.plural ?? ''}.`,
+        gloss: glosses.openerAgainst(target.root, modifier.adjective?.root ?? null),
         consumed: { target: true, modifier },
     };
 }
@@ -405,7 +412,7 @@ function shrinkPool(plan) {
         .filter((n) => glyphsFor(n.skeleton).length === n.glyphs.length)
         .map((n) => ({ skeleton: n.skeleton, glyphs: n.glyphs, spoken: n.spoken }));
 }
-function litany(plan, rng) {
+function litany(plan, rng, glosses) {
     if (plan.powerWordStyle === 'none')
         return null;
     if (plan.powerWordStyle === 'triple') {
@@ -414,24 +421,31 @@ function litany(plan, rng) {
             const word = dreadWord(epithet, 'litany');
             return {
                 words: [word, word, word],
-                gloss: `${capitalize(epithet.spoken)}, spoken three times.`,
+                gloss: glosses.litanyTriple({
+                    kind: 'epithet',
+                    id: epithet.skeleton,
+                    spoken: epithet.spoken,
+                }),
             };
         }
         const name = pick(rng, powerPool(plan));
         const word = nameWord(name, 'litany');
-        return { words: [word, word, word], gloss: `${name.name}, spoken three times.` };
+        return {
+            words: [word, word, word],
+            gloss: glosses.litanyTriple({ kind: 'power', id: name.skeleton }),
+        };
     }
     const base = pick(rng, shrinkPool(plan));
     return {
         words: shrinkSteps(base.skeleton, base.glyphs, base.spoken, plan.eldritch),
-        gloss: `${capitalize(base.spoken)}, shrinking to a single letter.`,
+        gloss: glosses.litanyTriangle(base.spoken),
     };
 }
 function closingIdioms(plan) {
     if (plan.eldritch)
-        return [ELDRITCH_CLOSE];
-    const own = plan.school === 'curse' ? PC2 : PC1;
-    return plan.difficulty >= 9 ? [own, PC3] : [own];
+        return ['ELDRITCH_CLOSE'];
+    const own = plan.school === 'curse' ? 'PC2' : 'PC1';
+    return plan.difficulty >= 9 ? [own, 'PC3'] : [own];
 }
 function sealCountFor(plan, rng) {
     if (plan.eldritch)
@@ -442,18 +456,21 @@ function sealCountFor(plan, rng) {
         return pick(rng, [7, 9]);
     return pick(rng, [9, 12]);
 }
-function realizeTierOne(plan, rng) {
+function realizeTierOne(plan, rng, glosses) {
     if (plan.eldritch) {
         const epithet = pick(rng, DREAD_POWER);
         return {
             words: [dreadWord(epithet, 'power')],
-            gloss: `${capitalize(epithet.spoken)}, ${epithet.gloss}.`,
+            gloss: glosses.tierOne({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }),
         };
     }
     const name = pick(rng, powerPool(plan));
-    return { words: [nameWord(name, 'power')], gloss: name.gloss };
+    return {
+        words: [nameWord(name, 'power')],
+        gloss: glosses.tierOne({ kind: 'power', id: name.skeleton }),
+    };
 }
-function realizeTierTwo(plan, rng) {
+function realizeTierTwo(plan, rng, glosses) {
     const clause = plan.clauses[0];
     if (clause === undefined)
         throw new Error('tier 2 plan has no clause');
@@ -465,7 +482,7 @@ function realizeTierTwo(plan, rng) {
             verbWord(intent, 'imperative', { eldritch }),
             nounWord(target, 'target', { eldritch }),
         ],
-        gloss: `${capitalize(intent.verb ?? '')} the ${target.noun ?? ''}!`,
+        gloss: glosses.tierTwo(intent.root, target.root),
     };
 }
 function joinWithW(word) {
@@ -478,28 +495,28 @@ function joinWithW(word) {
         joined: true,
     };
 }
-function composePhoenician(plan, rng) {
+function composePhoenician(plan, rng, glosses) {
     if (plan.difficulty === 1)
-        return realizeTierOne(plan, rng);
+        return realizeTierOne(plan, rng, glosses);
     if (plan.difficulty === 2)
-        return realizeTierTwo(plan, rng);
+        return realizeTierTwo(plan, rng, glosses);
     const words = [];
     const glossParts = [];
     const used = new Set();
     if (plan.difficulty >= 6) {
-        const presentation = selfPresentation(plan, rng, used);
+        const presentation = selfPresentation(plan, rng, used, glosses);
         words.push(...presentation.words);
         glossParts.push(presentation.gloss);
     }
-    const opener = schoolOpener(plan, rng, used);
+    const opener = schoolOpener(plan, rng, used, glosses);
     words.push(...opener.words);
     glossParts.push(opener.gloss);
     const jussive = plan.school === 'protection' || plan.school === 'curse';
     plan.clauses.forEach((clause, index) => {
         const consumed = index === 0 ? opener.consumed : { target: false, modifier: NO_MODIFIER };
         const realized = jussive
-            ? realizeJussiveClause(plan, clause, rng, used, consumed)
-            : realizeInvocationClause(plan, clause, rng, used);
+            ? realizeJussiveClause(plan, clause, rng, used, consumed, glosses)
+            : realizeInvocationClause(plan, clause, rng, used, glosses);
         const first = realized.words[0];
         if (index > 0 && first !== undefined) {
             realized.words[0] = joinWithW(first);
@@ -507,16 +524,16 @@ function composePhoenician(plan, rng) {
         words.push(...realized.words);
         glossParts.push(realized.gloss);
     });
-    const repeated = litany(plan, rng);
+    const repeated = litany(plan, rng, glosses);
     if (repeated !== null) {
         words.push(...repeated.words);
         glossParts.push(repeated.gloss);
     }
     if (plan.closing) {
-        for (const idiom of closingIdioms(plan)) {
-            for (const word of idiom.words)
+        for (const id of closingIdioms(plan)) {
+            for (const word of IDIOM_WORDS[id])
                 words.push(fixed(word));
-            glossParts.push(idiom.gloss);
+            glossParts.push(glosses.idiom(id));
         }
     }
     if (plan.seal) {
@@ -530,12 +547,12 @@ function composePhoenician(plan, rng) {
             vocalized: null,
             root: null,
         });
-        glossParts.push(SEAL_GLOSS[count]);
+        glossParts.push(glosses.seal(count));
     }
-    return { words, gloss: glossParts.join(' ').replace(/\s+/gu, ' ').trim() };
+    return { words, gloss: glosses.sentences(glossParts) };
 }
-function realizeFormula(plan, rng) {
-    const { words, gloss } = composePhoenician(plan, rng);
+function realizeFormula(plan, rng, pack) {
+    const { words, gloss } = composePhoenician(plan, rng, pack.phoenician);
     const separator = plan.difficulty <= 2 ? '' : WORD_SEP;
     return {
         glyphs: words.map((word) => word.glyphs).join(separator),

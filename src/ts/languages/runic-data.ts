@@ -1,19 +1,18 @@
-// Runic genome data, transcribed from docs/genomes.md section 2. Every
-// root, gloss, idiom, power word and codepoint comes from the spec. The
-// noun, verb, pp, adj and adv fields are the generator's English gloss
-// forms for the roles a root can fill. A root without a form for a role
-// is never drawn for that role.
+// Runic genome data, transcribed from docs/genomes.md section 2. Every root,
+// idiom word, power word and codepoint comes from the spec.
+//
+// What a root MEANS is not here. This file says which roles a root can fill,
+// the gloss pack of the displayed language says how each role reads. The pack
+// must cover exactly the forms declared here, no more and no less, which the
+// pack completeness tests check.
 
 import type { SemanticField } from '../generator/types.js';
+import type { RootForm } from '../glosses/types.js';
 
 export interface RunicRoot {
   root: string;
-  gloss: string;
-  noun?: string;
-  verb?: string;
-  pp?: string;
-  adj?: string;
-  adv?: string;
+  // Roles this root can fill. A role it does not declare is never drawn.
+  forms: ReadonlyArray<RootForm>;
   // Spec 2.3: kum and swelt never fill a slot that takes a direct object.
   intransitive?: boolean;
   // Spec 2.3: rune-name roots are noun roots only.
@@ -53,6 +52,8 @@ export const CROSS_SEP = '\u{16ED}';
 
 export type SealCount = 3 | 7 | 9 | 12;
 
+export const SEAL_COUNTS: ReadonlyArray<SealCount> = [3, 7, 9, 12];
+
 export const SEAL_GLYPHS: Readonly<Record<SealCount, string>> = {
   3: '\u{10109}',
   7: '\u{1010D}',
@@ -67,231 +68,214 @@ export const SEAL_WORDS: Readonly<Record<SealCount, string>> = {
   12: 'twalif',
 };
 
-export const SEAL_GLOSS: Readonly<Record<SealCount, string>> = {
-  3: 'Sealed three times.',
-  7: 'Sealed seven times.',
-  9: 'Sealed nine times.',
-  12: 'Sealed twelve times.',
-};
-
 // Coined roots by semantic field (spec 2.3), each field followed by its
 // rune-name roots per the normative assignment table. Rune names are noun
 // roots only. Verb forms exist on every root a school can draw as a verb,
 // kum and swelt carry the spec's intransitive flag.
 export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> = {
   warding: [
-    { root: 'ward', gloss: 'watch, guard', noun: 'warder', verb: 'ward' },
-    { root: 'skild', gloss: 'shield', noun: 'shield', verb: 'shield' },
-    { root: 'burg', gloss: 'stronghold', noun: 'stronghold' },
-    { root: 'helm', gloss: 'covering', noun: 'covering', verb: 'cover' },
-    { root: 'gard', gloss: 'enclosure', noun: 'enclosure', verb: 'enclose' },
-    { root: 'frith', gloss: 'peace-bond', noun: 'peace-bond' },
-    { root: 'mund', gloss: 'protecting hand', noun: 'protecting hand' },
-    { root: 'wern', gloss: 'fend off', verb: 'fend' },
-    { root: 'halg', gloss: 'hallow', verb: 'hallow' },
-    { root: 'skerm', gloss: 'screen', verb: 'screen' },
-    { root: 'wunj', gloss: 'joy', noun: 'joy', runeName: true },
-    { root: 'lauk', gloss: 'leek', noun: 'leek', runeName: true },
-    { root: 'alg', gloss: 'elk-guard', noun: 'elk-guard', runeName: true },
-    { root: 'tiw', gloss: 'the sky god', noun: 'sky god', runeName: true },
-    { root: 'berk', gloss: 'birch', noun: 'birch', runeName: true },
-    { root: 'othal', gloss: 'heritage', noun: 'heritage', runeName: true },
+    { root: 'ward', forms: ['noun', 'verb'] },
+    { root: 'skild', forms: ['noun', 'verb'] },
+    { root: 'burg', forms: ['noun'] },
+    { root: 'helm', forms: ['noun', 'verb'] },
+    { root: 'gard', forms: ['noun', 'verb'] },
+    { root: 'frith', forms: ['noun'] },
+    { root: 'mund', forms: ['noun'] },
+    { root: 'wern', forms: ['verb'] },
+    { root: 'halg', forms: ['verb'] },
+    { root: 'skerm', forms: ['verb'] },
+    { root: 'wunj', forms: ['noun'], runeName: true },
+    { root: 'lauk', forms: ['noun'], runeName: true },
+    { root: 'alg', forms: ['noun'], runeName: true },
+    { root: 'tiw', forms: ['noun'], runeName: true },
+    { root: 'berk', forms: ['noun'], runeName: true },
+    { root: 'othal', forms: ['noun'], runeName: true },
   ],
   harm: [
-    { root: 'skath', gloss: 'scathe', verb: 'scathe', pp: 'scathed' },
-    { root: 'bal', gloss: 'bale, evil', noun: 'bale' },
-    { root: 'sair', gloss: 'wound', noun: 'wound', verb: 'wound', pp: 'wounded' },
-    { root: 'agl', gloss: 'affliction', noun: 'affliction' },
-    { root: 'wund', gloss: 'gash', noun: 'gash', verb: 'gash', pp: 'gashed' },
-    { root: 'slah', gloss: 'strike', verb: 'strike', pp: 'struck' },
-    { root: 'brek', gloss: 'break', verb: 'break', pp: 'broken' },
-    { root: 'ait', gloss: 'poison', noun: 'poison', verb: 'poison', pp: 'poisoned' },
-    { root: 'grim', gloss: 'fierce, cruel', adj: 'cruel', adv: 'grimly' },
-    { root: 'harm', gloss: 'grief, hurt', noun: 'grief', verb: 'harm', pp: 'harmed' },
-    { root: 'kaun', gloss: 'sore', noun: 'sore', runeName: true },
-    { root: 'hagl', gloss: 'hail', noun: 'hail', runeName: true },
+    { root: 'skath', forms: ['verb', 'pp'] },
+    { root: 'bal', forms: ['noun'] },
+    { root: 'sair', forms: ['noun', 'verb', 'pp'] },
+    { root: 'agl', forms: ['noun'] },
+    { root: 'wund', forms: ['noun', 'verb', 'pp'] },
+    { root: 'slah', forms: ['verb', 'pp'] },
+    { root: 'brek', forms: ['verb', 'pp'] },
+    { root: 'ait', forms: ['noun', 'verb', 'pp'] },
+    { root: 'grim', forms: ['adj', 'adv'] },
+    { root: 'harm', forms: ['noun', 'verb', 'pp'] },
+    { root: 'kaun', forms: ['noun'], runeName: true },
+    { root: 'hagl', forms: ['noun'], runeName: true },
   ],
   summoning: [
-    { root: 'lath', gloss: 'summon, invite', verb: 'summon' },
-    { root: 'kall', gloss: 'call', verb: 'call' },
-    { root: 'bud', gloss: 'bid', verb: 'bid' },
-    { root: 'hait', gloss: 'command by name', verb: 'command' },
-    { root: 'wek', gloss: 'wake', verb: 'wake' },
-    { root: 'gal', gloss: 'chant, crow', verb: 'chant' },
-    { root: 'sok', gloss: 'seek', verb: 'seek' },
-    { root: 'kum', gloss: 'come', verb: 'come', intransitive: true },
-    { root: 'lok', gloss: 'lure', verb: 'lure' },
-    { root: 'stefn', gloss: 'voice-summons', noun: 'voice-summons', verb: 'call forth' },
-    { root: 'ur', gloss: 'primal beast', noun: 'primal beast', runeName: true },
-    { root: 'ans', gloss: 'god', noun: 'god', runeName: true },
-    { root: 'ehw', gloss: 'horse', noun: 'horse', runeName: true },
-    { root: 'ingw', gloss: 'the god Ing', noun: 'god Ing', runeName: true },
+    { root: 'lath', forms: ['verb'] },
+    { root: 'kall', forms: ['verb'] },
+    { root: 'bud', forms: ['verb'] },
+    { root: 'hait', forms: ['verb'] },
+    { root: 'wek', forms: ['verb'] },
+    { root: 'gal', forms: ['verb'] },
+    { root: 'sok', forms: ['verb'] },
+    { root: 'kum', forms: ['verb'], intransitive: true },
+    { root: 'lok', forms: ['verb'] },
+    { root: 'stefn', forms: ['noun', 'verb'] },
+    { root: 'ur', forms: ['noun'], runeName: true },
+    { root: 'ans', forms: ['noun'], runeName: true },
+    { root: 'ehw', forms: ['noun'], runeName: true },
+    { root: 'ingw', forms: ['noun'], runeName: true },
   ],
   hidden: [
-    { root: 'run', gloss: 'secret', noun: 'secret' },
-    { root: 'laun', gloss: 'concealment', noun: 'concealment' },
-    { root: 'hel', gloss: 'hide' },
-    { root: 'hul', gloss: 'cover' },
-    { root: 'dul', gloss: 'veiled thing', noun: 'veiled thing' },
-    { root: 'mirk', gloss: 'murk', noun: 'murk', adv: 'darkly' },
-    { root: 'felh', gloss: 'commit to hiding' },
-    { root: 'grub', gloss: 'dig hidden' },
-    { root: 'huld', gloss: 'the hidden one', noun: 'hidden one' },
-    { root: 'swik', gloss: 'deceit', noun: 'deceit' },
-    { root: 'feh', gloss: 'hoarded wealth', noun: 'hoarded wealth', runeName: true },
-    { root: 'perth', gloss: 'lot-cup', noun: 'lot-cup', runeName: true },
+    { root: 'run', forms: ['noun'] },
+    { root: 'laun', forms: ['noun'] },
+    { root: 'hel', forms: [] },
+    { root: 'hul', forms: [] },
+    { root: 'dul', forms: ['noun'] },
+    { root: 'mirk', forms: ['noun', 'adv'] },
+    { root: 'felh', forms: [] },
+    { root: 'grub', forms: [] },
+    { root: 'huld', forms: ['noun'] },
+    { root: 'swik', forms: ['noun'] },
+    { root: 'feh', forms: ['noun'], runeName: true },
+    { root: 'perth', forms: ['noun'], runeName: true },
   ],
   binding: [
-    { root: 'bind', gloss: 'bind', verb: 'bind', pp: 'bound' },
-    { root: 'band', gloss: 'bond', noun: 'bond' },
-    { root: 'haft', gloss: 'fetter-hold', noun: 'fetter-hold', verb: 'fetter' },
-    { root: 'fetur', gloss: 'shackle', noun: 'shackle', verb: 'shackle' },
-    { root: 'knut', gloss: 'knot', noun: 'knot', verb: 'knot' },
-    { root: 'wrid', gloss: 'twist, writhe', verb: 'twist' },
-    { root: 'spann', gloss: 'clasp', verb: 'clasp' },
-    { root: 'tug', gloss: 'rope', noun: 'rope' },
-    { root: 'hald', gloss: 'hold', verb: 'hold', pp: 'held' },
-    { root: 'luk', gloss: 'lock shut', verb: 'lock', pp: 'locked' },
-    { root: 'geb', gloss: 'binding gift', noun: 'binding gift', runeName: true },
-    { root: 'naud', gloss: 'need-fetter', noun: 'need-fetter', runeName: true },
-    { root: 'is', gloss: 'ice', noun: 'ice', runeName: true },
+    { root: 'bind', forms: ['verb', 'pp'] },
+    { root: 'band', forms: ['noun'] },
+    { root: 'haft', forms: ['noun', 'verb'] },
+    { root: 'fetur', forms: ['noun', 'verb'] },
+    { root: 'knut', forms: ['noun', 'verb'] },
+    { root: 'wrid', forms: ['verb'] },
+    { root: 'spann', forms: ['verb'] },
+    { root: 'tug', forms: ['noun'] },
+    { root: 'hald', forms: ['verb', 'pp'] },
+    { root: 'luk', forms: ['verb', 'pp'] },
+    { root: 'geb', forms: ['noun'], runeName: true },
+    { root: 'naud', forms: ['noun'], runeName: true },
+    { root: 'is', forms: ['noun'], runeName: true },
   ],
   fire: [
-    { root: 'fur', gloss: 'fire', noun: 'fire' },
-    { root: 'brand', gloss: 'burning brand', noun: 'burning brand' },
-    { root: 'log', gloss: 'flame', noun: 'flame' },
-    { root: 'eim', gloss: 'fire-reek', noun: 'fire-reek' },
-    { root: 'glod', gloss: 'ember', noun: 'ember' },
-    { root: 'brin', gloss: 'burn' },
-    { root: 'tand', gloss: 'kindled fire', noun: 'kindled fire' },
-    { root: 'swid', gloss: 'singe' },
-    { root: 'funk', gloss: 'spark', noun: 'spark' },
-    { root: 'bael', gloss: 'pyre', noun: 'pyre' },
-    { root: 'sowil', gloss: 'sun', noun: 'sun', runeName: true },
+    { root: 'fur', forms: ['noun'] },
+    { root: 'brand', forms: ['noun'] },
+    { root: 'log', forms: ['noun'] },
+    { root: 'eim', forms: ['noun'] },
+    { root: 'glod', forms: ['noun'] },
+    { root: 'brin', forms: [] },
+    { root: 'tand', forms: ['noun'] },
+    { root: 'swid', forms: [] },
+    { root: 'funk', forms: ['noun'] },
+    { root: 'bael', forms: ['noun'] },
+    { root: 'sowil', forms: ['noun'], runeName: true },
   ],
   night: [
-    { root: 'naht', gloss: 'night', noun: 'night' },
-    { root: 'derk', gloss: 'dark', adj: 'dark' },
-    { root: 'skad', gloss: 'shadow', noun: 'shadow' },
-    { root: 'kweld', gloss: 'evening', noun: 'evening' },
-    { root: 'swart', gloss: 'black', adj: 'black' },
-    { root: 'dim', gloss: 'dim', adj: 'dim', adv: 'dimly' },
-    { root: 'mena', gloss: 'moon', noun: 'moon' },
-    { root: 'rok', gloss: 'twilight', noun: 'twilight' },
-    { root: 'hrim', gloss: 'hoarfrost', noun: 'hoarfrost' },
-    { root: 'draum', gloss: 'dream', noun: 'dream' },
+    { root: 'naht', forms: ['noun'] },
+    { root: 'derk', forms: ['adj'] },
+    { root: 'skad', forms: ['noun'] },
+    { root: 'kweld', forms: ['noun'] },
+    { root: 'swart', forms: ['adj'] },
+    { root: 'dim', forms: ['adj', 'adv'] },
+    { root: 'mena', forms: ['noun'] },
+    { root: 'rok', forms: ['noun'] },
+    { root: 'hrim', forms: ['noun'] },
+    { root: 'draum', forms: ['noun'] },
   ],
   death: [
-    { root: 'dauth', gloss: 'death', noun: 'death' },
-    { root: 'wal', gloss: 'the slain', noun: 'slain' },
-    { root: 'faig', gloss: 'doomed', adj: 'doomed' },
-    { root: 'grab', gloss: 'grave', noun: 'grave' },
-    { root: 'ban', gloss: 'bane, slayer', noun: 'bane' },
-    { root: 'lik', gloss: 'corpse', noun: 'corpse' },
-    { root: 'mold', gloss: 'grave-earth', noun: 'grave-earth' },
-    { root: 'draug', gloss: 'walker-again', noun: 'walker-again' },
-    { root: 'swelt', gloss: 'die', verb: 'die', intransitive: true },
-    { root: 'naw', gloss: 'the dead', noun: 'dead one' },
-    { root: 'thurs', gloss: 'hostile wight', noun: 'hostile wight', runeName: true },
-    { root: 'iw', gloss: 'yew', noun: 'yew', runeName: true },
-    { root: 'mann', gloss: 'mortal man', noun: 'mortal man', runeName: true },
+    { root: 'dauth', forms: ['noun'] },
+    { root: 'wal', forms: ['noun'] },
+    { root: 'faig', forms: ['adj'] },
+    { root: 'grab', forms: ['noun'] },
+    { root: 'ban', forms: ['noun'] },
+    { root: 'lik', forms: ['noun'] },
+    { root: 'mold', forms: ['noun'] },
+    { root: 'draug', forms: ['noun'] },
+    { root: 'swelt', forms: ['verb'], intransitive: true },
+    { root: 'naw', forms: ['noun'] },
+    { root: 'thurs', forms: ['noun'], runeName: true },
+    { root: 'iw', forms: ['noun'], runeName: true },
+    { root: 'mann', forms: ['noun'], runeName: true },
   ],
   gates: [
-    { root: 'dur', gloss: 'door', noun: 'door' },
-    { root: 'gat', gloss: 'opening', noun: 'opening' },
-    { root: 'hlid', gloss: 'gate', noun: 'gate' },
-    { root: 'grind', gloss: 'gate-lattice', noun: 'gate-lattice' },
-    { root: 'brug', gloss: 'bridge', noun: 'bridge' },
-    { root: 'munth', gloss: 'mouth, entry', noun: 'mouth' },
-    { root: 'stig', gloss: 'path', noun: 'path' },
-    { root: 'weg', gloss: 'way', noun: 'way' },
-    { root: 'bor', gloss: 'bored passage', noun: 'bored passage' },
-    { root: 'gap', gloss: 'gap, chasm', noun: 'chasm' },
-    { root: 'raid', gloss: 'ride, journey', noun: 'journey', runeName: true },
+    { root: 'dur', forms: ['noun'] },
+    { root: 'gat', forms: ['noun'] },
+    { root: 'hlid', forms: ['noun'] },
+    { root: 'grind', forms: ['noun'] },
+    { root: 'brug', forms: ['noun'] },
+    { root: 'munth', forms: ['noun'] },
+    { root: 'stig', forms: ['noun'] },
+    { root: 'weg', forms: ['noun'] },
+    { root: 'bor', forms: ['noun'] },
+    { root: 'gap', forms: ['noun'] },
+    { root: 'raid', forms: ['noun'], runeName: true },
   ],
   time: [
-    { root: 'tid', gloss: 'time, tide', noun: 'tide of time' },
-    { root: 'stund', gloss: 'hour, while', noun: 'hour' },
-    { root: 'sumar', gloss: 'summer, bright season', noun: 'summer' },
-    { root: 'ald', gloss: 'age', noun: 'age' },
-    { root: 'wurd', gloss: 'woven fate', noun: 'woven fate' },
-    { root: 'skap', gloss: 'shaped destiny', noun: 'shaped destiny' },
-    { root: 'morgan', gloss: 'morrow', noun: 'morrow' },
-    { root: 'aband', gloss: 'evening of days', noun: 'evening of days' },
-    { root: 'aiw', gloss: 'eternity', noun: 'eternity' },
-    { root: 'forn', gloss: 'ancient time', noun: 'ancient time' },
-    { root: 'dag', gloss: 'day', noun: 'day', runeName: true },
-    { root: 'jer', gloss: 'harvest-year', noun: 'harvest-year', runeName: true },
+    { root: 'tid', forms: ['noun'] },
+    { root: 'stund', forms: ['noun'] },
+    { root: 'sumar', forms: ['noun'] },
+    { root: 'ald', forms: ['noun'] },
+    { root: 'wurd', forms: ['noun'] },
+    { root: 'skap', forms: ['noun'] },
+    { root: 'morgan', forms: ['noun'] },
+    { root: 'aband', forms: ['noun'] },
+    { root: 'aiw', forms: ['noun'] },
+    { root: 'forn', forms: ['noun'] },
+    { root: 'dag', forms: ['noun'], runeName: true },
+    { root: 'jer', forms: ['noun'], runeName: true },
   ],
 };
 
-export interface PowerWord {
-  word: string;
-  gloss: string;
-}
-
 // Attested bright power words (spec 2.7). The rune row itself lives in the
-// opening idioms instead.
-export const BRIGHT_POWER: ReadonlyArray<PowerWord> = [
-  { word: 'alu', gloss: 'Alu, the warding cry.' },
-  { word: 'laukaz', gloss: 'Laukaz, the leek of vitality.' },
-  { word: 'lathu', gloss: 'Lathu, the summons.' },
-  { word: 'auja', gloss: 'Auja, the luck word.' },
-  { word: 'ota', gloss: 'Ota, the companion cry.' },
-  { word: 'gagaga', gloss: 'Gagaga, the spear chant.' },
-  { word: 'tuwatuwa', gloss: 'Tuwatuwa, the chant of the bracteates.' },
+// opening idioms instead. A power word is an attested romanized word, not
+// English, so it stays here; only its gloss moved to the packs.
+export const BRIGHT_POWER: ReadonlyArray<string> = [
+  'alu',
+  'laukaz',
+  'lathu',
+  'auja',
+  'ota',
+  'gagaga',
+  'tuwatuwa',
 ];
 
 // The shrinking triangle needs at least four runes to allow three steps.
-export const TRIANGLE_BRIGHT: ReadonlyArray<PowerWord> = BRIGHT_POWER.filter(
-  ({ word }) => word !== 'alu' && word !== 'ota',
+export const TRIANGLE_BRIGHT: ReadonlyArray<string> = BRIGHT_POWER.filter(
+  (word) => word !== 'alu' && word !== 'ota',
 );
 
 // Dread epithet pool of the Eldritch register (spec 2.10).
-export const DREAD_POWER: ReadonlyArray<PowerWord> = [
-  { word: 'thruznaz', gloss: 'the gnawer beneath' },
-  { word: 'gulzoth', gloss: 'the maw of the dark' },
-  { word: 'wuzgrim', gloss: 'the cold that creeps' },
-  { word: 'skulthogn', gloss: 'the shadow that waits' },
-  { word: 'hruzbanaz', gloss: 'the bane from below' },
-  { word: 'nuthkolaz', gloss: 'the cold beyond the stars' },
-  { word: 'zguwald', gloss: 'the wielder in the void' },
-  { word: 'muznaht', gloss: 'the night that hungers' },
-  { word: 'thulgzar', gloss: 'the sleeper under the gates' },
-  { word: 'kruthmol', gloss: 'the grinder of ages' },
+export const DREAD_POWER: ReadonlyArray<string> = [
+  'thruznaz',
+  'gulzoth',
+  'wuzgrim',
+  'skulthogn',
+  'hruzbanaz',
+  'nuthkolaz',
+  'zguwald',
+  'muznaht',
+  'thulgzar',
+  'kruthmol',
 ];
 
-export interface Idiom {
-  words: ReadonlyArray<string>;
-  gloss: string;
-}
+export type RunicIdiomId =
+  | 'RO1'
+  | 'RO2'
+  | 'RO3_FIRST_AETT'
+  | 'RO3_FULL_ROW'
+  | 'RC1'
+  | 'RC2'
+  | 'RC3'
+  | 'ELDRITCH_OPEN_SHORT'
+  | 'ELDRITCH_OPEN_FULL'
+  | 'ELDRITCH_CLOSE';
 
-export const RO1: Idiom = { words: ['alu'], gloss: 'Alu!' };
-export const RO2: Idiom = { words: ['ek', 'erilaz'], gloss: 'I, the rune-master!' };
-export const RO3_FIRST_AETT: Idiom = {
-  words: ['futharkgw'],
-  gloss: 'The first aett of the futhark!',
-};
-export const RO3_FULL_ROW: Idiom = {
-  words: ['futharkgwhnijeipzstbemlngdo'],
-  gloss: 'The full row of the futhark!',
-};
-
-export const RC1: Idiom = { words: ['runoz', 'faihido'], gloss: 'I painted these runes.' };
-export const RC2: Idiom = { words: ['runoz', 'tawido'], gloss: 'I made these runes.' };
-export const RC3: Idiom = { words: ['alu'], gloss: 'Alu!' };
-
-export const ELDRITCH_OPEN_SHORT: Idiom = {
-  words: ['wgkrathuf'],
-  gloss: 'The first aett, spoken against its order!',
-};
-export const ELDRITCH_OPEN_FULL: Idiom = {
-  words: ['odnglmebtszpeijinhwgkrathuf'],
-  gloss: 'The rune row, spoken against its order!',
-};
-export const ELDRITCH_CLOSE: Idiom = {
-  words: ['runoz', 'gnagido'],
-  gloss: 'It gnawed the runes.',
+// Idiom word lists of spec 2.6 and 2.10. What each idiom says is in the packs,
+// under the same id.
+export const IDIOM_WORDS: Readonly<Record<RunicIdiomId, ReadonlyArray<string>>> = {
+  RO1: ['alu'],
+  RO2: ['ek', 'erilaz'],
+  RO3_FIRST_AETT: ['futharkgw'],
+  RO3_FULL_ROW: ['futharkgwhnijeipzstbemlngdo'],
+  RC1: ['runoz', 'faihido'],
+  RC2: ['runoz', 'tawido'],
+  RC3: ['alu'],
+  ELDRITCH_OPEN_SHORT: ['wgkrathuf'],
+  ELDRITCH_OPEN_FULL: ['odnglmebtszpeijinhwgkrathuf'],
+  ELDRITCH_CLOSE: ['runoz', 'gnagido'],
 };
 
 // The clause imperative addresses the invoked power itself, so it keeps

@@ -1,12 +1,16 @@
 import { generate } from './generator/pipeline.js';
 import type { LanguageId, School, Settings } from './generator/types.js';
+import { resolveGlosses } from './glosses/index.js';
 import { resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 
 const COPY_HOLD_MS = 1600;
 
-// One static page per language, so the page itself says which one it is.
-const strings = resolveStrings(document.documentElement.lang);
+// One static page per language, so the page itself says which one it is. The
+// same declaration picks the UI strings and the glosses the generator writes.
+const language = document.documentElement.lang;
+const strings = resolveStrings(language);
+const glosses = resolveGlosses(language);
 
 // Only the genomes that ship are selectable, the other options of the selects
 // stay disabled in the markup.
@@ -170,7 +174,7 @@ function readSettings(): Settings {
 }
 
 function conjure(settings: Settings): void {
-  const output = generate(settings, freshSeed());
+  const output = generate(settings, freshSeed(), glosses);
   const languageLabel = optionLabel('language', settings.language);
   const schoolLabel = optionLabel('school', settings.school);
   renderFormula(output, {

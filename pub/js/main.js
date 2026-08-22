@@ -1,8 +1,11 @@
 import { generate } from './generator/pipeline.js';
+import { resolveGlosses } from './glosses/index.js';
 import { resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 const COPY_HOLD_MS = 1600;
-const strings = resolveStrings(document.documentElement.lang);
+const language = document.documentElement.lang;
+const strings = resolveStrings(language);
+const glosses = resolveGlosses(language);
 const SHIPPED_LANGUAGES = ['runic', 'egyptian', 'phoenician'];
 const SHIPPED_SCHOOLS = [
     'protection',
@@ -127,7 +130,7 @@ function readSettings() {
     return { language: languageValue, school: schoolValue, difficulty: level };
 }
 function conjure(settings) {
-    const output = generate(settings, freshSeed());
+    const output = generate(settings, freshSeed(), glosses);
     const languageLabel = optionLabel('language', settings.language);
     const schoolLabel = optionLabel('school', settings.school);
     renderFormula(output, {

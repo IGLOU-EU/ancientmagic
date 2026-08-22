@@ -1,6 +1,7 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
+import { enGlosses } from '../src/ts/glosses/en/index.js';
 import { genomes } from '../src/ts/languages/index.js';
 import type { LanguageId } from '../src/ts/generator/types.js';
 import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, phoenician, runic } from './gen.js';
@@ -49,5 +50,5 @@ test('the registry carries the three mvp genomes and nothing else', () => {
 
 test('a language the registry does not carry is rejected', () => {
   const unshipped = 'greek' as unknown as LanguageId;
-  assert.throws(() => generate({ language: unshipped, school: 'curse', difficulty: 5 }, 1));
+  assert.throws(() => generate({ language: unshipped, school: 'curse', difficulty: 5 }, 1, enGlosses));
 });

@@ -1,6 +1,10 @@
 // Runic genome rules: tokenization, morphology, the Eldritch register and
 // the realization of a clause plan into the three aligned output lines.
 // Every rule implements docs/genomes.md section 2.
+//
+// No English lives here. The genome decides which root fills which role and
+// hands those choices to the gloss pack of the displayed language, which
+// writes the sentence.
 
 import { chance, pick, type Rng } from '../generator/rng.js';
 import type {
@@ -10,30 +14,20 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
+import type { GlossPack, GlossRef, RunicGlosses } from '../glosses/types.js';
 import {
   BRIGHT_POWER,
   CLAUSE_SEP,
   CROSS_SEP,
   DREAD_POWER,
-  ELDRITCH_CLOSE,
-  ELDRITCH_OPEN_FULL,
-  ELDRITCH_OPEN_SHORT,
   FIELDS,
+  IDIOM_WORDS,
   INVOCATION_COME,
-  RC1,
-  RC2,
-  RC3,
-  RO1,
-  RO2,
-  RO3_FIRST_AETT,
-  RO3_FULL_ROW,
   RUNE_MAP,
-  SEAL_GLOSS,
   SEAL_GLYPHS,
   SEAL_WORDS,
   WORD_SEP,
-  type Idiom,
-  type PowerWord,
+  type RunicIdiomId,
   type RunicRoot,
   type SealCount,
 } from './runic-data.js';
@@ -135,16 +129,16 @@ function eldritchRoot(root: string): string {
   return darkened.join('');
 }
 
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
+function fills(root: RunicRoot, role: 'noun' | 'verb' | 'adj' | 'adv'): boolean {
+  return root.forms.includes(role);
 }
 
 function nounsOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => r.noun !== undefined);
+  return FIELDS[field].filter((r) => fills(r, 'noun'));
 }
 
 function verbsOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => r.verb !== undefined);
+  return FIELDS[field].filter((r) => fills(r, 'verb'));
 }
 
 // An intransitive root never fills a slot that takes a direct object
@@ -154,11 +148,11 @@ function transitiveVerbsOf(field: SemanticField): RunicRoot[] {
 }
 
 function adjectivesOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => r.adj !== undefined);
+  return FIELDS[field].filter((r) => fills(r, 'adj'));
 }
 
 function adverbsOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => r.adv !== undefined);
+  return FIELDS[field].filter((r) => fills(r, 'adv'));
 }
 
 function byNames(names: ReadonlyArray<string>): RunicRoot[] {
@@ -200,6 +194,7 @@ function realizeProtectionClause(
   clause: ClausePlan,
   rng: Rng,
   distort: (root: string) => string,
+  glosses: RunicGlosses,
 ): ClauseRealization {
   const agent = pick(rng, nounsOf('warding'));
   const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
@@ -214,11 +209,15 @@ function realizeProtectionClause(
   if (mod.adv !== null) words.push(mod.advWord);
   words.push(verbForm(distort(intent.root), 'o'));
 
-  const adverb = mod.adv !== null ? ` ${mod.adv.adv ?? ''}` : '';
-  const adjective = mod.adj !== null ? `${mod.adj.adj ?? ''} ` : '';
   return {
     words,
-    gloss: `I, the ${agent.noun ?? ''}, ${intent.verb ?? ''}${adverb} against the ${adjective}${target.noun ?? ''}.`,
+    gloss: glosses.protectionClause({
+      agentRoot: agent.root,
+      intentRoot: intent.root,
+      targetRoot: target.root,
+      adjectiveRoot: mod.adj?.root ?? null,
+      adverbRoot: mod.adv?.root ?? null,
+    }),
   };
 }
 
@@ -226,6 +225,7 @@ function realizeCurseClause(
   clause: ClausePlan,
   rng: Rng,
   distort: (root: string) => string,
+  glosses: RunicGlosses,
 ): ClauseRealization {
   const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
   const target = pick(rng, nounsOf(targetField));
@@ -238,11 +238,14 @@ function realizeCurseClause(
   if (mod.adv !== null) words.push(mod.advWord);
   words.push(verbForm(distort(intent.root), 'ai'));
 
-  const adverb = mod.adv !== null ? `${mod.adv.adv ?? ''} ` : '';
-  const adjective = mod.adj !== null ? `${mod.adj.adj ?? ''} ` : '';
   return {
     words,
-    gloss: `May the ${adjective}${target.noun ?? ''} be ${adverb}${intent.pp ?? ''}.`,
+    gloss: glosses.curseClause({
+      targetRoot: target.root,
+      intentRoot: intent.root,
+      adjectiveRoot: mod.adj?.root ?? null,
+      adverbRoot: mod.adv?.root ?? null,
+    }),
   };
 }
 
@@ -252,23 +255,24 @@ function realizeInvocationClause(
   eldritch: boolean,
   distort: (root: string) => string,
   usedEpithets: Set<string>,
+  glosses: RunicGlosses,
 ): ClauseRealization {
-  const vocatives: string[] = [];
+  const agents: GlossRef[] = [];
   const words: string[] = [];
 
   for (const gene of clause.genes.filter((g) => g.role === 'AGENT')) {
     if (eldritch) {
-      const pool = DREAD_POWER.filter((p) => !usedEpithets.has(p.word));
+      const pool = DREAD_POWER.filter((word) => !usedEpithets.has(word));
       const epithet = pick(rng, pool);
-      usedEpithets.add(epithet.word);
-      words.push(epithet.word);
-      vocatives.push(`O ${epithet.gloss.replace(/^the /, '')}`);
+      usedEpithets.add(epithet);
+      words.push(epithet);
+      agents.push({ kind: 'epithet', id: epithet, spoken: epithet });
     } else {
       const pool = nounsOf(requireField(gene.field)).filter((r) => !usedEpithets.has(r.root));
       const agent = pick(rng, pool);
       usedEpithets.add(agent.root);
       words.push(nounForm(agent.root, 'az'));
-      vocatives.push(`O ${agent.noun ?? ''}`);
+      agents.push({ kind: 'root', id: agent.root });
     }
   }
 
@@ -277,71 +281,82 @@ function realizeInvocationClause(
   if (mod.adv !== null) words.push(mod.advWord);
   words.push(verbForm(distort(intent.root), 'bare'));
 
-  let power: PowerWord;
+  let power: string;
   if (eldritch) {
-    power = pick(rng, DREAD_POWER.filter((p) => !usedEpithets.has(p.word)));
-    usedEpithets.add(power.word);
+    power = pick(rng, DREAD_POWER.filter((word) => !usedEpithets.has(word)));
+    usedEpithets.add(power);
   } else {
     power = pick(rng, BRIGHT_POWER);
   }
-  words.push(power.word);
+  words.push(power);
 
-  const adverb = mod.adv !== null ? ` ${mod.adv.adv ?? ''}` : '';
   return {
     words,
-    gloss: `${vocatives.join(', ')}, ${intent.verb ?? ''}${adverb}! ${capitalize(power.word)}!`,
+    gloss: glosses.invocationClause({
+      agents,
+      intentRoot: intent.root,
+      adverbRoot: mod.adv?.root ?? null,
+      powerWord: power,
+    }),
   };
 }
 
-function pickOpenings(plan: FormulaPlan, rng: Rng): Idiom[] {
+function pickOpenings(plan: FormulaPlan, rng: Rng): RunicIdiomId[] {
   const d = plan.difficulty;
   if (plan.eldritch) {
-    return [d < 6 ? ELDRITCH_OPEN_SHORT : ELDRITCH_OPEN_FULL];
+    return [d < 6 ? 'ELDRITCH_OPEN_SHORT' : 'ELDRITCH_OPEN_FULL'];
   }
-  if (d <= 4) return [RO1];
-  if (d === 5) return [pick(rng, [RO1, RO2])];
-  if (d === 6) return [RO2];
+  if (d <= 4) return ['RO1'];
+  if (d === 5) return [pick(rng, ['RO1', 'RO2'] as const)];
+  if (d === 6) return ['RO2'];
   if (d === 7) {
-    return chance(rng, 0.5) ? [RO2, RO3_FIRST_AETT] : [RO2];
+    return chance(rng, 0.5) ? ['RO2', 'RO3_FIRST_AETT'] : ['RO2'];
   }
-  return [RO3_FULL_ROW];
+  return ['RO3_FULL_ROW'];
 }
 
-function pickClosings(plan: FormulaPlan, rng: Rng): Idiom[] {
-  if (plan.eldritch) return [ELDRITCH_CLOSE];
-  if (plan.difficulty >= 8) return [RC1, RC3];
-  return [pick(rng, [RC1, RC2])];
+function pickClosings(plan: FormulaPlan, rng: Rng): RunicIdiomId[] {
+  if (plan.eldritch) return ['ELDRITCH_CLOSE'];
+  if (plan.difficulty >= 8) return ['RC1', 'RC3'];
+  return [pick(rng, ['RC1', 'RC2'] as const)];
 }
 
-function litanySegment(plan: FormulaPlan, rng: Rng): ClauseRealization | null {
+function litanySegment(
+  plan: FormulaPlan,
+  rng: Rng,
+  glosses: RunicGlosses,
+): ClauseRealization | null {
   if (plan.powerWordStyle === 'none') return null;
   if (plan.powerWordStyle === 'triple') {
     const pool = plan.eldritch ? DREAD_POWER : BRIGHT_POWER;
-    const word = pick(rng, pool).word;
-    return { words: [word, word, word], gloss: `${capitalize(word)}, spoken three times.` };
+    const word = pick(rng, pool);
+    return { words: [word, word, word], gloss: glosses.litanyTriple(word) };
   }
   // Shrinking triangle: the word loses its first rune at each repetition,
   // down to a single rune. Steps drop whole rune tokens so a digraph never
   // splits into two letters.
   const pool = plan.eldritch
     ? DREAD_POWER
-    : BRIGHT_POWER.filter(({ word }) => word !== 'alu' && word !== 'ota');
-  const base = pick(rng, pool).word;
+    : BRIGHT_POWER.filter((word) => word !== 'alu' && word !== 'ota');
+  const base = pick(rng, pool);
   const tokens = tokenizeRunic(base);
   const words: string[] = [];
   for (let i = 0; i < tokens.length; i += 1) {
     words.push(tokens.slice(i).join(''));
   }
-  return { words, gloss: `${capitalize(base)}, shrinking to a single rune.` };
+  return { words, gloss: glosses.litanyTriangle(base) };
 }
 
-function realizeTierOne(plan: FormulaPlan, rng: Rng): FormulaOutput {
+function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): FormulaOutput {
   const power = pick(rng, plan.eldritch ? DREAD_POWER : BRIGHT_POWER);
-  const gloss = plan.eldritch ? `${capitalize(power.word)}, ${power.gloss}.` : power.gloss;
-  return { glyphs: runesFor(power.word), transliteration: power.word, gloss };
+  return {
+    glyphs: runesFor(power),
+    transliteration: power,
+    gloss: glosses.tierOne(power, plan.eldritch),
+  };
 }
 
-function realizeTierTwo(plan: FormulaPlan, rng: Rng): FormulaOutput {
+function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): FormulaOutput {
   const distort = (root: string): string => (plan.eldritch ? eldritchRoot(root) : root);
   const clause = plan.clauses[0];
   if (clause === undefined) throw new Error('tier 2 plan has no clause');
@@ -355,21 +370,22 @@ function realizeTierTwo(plan: FormulaPlan, rng: Rng): FormulaOutput {
   return {
     glyphs: words.map(runesFor).join(''),
     transliteration: words.join(' '),
-    gloss: `${capitalize(intent.verb ?? '')} the ${target.noun ?? ''}!`,
+    gloss: glosses.tierTwo(intent.root, target.root),
   };
 }
 
-function realizeFormula(plan: FormulaPlan, rng: Rng): FormulaOutput {
-  if (plan.difficulty === 1) return realizeTierOne(plan, rng);
-  if (plan.difficulty === 2) return realizeTierTwo(plan, rng);
+function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOutput {
+  const glosses = pack.runic;
+  if (plan.difficulty === 1) return realizeTierOne(plan, rng, glosses);
+  if (plan.difficulty === 2) return realizeTierTwo(plan, rng, glosses);
 
   const distort = (root: string): string => (plan.eldritch ? eldritchRoot(root) : root);
   const segments: Segment[] = [];
   const glossParts: string[] = [];
 
   const openings = pickOpenings(plan, rng);
-  for (const idiom of openings) glossParts.push(idiom.gloss);
-  const openingWords = openings.flatMap((idiom) => [...idiom.words]);
+  for (const id of openings) glossParts.push(glosses.idiom(id));
+  const openingWords = openings.flatMap((id) => [...IDIOM_WORDS[id]]);
 
   plan.clauses.forEach((clause, index) => {
     // Epithets stay distinct within one clause. Across clauses the pools
@@ -377,11 +393,18 @@ function realizeFormula(plan: FormulaPlan, rng: Rng): FormulaOutput {
     const usedEpithets = new Set<string>();
     let realized: ClauseRealization;
     if (plan.school === 'protection') {
-      realized = realizeProtectionClause(clause, rng, distort);
+      realized = realizeProtectionClause(clause, rng, distort, glosses);
     } else if (plan.school === 'curse') {
-      realized = realizeCurseClause(clause, rng, distort);
+      realized = realizeCurseClause(clause, rng, distort, glosses);
     } else {
-      realized = realizeInvocationClause(clause, rng, plan.eldritch, distort, usedEpithets);
+      realized = realizeInvocationClause(
+        clause,
+        rng,
+        plan.eldritch,
+        distort,
+        usedEpithets,
+        glosses,
+      );
     }
     // The opening idioms join the first clause with word separators, as in
     // the section 5 rendering. Only clause boundaries take the colon.
@@ -389,16 +412,16 @@ function realizeFormula(plan: FormulaPlan, rng: Rng): FormulaOutput {
     glossParts.push(realized.gloss);
   });
 
-  const litany = litanySegment(plan, rng);
+  const litany = litanySegment(plan, rng, glosses);
   if (litany !== null) {
     segments.push({ words: litany.words });
     glossParts.push(litany.gloss);
   }
 
   if (plan.closing) {
-    for (const idiom of pickClosings(plan, rng)) {
-      segments.push({ words: [...idiom.words] });
-      glossParts.push(idiom.gloss);
+    for (const id of pickClosings(plan, rng)) {
+      segments.push({ words: [...IDIOM_WORDS[id]] });
+      glossParts.push(glosses.idiom(id));
     }
   }
 
@@ -408,7 +431,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng): FormulaOutput {
     else if (plan.difficulty === 7) sealCount = pick(rng, [3, 7] as const);
     else if (plan.difficulty === 8) sealCount = pick(rng, [7, 9] as const);
     else sealCount = pick(rng, [9, 12] as const);
-    glossParts.push(SEAL_GLOSS[sealCount]);
+    glossParts.push(glosses.seal(sealCount));
   }
 
   let glyphs = segments
@@ -420,7 +443,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng): FormulaOutput {
     transliteration += ` ${SEAL_WORDS[sealCount]}`;
   }
 
-  return { glyphs, transliteration, gloss: glossParts.join(' ') };
+  return { glyphs, transliteration, gloss: glosses.sentences(glossParts) };
 }
 
 export const runicGenome: Genome = {

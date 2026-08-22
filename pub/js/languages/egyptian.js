@@ -1,5 +1,5 @@
 import { pick } from '../generator/rng.js';
-import { A14_ENEMY, AGENT_POWER, BRIGHT_POWER, DREAD_POWER, EC1, EC2, ELDRITCH_CLOSE, ELDRITCH_OPEN, EO1, EO2_HEAD, FIELD_DET, FIELDS, FN_I, FN_IN, FN_IR, FN_M, FN_MY, FN_N, FN_R, G37_EVIL, NUMERAL_WORDS, RN_I, RN_K, RX_I, RX_K, SEAL_GLOSS, SEAL_HEAD, SIGN_MAP, SUFFIX_GLYPHS, SUFFIX_SKELETON, } from './egyptian-data.js';
+import { A14_ENEMY, AGENT_POWER, BRIGHT_POWER, DREAD_POWER, EO2_HEAD, FIELD_DET, FIELDS, FN_I, FN_IN, FN_IR, FN_M, FN_MY, FN_N, FN_R, G37_EVIL, IDIOM_WORDS, NUMERAL_WORDS, RN_I, RN_K, RX_I, RX_K, SEAL_HEAD, SIGN_MAP, SUFFIX_GLYPHS, SUFFIX_SKELETON, } from './egyptian-data.js';
 export { speakSkeleton, glyphsFor, joinSpoken, degradeSpoken, eldritchSkeleton, composeEgyptian, };
 const VOWEL_SIGNS = new Set(['A', 'a', 'i']);
 const SPOKEN_VALUE = {
@@ -159,17 +159,17 @@ function powerWord(power) {
         field: null,
     };
 }
-function capitalize(text) {
-    return text.charAt(0).toUpperCase() + text.slice(1);
+function fills(root, role) {
+    return root.forms.includes(role);
 }
 function nounsOf(field) {
-    return FIELDS[field].filter((r) => r.noun !== undefined);
+    return FIELDS[field].filter((r) => fills(r, 'noun'));
 }
 function verbsOf(field) {
-    return FIELDS[field].filter((r) => r.verb !== undefined);
+    return FIELDS[field].filter((r) => fills(r, 'verb'));
 }
 function adjectivesOf(field) {
-    return FIELDS[field].filter((r) => r.adj !== undefined);
+    return FIELDS[field].filter((r) => fills(r, 'adj'));
 }
 function requireField(field) {
     if (field === null)
@@ -191,7 +191,7 @@ function drawModifier(clause, rng) {
 function adverbPhrase(modifier, clause, eldritch) {
     const root = modifier.adverb;
     if (root === null || clause.modifierField === null)
-        return { words: [], gloss: '' };
+        return { words: [], root: null };
     return {
         words: [
             fixed(FN_M),
@@ -203,7 +203,7 @@ function adverbPhrase(modifier, clause, eldritch) {
                 verb: false,
             }),
         ],
-        gloss: ` in the ${root.noun ?? ''}`,
+        root: root.skeleton,
     };
 }
 function adjectiveWord(modifier, headField, eldritch) {
@@ -220,10 +220,7 @@ function adjectiveWord(modifier, headField, eldritch) {
         }),
     ];
 }
-function adjectiveGloss(modifier) {
-    return modifier.adjective === null ? '' : `${modifier.adjective.adj ?? ''} `;
-}
-function realizeProtectionClause(clause, rng, usedPowers) {
+function realizeProtectionClause(clause, rng, usedPowers, glosses) {
     const intent = pick(rng, verbsOf(geneField(clause, 'INTENT')));
     const targetField = geneField(clause, 'TARGET');
     const target = pick(rng, nounsOf(targetField));
@@ -258,10 +255,17 @@ function realizeProtectionClause(clause, rng, usedPowers) {
     ];
     return {
         words,
-        gloss: `I ${intent.verb ?? ''} against the ${adjectiveGloss(modifier)}${target.noun ?? ''}${adverb.gloss}, by ${agent.name}. ${power.name}!`,
+        gloss: glosses.protectionClause({
+            intentRoot: intent.skeleton,
+            targetRoot: target.skeleton,
+            adjectiveRoot: modifier.adjective?.skeleton ?? null,
+            adverbRoot: adverb.root,
+            agentPower: agent.skeleton,
+            freePower: power.skeleton,
+        }),
     };
 }
-function realizeCurseClause(clause, rng) {
+function realizeCurseClause(clause, rng, glosses) {
     const targetField = geneField(clause, 'TARGET');
     const target = pick(rng, nounsOf(targetField));
     const intent = pick(rng, verbsOf('harm'));
@@ -289,16 +293,21 @@ function realizeCurseClause(clause, rng) {
     ];
     return {
         words,
-        gloss: `May the ${adjectiveGloss(modifier)}${target.noun ?? ''} be ${intent.pp ?? ''}${adverb.gloss}.`,
+        gloss: glosses.curseClause({
+            targetRoot: target.skeleton,
+            intentRoot: intent.skeleton,
+            adjectiveRoot: modifier.adjective?.skeleton ?? null,
+            adverbRoot: adverb.root,
+        }),
     };
 }
-function realizeInvocationClause(clause, rng, plan, used) {
+function realizeInvocationClause(clause, rng, plan, used, glosses) {
     const eldritch = plan.eldritch;
     const agentGenes = clause.genes.filter((g) => g.role === 'AGENT');
     const lastGene = agentGenes[agentGenes.length - 1];
     const chain = plan.difficulty >= 9 && lastGene !== undefined ? [...agentGenes, lastGene] : agentGenes;
     const words = [fixed(FN_I)];
-    const names = [];
+    const agents = [];
     chain.forEach((gene, index) => {
         if (index > 0)
             words.push(fixed(FN_N));
@@ -306,7 +315,7 @@ function realizeInvocationClause(clause, rng, plan, used) {
             const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
             used.add(epithet.skeleton);
             words.push(dreadWord(epithet));
-            names.push(epithet.gloss.replace(/^the /, ''));
+            agents.push({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken });
         }
         else {
             const field = requireField(gene.field);
@@ -319,38 +328,39 @@ function realizeInvocationClause(clause, rng, plan, used) {
                 eldritch: false,
                 verb: false,
             }));
-            names.push(root.noun ?? '');
+            agents.push({ kind: 'root', id: root.skeleton });
         }
     });
     words.push(fixed(FN_MY));
-    let powerGloss;
+    let invoked;
     if (eldritch) {
         const power = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
         used.add(power.skeleton);
         words.push(dreadWord(power));
-        powerGloss = capitalize(power.spoken);
+        invoked = { kind: 'epithet', id: power.skeleton, spoken: power.spoken };
     }
     else {
         const power = pick(rng, BRIGHT_POWER.filter((p) => !used.has(p.skeleton)));
         used.add(power.skeleton);
         words.push(powerWord(power));
-        powerGloss = power.name;
+        invoked = { kind: 'power', id: power.skeleton };
     }
     const modifier = drawModifier(clause, rng);
     const adverb = adverbPhrase(modifier, clause, eldritch);
     words.push(...adverb.words);
-    const head = names[0] ?? '';
-    const epithets = names.slice(1).map((name) => ` of the ${name}`).join('');
-    return { words, gloss: `O ${head}${epithets}, come${adverb.gloss}! ${powerGloss}!` };
+    return {
+        words,
+        gloss: glosses.invocationClause({ agents, adverbRoot: adverb.root, power: invoked }),
+    };
 }
-function openingWords(plan, rng, used) {
+function openingWords(plan, rng, used, glosses) {
     const words = [];
     const glossParts = [];
     const difficulty = plan.difficulty;
-    const pushIdiom = (idiom) => {
-        for (const word of idiom.words)
+    const pushIdiom = (id) => {
+        for (const word of IDIOM_WORDS[id])
             words.push(idiomWord(word));
-        glossParts.push(idiom.gloss);
+        glossParts.push(glosses.idiom(id));
     };
     const pushTitle = () => {
         for (const word of EO2_HEAD)
@@ -359,7 +369,7 @@ function openingWords(plan, rng, used) {
             const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
             used.add(epithet.skeleton);
             words.push(dreadWord(epithet));
-            glossParts.push(`Spell of ${epithet.gloss}.`);
+            glossParts.push(glosses.spellTitle({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }));
             return;
         }
         const clause = plan.clauses[0];
@@ -373,40 +383,36 @@ function openingWords(plan, rng, used) {
             eldritch: false,
             verb: false,
         }));
-        glossParts.push(`Spell of the ${root.noun ?? ''}.`);
+        glossParts.push(glosses.spellTitle({ kind: 'root', id: root.skeleton }));
     };
     if (difficulty <= 4) {
         pushTitle();
     }
     else if (difficulty <= 7) {
-        pushIdiom(plan.eldritch ? ELDRITCH_OPEN : EO1);
+        pushIdiom(plan.eldritch ? 'ELDRITCH_OPEN' : 'EO1');
     }
     else {
-        pushIdiom(plan.eldritch ? ELDRITCH_OPEN : EO1);
+        pushIdiom(plan.eldritch ? 'ELDRITCH_OPEN' : 'EO1');
         pushTitle();
     }
-    return { words, gloss: glossParts.join(' ') };
+    return { words, gloss: glosses.sentences(glossParts) };
 }
-function nameKnowledgeLine(plan, address, addressGloss) {
+function nameKnowledgeLine(plan, address, addressed, glosses) {
     const words = [fixed(FN_I), ...address];
-    if (plan.eldritch) {
-        words.push(fixed(RX_K), fixed(RN_I));
-        return { words, gloss: `O ${addressGloss}, you know my name.` };
-    }
-    words.push(fixed(RX_I), fixed(RN_K));
-    return { words, gloss: `O ${addressGloss}, I know your name.` };
+    words.push(...(plan.eldritch ? [fixed(RX_K), fixed(RN_I)] : [fixed(RX_I), fixed(RN_K)]));
+    return { words, gloss: glosses.nameKnowledge(addressed, plan.eldritch) };
 }
-function singleAddress(plan, rng, used) {
+function singleAddress(plan, rng, used, glosses) {
     if (plan.school === 'curse')
         return null;
     if (plan.eldritch) {
         const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
         used.add(epithet.skeleton);
-        return nameKnowledgeLine(plan, [dreadWord(epithet)], epithet.gloss.replace(/^the /, ''));
+        return nameKnowledgeLine(plan, [dreadWord(epithet)], { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }, glosses);
     }
     if (plan.school === 'protection') {
         const god = pick(rng, AGENT_POWER);
-        return nameKnowledgeLine(plan, [powerWord(god)], god.name);
+        return nameKnowledgeLine(plan, [powerWord(god)], { kind: 'power', id: god.skeleton }, glosses);
     }
     const field = requireField(plan.clauses[0]?.genes.find((g) => g.role === 'AGENT')?.field ?? null);
     const root = pick(rng, nounsOf(field));
@@ -418,9 +424,9 @@ function singleAddress(plan, rng, used) {
             eldritch: false,
             verb: false,
         }),
-    ], root.noun ?? '');
+    ], { kind: 'root', id: root.skeleton }, glosses);
 }
-function gateLitany(plan, rng, used) {
+function gateLitany(plan, rng, used, glosses) {
     const words = [];
     const glossParts = [];
     const heads = new Set();
@@ -428,7 +434,7 @@ function gateLitany(plan, rng, used) {
         if (plan.eldritch) {
             const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
             used.add(epithet.skeleton);
-            const line = nameKnowledgeLine(plan, [dreadWord(epithet)], epithet.gloss.replace(/^the /, ''));
+            const line = nameKnowledgeLine(plan, [dreadWord(epithet)], { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }, glosses);
             words.push(...line.words);
             glossParts.push(line.gloss);
             continue;
@@ -453,20 +459,20 @@ function gateLitany(plan, rng, used) {
                 eldritch: false,
                 verb: false,
             }),
-        ], `${head.noun ?? ''} of the ${tail.noun ?? ''}`);
+        ], { kind: 'gate', headRoot: head.skeleton, tailRoot: tail.skeleton }, glosses);
         words.push(...line.words);
         glossParts.push(line.gloss);
     }
-    return { words, gloss: glossParts.join(' ') };
+    return { words, gloss: glosses.sentences(glossParts) };
 }
 function closingIdioms(plan) {
     if (plan.eldritch)
-        return [ELDRITCH_CLOSE];
+        return ['ELDRITCH_CLOSE'];
     if (plan.difficulty <= 6)
-        return [EC2];
+        return ['EC2'];
     if (plan.difficulty <= 8)
-        return [EC1];
-    return [EC1, EC2];
+        return ['EC1'];
+    return ['EC1', 'EC2'];
 }
 function sealCountFor(plan, rng) {
     if (plan.eldritch)
@@ -477,18 +483,21 @@ function sealCountFor(plan, rng) {
         return 7;
     return pick(rng, [9, 12]);
 }
-function realizeTierOne(plan, rng) {
+function realizeTierOne(plan, rng, glosses) {
     if (plan.eldritch) {
         const epithet = pick(rng, DREAD_POWER);
         return {
             words: [dreadWord(epithet)],
-            gloss: `${capitalize(epithet.spoken)}, ${epithet.gloss}.`,
+            gloss: glosses.tierOne({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }),
         };
     }
     const power = pick(rng, BRIGHT_POWER);
-    return { words: [powerWord(power)], gloss: power.gloss };
+    return {
+        words: [powerWord(power)],
+        gloss: glosses.tierOne({ kind: 'power', id: power.skeleton }),
+    };
 }
-function realizeTierTwo(plan, rng) {
+function realizeTierTwo(plan, rng, glosses) {
     const clause = plan.clauses[0];
     if (clause === undefined)
         throw new Error('tier 2 plan has no clause');
@@ -513,27 +522,27 @@ function realizeTierTwo(plan, rng) {
                 verb: false,
             }),
         ],
-        gloss: `${capitalize(intent.verb ?? '')} the ${target.noun ?? ''}!`,
+        gloss: glosses.tierTwo(intent.skeleton, target.skeleton),
     };
 }
-function composeEgyptian(plan, rng) {
+function composeEgyptian(plan, rng, glosses) {
     if (plan.difficulty === 1)
-        return realizeTierOne(plan, rng);
+        return realizeTierOne(plan, rng, glosses);
     if (plan.difficulty === 2)
-        return realizeTierTwo(plan, rng);
+        return realizeTierTwo(plan, rng, glosses);
     const words = [];
     const glossParts = [];
     const used = new Set();
-    const opening = openingWords(plan, rng, used);
+    const opening = openingWords(plan, rng, used, glosses);
     words.push(...opening.words);
     glossParts.push(opening.gloss);
     if (plan.difficulty >= 8) {
-        const litany = gateLitany(plan, rng, used);
+        const litany = gateLitany(plan, rng, used, glosses);
         words.push(...litany.words);
         glossParts.push(litany.gloss);
     }
     else if (plan.difficulty >= 6) {
-        const address = singleAddress(plan, rng, used);
+        const address = singleAddress(plan, rng, used, glosses);
         if (address !== null) {
             words.push(...address.words);
             glossParts.push(address.gloss);
@@ -543,22 +552,22 @@ function composeEgyptian(plan, rng) {
         const clauseUsed = new Set(used);
         let realized;
         if (plan.school === 'protection') {
-            realized = realizeProtectionClause(clause, rng, clauseUsed);
+            realized = realizeProtectionClause(clause, rng, clauseUsed, glosses);
         }
         else if (plan.school === 'curse') {
-            realized = realizeCurseClause(clause, rng);
+            realized = realizeCurseClause(clause, rng, glosses);
         }
         else {
-            realized = realizeInvocationClause(clause, rng, plan, clauseUsed);
+            realized = realizeInvocationClause(clause, rng, plan, clauseUsed, glosses);
         }
         words.push(...realized.words);
         glossParts.push(realized.gloss);
     }
     if (plan.closing) {
-        for (const idiom of closingIdioms(plan)) {
-            for (const word of idiom.words)
+        for (const id of closingIdioms(plan)) {
+            for (const word of IDIOM_WORDS[id])
                 words.push(idiomWord(word));
-            glossParts.push(idiom.gloss);
+            glossParts.push(glosses.idiom(id));
         }
     }
     if (plan.seal) {
@@ -566,12 +575,12 @@ function composeEgyptian(plan, rng) {
         words.push(idiomWord(SEAL_HEAD));
         for (const numeral of NUMERAL_WORDS[count])
             words.push(idiomWord(numeral));
-        glossParts.push(SEAL_GLOSS[count]);
+        glossParts.push(glosses.seal(count));
     }
-    return { words, gloss: glossParts.join(' ') };
+    return { words, gloss: glosses.sentences(glossParts) };
 }
-function realizeFormula(plan, rng) {
-    const { words, gloss } = composeEgyptian(plan, rng);
+function realizeFormula(plan, rng, pack) {
+    const { words, gloss } = composeEgyptian(plan, rng, pack.egyptian);
     return {
         glyphs: words.map((word) => word.glyphs).join(''),
         transliteration: words.map((word) => word.spoken).join(' '),

@@ -2,6 +2,7 @@
 // independent, genomes turn a plan into the three aligned output lines.
 
 import type { Rng } from './rng.js';
+import type { GlossPack } from '../glosses/types.js';
 
 export type LanguageId = 'runic' | 'egyptian' | 'phoenician';
 
@@ -70,5 +71,7 @@ export interface Settings {
 
 export interface Genome {
   id: LanguageId;
-  realize(plan: FormulaPlan, rng: Rng): FormulaOutput;
+  // The pack is passed in rather than imported, so the language displayed is
+  // the caller's decision and a genome never reaches for a wording of its own.
+  realize(plan: FormulaPlan, rng: Rng, glosses: GlossPack): FormulaOutput;
 }

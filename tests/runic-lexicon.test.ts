@@ -2,6 +2,7 @@ import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { eldritchRoot } from '../src/ts/languages/runic.js';
 import { FIELDS } from '../src/ts/languages/runic-data.js';
+import { runicGlosses } from '../src/ts/glosses/en/runic.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
 import { SEEDS, runic } from './gen.js';
 
@@ -37,13 +38,9 @@ test('rune-name roots follow the normative table and stay noun-only', () => {
   for (const [root, gloss, field] of RUNE_NAME_TABLE) {
     const entry = FIELDS[field].find((r) => r.root === root);
     assert.ok(entry !== undefined, `${root} missing from field ${field}`);
-    assert.strictEqual(entry?.gloss, gloss, `gloss of ${root}`);
+    assert.strictEqual(runicGlosses.roots[root]?.gloss, gloss, `gloss of ${root}`);
     assert.strictEqual(entry?.runeName, true, `${root} not flagged as rune name`);
-    assert.ok(entry?.noun !== undefined, `${root} has no noun form`);
-    assert.strictEqual(entry?.verb, undefined, `${root} must not be a verb`);
-    assert.strictEqual(entry?.adj, undefined, `${root} must not be an adjective`);
-    assert.strictEqual(entry?.adv, undefined, `${root} must not be an adverb`);
-    assert.strictEqual(entry?.pp, undefined, `${root} must not carry a participle`);
+    assert.deepStrictEqual(entry?.forms, ['noun'], `${root} fills a role beyond noun`);
   }
   const flagged = Object.values(FIELDS).flat().filter((r) => r.runeName === true);
   assert.strictEqual(flagged.length, 24, 'exactly the 24 rune names are flagged');

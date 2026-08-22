@@ -3,16 +3,13 @@ import * as assert from 'node:assert/strict';
 import {
   BRIGHT_POWER,
   DREAD_POWER,
-  EC1,
-  EC2,
-  EO1,
-  ELDRITCH_CLOSE,
-  ELDRITCH_OPEN,
   FIELD_DET,
   FIELDS,
+  IDIOM_WORDS,
   NUMERAL_WORDS,
   SIGN_MAP,
 } from '../src/ts/languages/egyptian-data.js';
+import { egyptianGlosses } from '../src/ts/glosses/en/egyptian.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
 import {
   DETERMINATIVE_TABLE,
@@ -61,7 +58,11 @@ test('the coined lexicon matches the spec table, skeleton, spoken form and gloss
       const root = roots[index];
       assert.strictEqual(root?.skeleton, skeleton, `${field} row ${index} skeleton`);
       assert.strictEqual(root?.spoken, spoken, `${field} row ${index} spoken`);
-      assert.strictEqual(root?.gloss, gloss, `${field} row ${index} gloss`);
+      assert.strictEqual(
+        egyptianGlosses.roots[skeleton]?.gloss,
+        gloss,
+        `${field} row ${index} gloss`,
+      );
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
@@ -86,11 +87,11 @@ test('every root carries the gloss forms of the roles it can fill', () => {
   for (const roots of Object.values(FIELDS)) {
     for (const root of roots) {
       assert.ok(
-        root.noun !== undefined || root.verb !== undefined,
+        root.forms.includes('noun') || root.forms.includes('verb'),
         `${root.skeleton} fills no role`,
       );
-      if (root.verb !== undefined) {
-        assert.ok(root.pp !== undefined, `${root.skeleton} is a verb without a participle`);
+      if (root.forms.includes('verb')) {
+        assert.ok(root.forms.includes('pp'), `${root.skeleton} is a verb without a participle`);
       }
     }
   }
@@ -98,19 +99,22 @@ test('every root carries the gloss forms of the roles it can fill', () => {
   // at least one, and adverbial m-phrases need nouns in theirs.
   for (const field of ['night', 'harm', 'death'] as const) {
     assert.ok(
-      FIELDS[field].some((r) => r.adj !== undefined),
+      FIELDS[field].some((r) => r.forms.includes('adj')),
       `no adjective in ${field}`,
     );
   }
   for (const field of ['hidden', 'night', 'harm'] as const) {
-    assert.ok(FIELDS[field].some((r) => r.noun !== undefined), `no noun in ${field}`);
+    assert.ok(FIELDS[field].some((r) => r.forms.includes('noun')), `no noun in ${field}`);
   }
   // Every field a school can draw a verb or a noun from must offer one.
   for (const field of ['warding', 'binding', 'harm', 'summoning'] as const) {
-    assert.ok(FIELDS[field].some((r) => r.verb !== undefined), `no verb in ${field}`);
+    assert.ok(FIELDS[field].some((r) => r.forms.includes('verb')), `no verb in ${field}`);
   }
   for (const field of ['harm', 'death', 'night', 'fire', 'hidden', 'gates', 'time'] as const) {
-    assert.ok(FIELDS[field].filter((r) => r.noun !== undefined).length >= 3, `thin nouns in ${field}`);
+    assert.ok(
+      FIELDS[field].filter((r) => r.forms.includes('noun')).length >= 3,
+      `thin nouns in ${field}`,
+    );
   }
 });
 
@@ -130,7 +134,7 @@ test('the dread pool matches the spec table and every skeleton already ends in x
     const epithet = DREAD_POWER[index];
     assert.strictEqual(epithet?.skeleton, skeleton, `dread ${index} skeleton`);
     assert.strictEqual(epithet?.spoken, spoken, `dread ${index} spoken`);
-    assert.strictEqual(epithet?.gloss, gloss, `dread ${index} gloss`);
+    assert.strictEqual(egyptianGlosses.epithets[skeleton], gloss, `dread ${index} gloss`);
     // The sieve is the tell of the register. It closes every epithet but
     // xAxr, where the spec's own skeleton carries it in second position.
     assert.ok(skeleton.includes('x'), `dread ${skeleton} carries no sieve`);
@@ -138,15 +142,20 @@ test('the dread pool matches the spec table and every skeleton already ends in x
 });
 
 test('idioms carry the attested spellings of the spec', () => {
-  assert.deepStrictEqual(EO1.words.map((w) => w.spoken), [...EO1_SPOKEN]);
-  assert.strictEqual(EO1.words.map((w) => w.glyphs).join(''), EO1_GLYPHS);
-  assert.deepStrictEqual(ELDRITCH_OPEN.words.map((w) => w.spoken), [...ELDRITCH_OPEN_SPOKEN]);
-  assert.deepStrictEqual(EC1.words.map((w) => w.spoken), [...EC1_SPOKEN]);
-  assert.strictEqual(EC1.words.map((w) => w.glyphs).join(''), EC1_GLYPHS);
-  assert.deepStrictEqual(EC2.words.map((w) => w.spoken), [...EC2_SPOKEN]);
-  assert.strictEqual(EC2.words.map((w) => w.glyphs).join(''), EC2_GLYPHS);
-  assert.deepStrictEqual(ELDRITCH_CLOSE.words.map((w) => w.spoken), [...ELDRITCH_CLOSE_SPOKEN]);
-  assert.strictEqual(ELDRITCH_CLOSE.words.map((w) => w.glyphs).join(''), ELDRITCH_CLOSE_GLYPHS);
+  const spoken = (id: keyof typeof IDIOM_WORDS): string[] =>
+    IDIOM_WORDS[id].map((w) => w.spoken);
+  const glyphs = (id: keyof typeof IDIOM_WORDS): string =>
+    IDIOM_WORDS[id].map((w) => w.glyphs).join('');
+
+  assert.deepStrictEqual(spoken('EO1'), [...EO1_SPOKEN]);
+  assert.strictEqual(glyphs('EO1'), EO1_GLYPHS);
+  assert.deepStrictEqual(spoken('ELDRITCH_OPEN'), [...ELDRITCH_OPEN_SPOKEN]);
+  assert.deepStrictEqual(spoken('EC1'), [...EC1_SPOKEN]);
+  assert.strictEqual(glyphs('EC1'), EC1_GLYPHS);
+  assert.deepStrictEqual(spoken('EC2'), [...EC2_SPOKEN]);
+  assert.strictEqual(glyphs('EC2'), EC2_GLYPHS);
+  assert.deepStrictEqual(spoken('ELDRITCH_CLOSE'), [...ELDRITCH_CLOSE_SPOKEN]);
+  assert.strictEqual(glyphs('ELDRITCH_CLOSE'), ELDRITCH_CLOSE_GLYPHS);
 });
 
 test('numerals compose from strokes and the hobble as the spec lists them', () => {

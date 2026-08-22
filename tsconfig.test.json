@@ -8,6 +8,7 @@
   "include": [
     "src/ts/generator/**/*",
     "src/ts/languages/**/*",
+    "src/ts/glosses/**/*",
     "src/ts/strings/**/*",
     "tools/**/*",
     "tests/**/*",

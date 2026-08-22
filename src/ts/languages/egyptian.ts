@@ -2,6 +2,10 @@
 // morphology, the Eldritch register and the realization of a clause plan into
 // the three aligned output lines. Every rule implements docs/genomes.md
 // section 3.
+//
+// No English lives here. The genome decides which root fills which role and
+// hands those choices to the gloss pack of the displayed language, which
+// writes the sentence.
 
 import { pick, type Rng } from '../generator/rng.js';
 import type {
@@ -11,16 +15,18 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
+import type {
+  EgyptianAddress,
+  EgyptianGlosses,
+  GlossPack,
+  GlossRef,
+  RootForm,
+} from '../glosses/types.js';
 import {
   A14_ENEMY,
   AGENT_POWER,
   BRIGHT_POWER,
   DREAD_POWER,
-  EC1,
-  EC2,
-  ELDRITCH_CLOSE,
-  ELDRITCH_OPEN,
-  EO1,
   EO2_HEAD,
   FIELD_DET,
   FIELDS,
@@ -32,20 +38,20 @@ import {
   FN_N,
   FN_R,
   G37_EVIL,
+  IDIOM_WORDS,
   NUMERAL_WORDS,
   RN_I,
   RN_K,
   RX_I,
   RX_K,
-  SEAL_GLOSS,
   SEAL_HEAD,
   SIGN_MAP,
   SUFFIX_GLYPHS,
   SUFFIX_SKELETON,
   type DreadEpithet,
+  type EgyptianIdiomId,
   type EgyptianRoot,
   type FixedWord,
-  type Idiom,
   type PowerWord,
   type SealCount,
   type SuffixId,
@@ -284,20 +290,20 @@ function powerWord(power: PowerWord): EgyptianWord {
   };
 }
 
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
+function fills(root: EgyptianRoot, role: RootForm): boolean {
+  return root.forms.includes(role);
 }
 
 function nounsOf(field: SemanticField): EgyptianRoot[] {
-  return FIELDS[field].filter((r) => r.noun !== undefined);
+  return FIELDS[field].filter((r) => fills(r, 'noun'));
 }
 
 function verbsOf(field: SemanticField): EgyptianRoot[] {
-  return FIELDS[field].filter((r) => r.verb !== undefined);
+  return FIELDS[field].filter((r) => fills(r, 'verb'));
 }
 
 function adjectivesOf(field: SemanticField): EgyptianRoot[] {
-  return FIELDS[field].filter((r) => r.adj !== undefined);
+  return FIELDS[field].filter((r) => fills(r, 'adj'));
 }
 
 function requireField(field: SemanticField | null): SemanticField {
@@ -333,9 +339,9 @@ function adverbPhrase(
   modifier: Modifier,
   clause: ClausePlan,
   eldritch: boolean,
-): { words: EgyptianWord[]; gloss: string } {
+): { words: EgyptianWord[]; root: string | null } {
   const root = modifier.adverb;
-  if (root === null || clause.modifierField === null) return { words: [], gloss: '' };
+  if (root === null || clause.modifierField === null) return { words: [], root: null };
   return {
     words: [
       fixed(FN_M),
@@ -347,7 +353,7 @@ function adverbPhrase(
         verb: false,
       }),
     ],
-    gloss: ` in the ${root.noun ?? ''}`,
+    root: root.skeleton,
   };
 }
 
@@ -371,14 +377,11 @@ function adjectiveWord(
   ];
 }
 
-function adjectiveGloss(modifier: Modifier): string {
-  return modifier.adjective === null ? '' : `${modifier.adjective.adj ?? ''} `;
-}
-
 function realizeProtectionClause(
   clause: ClausePlan,
   rng: Rng,
   usedPowers: Set<string>,
+  glosses: EgyptianGlosses,
 ): Realization {
   const intent = pick(rng, verbsOf(geneField(clause, 'INTENT')));
   const targetField = geneField(clause, 'TARGET');
@@ -416,11 +419,22 @@ function realizeProtectionClause(
 
   return {
     words,
-    gloss: `I ${intent.verb ?? ''} against the ${adjectiveGloss(modifier)}${target.noun ?? ''}${adverb.gloss}, by ${agent.name}. ${power.name}!`,
+    gloss: glosses.protectionClause({
+      intentRoot: intent.skeleton,
+      targetRoot: target.skeleton,
+      adjectiveRoot: modifier.adjective?.skeleton ?? null,
+      adverbRoot: adverb.root,
+      agentPower: agent.skeleton,
+      freePower: power.skeleton,
+    }),
   };
 }
 
-function realizeCurseClause(clause: ClausePlan, rng: Rng): Realization {
+function realizeCurseClause(
+  clause: ClausePlan,
+  rng: Rng,
+  glosses: EgyptianGlosses,
+): Realization {
   const targetField = geneField(clause, 'TARGET');
   const target = pick(rng, nounsOf(targetField));
   const intent = pick(rng, verbsOf('harm'));
@@ -450,7 +464,12 @@ function realizeCurseClause(clause: ClausePlan, rng: Rng): Realization {
 
   return {
     words,
-    gloss: `May the ${adjectiveGloss(modifier)}${target.noun ?? ''} be ${intent.pp ?? ''}${adverb.gloss}.`,
+    gloss: glosses.curseClause({
+      targetRoot: target.skeleton,
+      intentRoot: intent.skeleton,
+      adjectiveRoot: modifier.adjective?.skeleton ?? null,
+      adverbRoot: adverb.root,
+    }),
   };
 }
 
@@ -459,6 +478,7 @@ function realizeInvocationClause(
   rng: Rng,
   plan: FormulaPlan,
   used: Set<string>,
+  glosses: EgyptianGlosses,
 ): Realization {
   const eldritch = plan.eldritch;
   const agentGenes = clause.genes.filter((g) => g.role === 'AGENT');
@@ -469,7 +489,7 @@ function realizeInvocationClause(
   const chain =
     plan.difficulty >= 9 && lastGene !== undefined ? [...agentGenes, lastGene] : agentGenes;
   const words: EgyptianWord[] = [fixed(FN_I)];
-  const names: string[] = [];
+  const agents: GlossRef[] = [];
 
   chain.forEach((gene, index) => {
     if (index > 0) words.push(fixed(FN_N));
@@ -477,7 +497,7 @@ function realizeInvocationClause(
       const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
       used.add(epithet.skeleton);
       words.push(dreadWord(epithet));
-      names.push(epithet.gloss.replace(/^the /, ''));
+      agents.push({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken });
     } else {
       const field = requireField(gene.field);
       const root = pick(rng, nounsOf(field).filter((r) => !used.has(r.skeleton)));
@@ -491,7 +511,7 @@ function realizeInvocationClause(
           verb: false,
         }),
       );
-      names.push(root.noun ?? '');
+      agents.push({ kind: 'root', id: root.skeleton });
     }
   });
 
@@ -499,36 +519,42 @@ function realizeInvocationClause(
   // "come!" (spec 3.5), which is a function word and takes no determinative.
   words.push(fixed(FN_MY));
 
-  let powerGloss: string;
+  let invoked: GlossRef;
   if (eldritch) {
     const power = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
     used.add(power.skeleton);
     words.push(dreadWord(power));
-    powerGloss = capitalize(power.spoken);
+    invoked = { kind: 'epithet', id: power.skeleton, spoken: power.spoken };
   } else {
     const power = pick(rng, BRIGHT_POWER.filter((p) => !used.has(p.skeleton)));
     used.add(power.skeleton);
     words.push(powerWord(power));
-    powerGloss = power.name;
+    invoked = { kind: 'power', id: power.skeleton };
   }
 
   const modifier = drawModifier(clause, rng);
   const adverb = adverbPhrase(modifier, clause, eldritch);
   words.push(...adverb.words);
 
-  const head = names[0] ?? '';
-  const epithets = names.slice(1).map((name) => ` of the ${name}`).join('');
-  return { words, gloss: `O ${head}${epithets}, come${adverb.gloss}! ${powerGloss}!` };
+  return {
+    words,
+    gloss: glosses.invocationClause({ agents, adverbRoot: adverb.root, power: invoked }),
+  };
 }
 
-function openingWords(plan: FormulaPlan, rng: Rng, used: Set<string>): Realization {
+function openingWords(
+  plan: FormulaPlan,
+  rng: Rng,
+  used: Set<string>,
+  glosses: EgyptianGlosses,
+): Realization {
   const words: EgyptianWord[] = [];
   const glossParts: string[] = [];
   const difficulty = plan.difficulty;
 
-  const pushIdiom = (idiom: Idiom): void => {
-    for (const word of idiom.words) words.push(idiomWord(word));
-    glossParts.push(idiom.gloss);
+  const pushIdiom = (id: EgyptianIdiomId): void => {
+    for (const word of IDIOM_WORDS[id]) words.push(idiomWord(word));
+    glossParts.push(glosses.idiom(id));
   };
 
   // EO2 keeps its shape under the register but its topic noun always comes
@@ -539,7 +565,9 @@ function openingWords(plan: FormulaPlan, rng: Rng, used: Set<string>): Realizati
       const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
       used.add(epithet.skeleton);
       words.push(dreadWord(epithet));
-      glossParts.push(`Spell of ${epithet.gloss}.`);
+      glossParts.push(
+        glosses.spellTitle({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }),
+      );
       return;
     }
     const clause = plan.clauses[0];
@@ -556,19 +584,19 @@ function openingWords(plan: FormulaPlan, rng: Rng, used: Set<string>): Realizati
         verb: false,
       }),
     );
-    glossParts.push(`Spell of the ${root.noun ?? ''}.`);
+    glossParts.push(glosses.spellTitle({ kind: 'root', id: root.skeleton }));
   };
 
   if (difficulty <= 4) {
     pushTitle();
   } else if (difficulty <= 7) {
-    pushIdiom(plan.eldritch ? ELDRITCH_OPEN : EO1);
+    pushIdiom(plan.eldritch ? 'ELDRITCH_OPEN' : 'EO1');
   } else {
-    pushIdiom(plan.eldritch ? ELDRITCH_OPEN : EO1);
+    pushIdiom(plan.eldritch ? 'ELDRITCH_OPEN' : 'EO1');
     pushTitle();
   }
 
-  return { words, gloss: glossParts.join(' ') };
+  return { words, gloss: glosses.sentences(glossParts) };
 }
 
 // EO3, the gate spell address. The register inverts it: the gatekeeper knows
@@ -576,27 +604,34 @@ function openingWords(plan: FormulaPlan, rng: Rng, used: Set<string>): Realizati
 function nameKnowledgeLine(
   plan: FormulaPlan,
   address: EgyptianWord[],
-  addressGloss: string,
+  addressed: EgyptianAddress,
+  glosses: EgyptianGlosses,
 ): Realization {
   const words: EgyptianWord[] = [fixed(FN_I), ...address];
-  if (plan.eldritch) {
-    words.push(fixed(RX_K), fixed(RN_I));
-    return { words, gloss: `O ${addressGloss}, you know my name.` };
-  }
-  words.push(fixed(RX_I), fixed(RN_K));
-  return { words, gloss: `O ${addressGloss}, I know your name.` };
+  words.push(...(plan.eldritch ? [fixed(RX_K), fixed(RN_I)] : [fixed(RX_I), fixed(RN_K)]));
+  return { words, gloss: glosses.nameKnowledge(addressed, plan.eldritch) };
 }
 
-function singleAddress(plan: FormulaPlan, rng: Rng, used: Set<string>): Realization | null {
+function singleAddress(
+  plan: FormulaPlan,
+  rng: Rng,
+  used: Set<string>,
+  glosses: EgyptianGlosses,
+): Realization | null {
   if (plan.school === 'curse') return null;
   if (plan.eldritch) {
     const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
     used.add(epithet.skeleton);
-    return nameKnowledgeLine(plan, [dreadWord(epithet)], epithet.gloss.replace(/^the /, ''));
+    return nameKnowledgeLine(
+      plan,
+      [dreadWord(epithet)],
+      { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken },
+      glosses,
+    );
   }
   if (plan.school === 'protection') {
     const god = pick(rng, AGENT_POWER);
-    return nameKnowledgeLine(plan, [powerWord(god)], god.name);
+    return nameKnowledgeLine(plan, [powerWord(god)], { kind: 'power', id: god.skeleton }, glosses);
   }
   const field = requireField(plan.clauses[0]?.genes.find((g) => g.role === 'AGENT')?.field ?? null);
   const root = pick(rng, nounsOf(field));
@@ -611,14 +646,20 @@ function singleAddress(plan: FormulaPlan, rng: Rng, used: Set<string>): Realizat
         verb: false,
       }),
     ],
-    root.noun ?? '',
+    { kind: 'root', id: root.skeleton },
+    glosses,
   );
 }
 
 // The tier 8 and 9 litany: three EO3 addresses to coined gate names, a
 // gates-field noun joined by n to a night or death noun (spec 3.9). The three
 // head nouns of one litany must differ.
-function gateLitany(plan: FormulaPlan, rng: Rng, used: Set<string>): Realization {
+function gateLitany(
+  plan: FormulaPlan,
+  rng: Rng,
+  used: Set<string>,
+  glosses: EgyptianGlosses,
+): Realization {
   const words: EgyptianWord[] = [];
   const glossParts: string[] = [];
   const heads = new Set<string>();
@@ -627,7 +668,12 @@ function gateLitany(plan: FormulaPlan, rng: Rng, used: Set<string>): Realization
     if (plan.eldritch) {
       const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
       used.add(epithet.skeleton);
-      const line = nameKnowledgeLine(plan, [dreadWord(epithet)], epithet.gloss.replace(/^the /, ''));
+      const line = nameKnowledgeLine(
+        plan,
+        [dreadWord(epithet)],
+        { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken },
+        glosses,
+      );
       words.push(...line.words);
       glossParts.push(line.gloss);
       continue;
@@ -655,20 +701,21 @@ function gateLitany(plan: FormulaPlan, rng: Rng, used: Set<string>): Realization
           verb: false,
         }),
       ],
-      `${head.noun ?? ''} of the ${tail.noun ?? ''}`,
+      { kind: 'gate', headRoot: head.skeleton, tailRoot: tail.skeleton },
+      glosses,
     );
     words.push(...line.words);
     glossParts.push(line.gloss);
   }
 
-  return { words, gloss: glossParts.join(' ') };
+  return { words, gloss: glosses.sentences(glossParts) };
 }
 
-function closingIdioms(plan: FormulaPlan): Idiom[] {
-  if (plan.eldritch) return [ELDRITCH_CLOSE];
-  if (plan.difficulty <= 6) return [EC2];
-  if (plan.difficulty <= 8) return [EC1];
-  return [EC1, EC2];
+function closingIdioms(plan: FormulaPlan): EgyptianIdiomId[] {
+  if (plan.eldritch) return ['ELDRITCH_CLOSE'];
+  if (plan.difficulty <= 6) return ['EC2'];
+  if (plan.difficulty <= 8) return ['EC1'];
+  return ['EC1', 'EC2'];
 }
 
 function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
@@ -678,19 +725,22 @@ function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
   return pick(rng, [9, 12] as const);
 }
 
-function realizeTierOne(plan: FormulaPlan, rng: Rng): Realization {
+function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): Realization {
   if (plan.eldritch) {
     const epithet = pick(rng, DREAD_POWER);
     return {
       words: [dreadWord(epithet)],
-      gloss: `${capitalize(epithet.spoken)}, ${epithet.gloss}.`,
+      gloss: glosses.tierOne({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }),
     };
   }
   const power = pick(rng, BRIGHT_POWER);
-  return { words: [powerWord(power)], gloss: power.gloss };
+  return {
+    words: [powerWord(power)],
+    gloss: glosses.tierOne({ kind: 'power', id: power.skeleton }),
+  };
 }
 
-function realizeTierTwo(plan: FormulaPlan, rng: Rng): Realization {
+function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): Realization {
   const clause = plan.clauses[0];
   if (clause === undefined) throw new Error('tier 2 plan has no clause');
   const intentField = geneField(clause, 'INTENT');
@@ -715,13 +765,13 @@ function realizeTierTwo(plan: FormulaPlan, rng: Rng): Realization {
         verb: false,
       }),
     ],
-    gloss: `${capitalize(intent.verb ?? '')} the ${target.noun ?? ''}!`,
+    gloss: glosses.tierTwo(intent.skeleton, target.skeleton),
   };
 }
 
-function composeEgyptian(plan: FormulaPlan, rng: Rng): Realization {
-  if (plan.difficulty === 1) return realizeTierOne(plan, rng);
-  if (plan.difficulty === 2) return realizeTierTwo(plan, rng);
+function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): Realization {
+  if (plan.difficulty === 1) return realizeTierOne(plan, rng, glosses);
+  if (plan.difficulty === 2) return realizeTierTwo(plan, rng, glosses);
 
   const words: EgyptianWord[] = [];
   const glossParts: string[] = [];
@@ -729,16 +779,16 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng): Realization {
   // never both the invoked agent and the free power word.
   const used = new Set<string>();
 
-  const opening = openingWords(plan, rng, used);
+  const opening = openingWords(plan, rng, used, glosses);
   words.push(...opening.words);
   glossParts.push(opening.gloss);
 
   if (plan.difficulty >= 8) {
-    const litany = gateLitany(plan, rng, used);
+    const litany = gateLitany(plan, rng, used, glosses);
     words.push(...litany.words);
     glossParts.push(litany.gloss);
   } else if (plan.difficulty >= 6) {
-    const address = singleAddress(plan, rng, used);
+    const address = singleAddress(plan, rng, used, glosses);
     if (address !== null) {
       words.push(...address.words);
       glossParts.push(address.gloss);
@@ -749,20 +799,20 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng): Realization {
     const clauseUsed = new Set<string>(used);
     let realized: Realization;
     if (plan.school === 'protection') {
-      realized = realizeProtectionClause(clause, rng, clauseUsed);
+      realized = realizeProtectionClause(clause, rng, clauseUsed, glosses);
     } else if (plan.school === 'curse') {
-      realized = realizeCurseClause(clause, rng);
+      realized = realizeCurseClause(clause, rng, glosses);
     } else {
-      realized = realizeInvocationClause(clause, rng, plan, clauseUsed);
+      realized = realizeInvocationClause(clause, rng, plan, clauseUsed, glosses);
     }
     words.push(...realized.words);
     glossParts.push(realized.gloss);
   }
 
   if (plan.closing) {
-    for (const idiom of closingIdioms(plan)) {
-      for (const word of idiom.words) words.push(idiomWord(word));
-      glossParts.push(idiom.gloss);
+    for (const id of closingIdioms(plan)) {
+      for (const word of IDIOM_WORDS[id]) words.push(idiomWord(word));
+      glossParts.push(glosses.idiom(id));
     }
   }
 
@@ -770,14 +820,14 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng): Realization {
     const count = sealCountFor(plan, rng);
     words.push(idiomWord(SEAL_HEAD));
     for (const numeral of NUMERAL_WORDS[count]) words.push(idiomWord(numeral));
-    glossParts.push(SEAL_GLOSS[count]);
+    glossParts.push(glosses.seal(count));
   }
 
-  return { words, gloss: glossParts.join(' ') };
+  return { words, gloss: glosses.sentences(glossParts) };
 }
 
-function realizeFormula(plan: FormulaPlan, rng: Rng): FormulaOutput {
-  const { words, gloss } = composeEgyptian(plan, rng);
+function realizeFormula(plan: FormulaPlan, rng: Rng, pack: GlossPack): FormulaOutput {
+  const { words, gloss } = composeEgyptian(plan, rng, pack.egyptian);
   return {
     // The script runs continuous at every difficulty, word boundaries show
     // only through the determinatives (spec 3.2).
