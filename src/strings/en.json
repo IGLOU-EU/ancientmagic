@@ -59,12 +59,13 @@
   "copy.failed": "Copy failed",
 
   "share.message": "An incantation traced by the ancient scripts. Pronounce it.",
+  "share.mastodon.label": "Share on Mastodon",
+  "share.mail.label": "Share by email",
   "share.bluesky.label": "Share on Bluesky",
+  "share.whatsapp.label": "Share on WhatsApp",
+  "share.linkedin.label": "Share on LinkedIn",
   "share.facebook.label": "Share on Facebook",
   "share.x.label": "Share on X",
-  "share.linkedin.label": "Share on LinkedIn",
-  "share.whatsapp.label": "Share on WhatsApp",
-  "share.mail.label": "Share by email",
 
   "print.caption": "Runic · Protection · Power 5",
 

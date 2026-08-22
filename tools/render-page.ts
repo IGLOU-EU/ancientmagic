@@ -48,13 +48,20 @@ const SHARE_MESSAGE = 'share.message';
 //
 // {url} is the page, {message} the authored line, {post} the two of them
 // together, which is what a network expects when it offers a single field.
+//
+// The order is the row's order, and it is an editorial one: free software
+// before proprietary, personal before public, least harmful before most.
+// Mastodon shares through the project's own service, which asks the reader
+// for their instance instead of assuming one, and it rides the fragment
+// rather than a query, so the address never reaches that service's server.
 const SHARE_TARGETS: ReadonlyMap<string, string> = new Map([
+  ['mastodon', 'https://share.joinmastodon.org/#text={post}'],
+  ['mail', 'mailto:?subject={message}&body={url}'],
   ['bluesky', 'https://bsky.app/intent/compose?text={post}'],
+  ['whatsapp', 'https://api.whatsapp.com/send?text={post}'],
+  ['linkedin', 'https://www.linkedin.com/sharing/share-offsite/?url={url}'],
   ['facebook', 'https://www.facebook.com/sharer/sharer.php?u={url}'],
   ['x', 'https://x.com/intent/post?text={message}&url={url}'],
-  ['linkedin', 'https://www.linkedin.com/sharing/share-offsite/?url={url}'],
-  ['whatsapp', 'https://api.whatsapp.com/send?text={post}'],
-  ['mail', 'mailto:?subject={message}&body={url}'],
 ]);
 
 export const SHARE_NETWORKS: ReadonlyArray<string> = Array.from(SHARE_TARGETS.keys());

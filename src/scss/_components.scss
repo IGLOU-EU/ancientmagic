@@ -909,6 +909,14 @@ a:focus-visible {
   fill: currentcolor;
 }
 
+// The official Mastodon mark fills its own box edge to edge, where the others
+// keep a margin inside theirs. Sized down so all seven carry the same apparent
+// ink, the same calibration the glyph families get in design 13.3.
+.share-icon--mastodon {
+  width: 15px;
+  height: 15px;
+}
+
 // ------------------------------------------------------------------ footer
 .site-footer {
   color: $text-muted;

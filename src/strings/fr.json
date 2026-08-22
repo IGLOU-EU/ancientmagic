@@ -59,12 +59,13 @@
   "copy.failed": "Échec de la copie",
 
   "share.message": "Une incantation tracée par les anciennes écritures. Prononcez-la.",
+  "share.mastodon.label": "Partager sur Mastodon",
+  "share.mail.label": "Partager par courriel",
   "share.bluesky.label": "Partager sur Bluesky",
+  "share.whatsapp.label": "Partager sur WhatsApp",
+  "share.linkedin.label": "Partager sur LinkedIn",
   "share.facebook.label": "Partager sur Facebook",
   "share.x.label": "Partager sur X",
-  "share.linkedin.label": "Partager sur LinkedIn",
-  "share.whatsapp.label": "Partager sur WhatsApp",
-  "share.mail.label": "Partager par courriel",
 
   "print.caption": "Runes · Protection · Puissance 5",
 
