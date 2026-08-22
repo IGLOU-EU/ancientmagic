@@ -28,6 +28,7 @@ const LANGUAGE_NAME = 'lang.name';
 const SHARED_LABEL = 'common';
 
 const STRAIGHT_QUOTE = '"';
+const STRAIGHT_APOSTROPHE = "'";
 
 // The indent the template gives the switcher list, so a second alternate lines
 // up under the first instead of hanging off the left margin.
@@ -128,6 +129,15 @@ export function assertTypographicQuotes(strings: PageStrings, label: string): vo
   if (offenders.length > 0) {
     throw new Error(
       `${label}: straight double quotes in ${listed(offenders)}, use typographic quotes`,
+    );
+  }
+  // Harmless technically, but typography is a build concern by owner ruling.
+  const apostrophes = Object.keys(strings).filter((key) =>
+    strings[key].includes(STRAIGHT_APOSTROPHE),
+  );
+  if (apostrophes.length > 0) {
+    throw new Error(
+      `${label}: straight apostrophes in ${listed(apostrophes)}, use U+2019`,
     );
   }
 }

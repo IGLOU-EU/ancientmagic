@@ -7,5 +7,5 @@ export const en = {
     },
     difficultyValueText: (value, tier) => `${value}, ${tier}`,
     glyphLineLabel: (languageLabel) => `Incantation in ${languageLabel}`,
-    printCaption: (languageLabel, schoolLabel, difficulty) => `${languageLabel} · ${schoolLabel} · Difficulty ${difficulty}`,
+    printCaption: (languageLabel, schoolLabel, difficulty) => `${languageLabel} · ${schoolLabel} · Power ${difficulty}`,
 };

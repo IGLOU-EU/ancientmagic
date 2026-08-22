@@ -14,5 +14,5 @@ export const fr: UiStrings = {
   glyphLineLabel: (languageLabel) => `Incantation en ${languageLabel}`,
 
   printCaption: (languageLabel, schoolLabel, difficulty) =>
-    `${languageLabel} · ${schoolLabel} · Difficulté ${difficulty}`,
+    `${languageLabel} · ${schoolLabel} · Puissance ${difficulty}`,
 };

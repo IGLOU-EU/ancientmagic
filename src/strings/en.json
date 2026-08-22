@@ -4,21 +4,21 @@
   "lang.name": "English",
   "lang.navLabel": "Site language",
 
-  "meta.title": "Ancient Magic, conjured incantations in real ancient scripts",
-  "meta.description": "Pick a script, a school of magic and a difficulty, then read a fictional incantation written in real ancient glyphs, with its transliteration and a plain-language gloss.",
+  "meta.title": "Ancient Magic, the incantations of the ancient scripts",
+  "meta.description": "Choose a script, a school of magic and a level of power, then pronounce the incantation traced in ancient glyphs, with its transliteration and its gloss.",
   "meta.ogLocale": "en_GB",
   "meta.imageAlt": "The Ancient Magic wordmark in gold over a dark violet starfield, above a glowing runic incantation and its transliteration.",
 
-  "jsonld.description": "A single-page generator of fictional incantations written in real ancient scripts, with transliteration and a plain-language gloss.",
+  "jsonld.description": "Magical incantations, traced by the ancient scripts, with their transliteration and gloss.",
   "jsonld.operatingSystem": "Any modern web browser",
   "jsonld.browserRequirements": "Requires JavaScript",
 
-  "header.promise": "Conjured incantations, written in real ancient scripts.",
+  "header.promise": "Magical incantations, traced in ancient and powerful scripts.",
 
   "altar.title": "The Altar",
   "altar.languageLabel": "Language",
   "altar.schoolLabel": "School of magic",
-  "altar.difficultyLabel": "Difficulty",
+  "altar.difficultyLabel": "Power",
 
   "language.runic": "Runic",
   "language.egyptian": "Egyptian Hieroglyphs",
@@ -50,17 +50,17 @@
   "action.conjure": "Conjure",
   "action.reroll": "Reroll",
 
-  "manifestation.title": "The Manifestation",
+  "manifestation.title": "The Emanation",
   "sample.glyphLabel": "Incantation in Runic",
 
   "copy.idle": "Copy glyphs",
   "copy.copied": "Copied",
   "copy.failed": "Copy failed",
 
-  "print.caption": "Runic · Protection · Difficulty 5",
+  "print.caption": "Runic · Protection · Power 5",
 
   "footer.license": "Public domain (Unlicense)",
   "footer.separator": "·",
   "footer.source": "Source",
-  "footer.disclaimer": "Every formula here is generated fiction. It translates nothing and teaches nothing."
+  "footer.disclaimer": "Every formula generated here is fiction, and is not to be taken for a reliable translation or a teaching."
 }

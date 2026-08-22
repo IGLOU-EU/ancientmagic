@@ -1,24 +1,24 @@
 {
-  "brand.name": "Ancient Magic",
+  "brand.name": "Ancienne Magie",
 
   "lang.name": "Français",
   "lang.navLabel": "Langue du site",
 
-  "meta.title": "Ancient Magic, des incantations en véritables écritures anciennes",
-  "meta.description": "Choisissez une écriture, une école de magie et une difficulté, puis lisez une incantation fictive tracée en véritables glyphes anciens, avec sa translittération et sa glose.",
+  "meta.title": "Ancienne Magie, sont les incantations des anciennes écritures",
+  "meta.description": "Choisissez une écriture, une école de magie et un niveau de puissance, prononcez l’incantation tracée des glyphes anciens, avec sa translittération et sa glose.",
   "meta.ogLocale": "fr_FR",
-  "meta.imageAlt": "Le logotype Ancient Magic en or sur un ciel étoilé violet sombre, au-dessus d’une incantation runique lumineuse et de sa translittération.",
+  "meta.imageAlt": "Le logotype d’Ancienne Magie en or sur un ciel étoilé violet sombre, au-dessus d’une incantation runique lumineuse et de sa translittération.",
 
-  "jsonld.description": "Un générateur d’incantations fictives, sur une seule page, tracées en véritables écritures anciennes, avec translittération et glose.",
+  "jsonld.description": "Des incantations magiques, tracées par les anciennes écritures, avec leur translittération et glose.",
   "jsonld.operatingSystem": "Tout navigateur web moderne",
   "jsonld.browserRequirements": "Nécessite JavaScript",
 
-  "header.promise": "Des incantations invoquées, tracées en véritables écritures anciennes.",
+  "header.promise": "Des incantations magiques, tracées dans d’anciennes et puissantes écritures.",
 
   "altar.title": "L’Autel",
   "altar.languageLabel": "Langue",
   "altar.schoolLabel": "École de magie",
-  "altar.difficultyLabel": "Difficulté",
+  "altar.difficultyLabel": "Puissance",
 
   "language.runic": "Runes",
   "language.egyptian": "Hiéroglyphes égyptiens",
@@ -50,17 +50,17 @@
   "action.conjure": "Invoquer",
   "action.reroll": "Relancer",
 
-  "manifestation.title": "La Manifestation",
+  "manifestation.title": "L’Émanation",
   "sample.glyphLabel": "Incantation en Runes",
 
   "copy.idle": "Copier les glyphes",
   "copy.copied": "Copié",
   "copy.failed": "Échec de la copie",
 
-  "print.caption": "Runes · Protection · Difficulté 5",
+  "print.caption": "Runes · Protection · Puissance 5",
 
   "footer.license": "Domaine public (Unlicense)",
   "footer.separator": "·",
   "footer.source": "Source",
-  "footer.disclaimer": "Chaque formule est une fiction générée. Elle ne traduit rien et n’enseigne rien."
+  "footer.disclaimer": "Chaque formule générée est fictive, et ne saurait être considérée comme une traduction fiable ou un enseignement."
 }

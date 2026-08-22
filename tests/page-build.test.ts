@@ -146,6 +146,22 @@ test('page build: names every value carrying a straight double quote', () => {
   );
 });
 
+// A straight apostrophe breaks nothing technically, only the typography rule.
+// The owner ruled it mechanical: he never wants to proofread for it.
+test('page build: fails on a straight apostrophe in a value', () => {
+  assert.throws(
+    () => assertTypographicQuotes({ 'footer.disclaimer': "l'ancienne magie" }, 'fr'),
+    /^Error: fr: .*footer\.disclaimer.*U\+2019/,
+  );
+});
+
+test('page build: names every value carrying a straight apostrophe', () => {
+  assert.throws(
+    () => assertTypographicQuotes({ a: "l'un", b: 'clean', c: "l'autre" }, 'fr'),
+    /a, c/,
+  );
+});
+
 test('page build: accepts typographic quotes, guillemets and apostrophes', () => {
   assert.doesNotThrow(() =>
     assertTypographicQuotes(
