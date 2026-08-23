@@ -44,7 +44,9 @@ $glyph-descent: 0.29;
     src: url('../fonts/#{$file}.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
-    font-display: swap;
+    // Block, owner ruling: the glyph line waits for its face rather than
+    // flashing a fallback, so a first conjuration always lands complete.
+    font-display: block;
     unicode-range: #{$range};
     size-adjust: pct($scale);
     ascent-override: pct(math.div($glyph-ascent, $scale));

@@ -207,6 +207,13 @@ async function loadConjurer(id: LanguageId): Promise<Conjurer> {
   return (settings, seed) => pipeline.generate(genome, settings, seed);
 }
 
+// The panel the served page keeps hidden. Nothing opens it but a conjuration,
+// and once open it stays: the page holds a formula from then on.
+function revealManifestation(): void {
+  const section = document.querySelector('.manifestation');
+  if (section instanceof HTMLElement) section.hidden = false;
+}
+
 // The seed is the caller's: a click draws a fresh one, a link brings its own,
 // and everything after this point is the same for both.
 async function conjure(settings: Settings, seed: number): Promise<void> {
@@ -223,6 +230,13 @@ async function conjure(settings: Settings, seed: number): Promise<void> {
   const output = write(settings, seed);
   const languageLabel = optionLabel('language', settings.language);
   const schoolLabel = optionLabel('school', settings.school);
+
+  // Opened and written in the same breath, so the panel is never on screen
+  // holding the served sample: no frame lays it out, no script face is fetched
+  // for it, and the well is displayed and true in the same frame. A conjuration
+  // that never comes back leaves the page as it was served, which is the only
+  // honest thing to show when there is no formula.
+  revealManifestation();
   renderFormula(output, {
     languageId: settings.language,
     glyphLabel: strings.glyphLineLabel(languageLabel),

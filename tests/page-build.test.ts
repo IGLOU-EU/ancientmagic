@@ -403,6 +403,22 @@ test('page build: every language ships the social preview its page points at', (
   }
 });
 
+// The Emanation belongs to a conjuration. Served open it would show every
+// arrival a formula nobody asked for, with a reroll that replays nothing and a
+// copy that hands over the sample. The attribute is what the served page
+// carries, and the conjuration flow is the only thing that lifts it. The text
+// underneath is untouched: it is still what a crawler reads and what the
+// pre-rendered equality tests hold to the replay of its own link.
+test('page build: every page serves the Emanation hidden, sample and all', () => {
+  const glyphs = readJson('src', 'strings', 'common.json')['sample.glyphs'];
+
+  for (const page of site().values()) {
+    const tag = /<section class="manifestation"[^>]*>/.exec(page)?.[0] ?? '';
+    assert.match(tag, /\bhidden\b/, tag);
+    assert.ok(page.includes(glyphs), 'the served sample left the document');
+  }
+});
+
 // An icon carries no name, so each link states its own, and the drawing is
 // hidden from anything that reads. Both are what makes the row usable without
 // the icons ever being recognized, and neither is visible on screen.

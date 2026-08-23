@@ -163,9 +163,18 @@ html { color-scheme: dark; background-color: #171029; }
       </div>
     </section>
 
-    <div class="sigil-band" aria-hidden="true"></div>
+    <!-- Served hidden, because nothing this panel holds means anything before a
+         formula exists: rerolling replays nothing, copying would hand over a
+         sample, sharing would name a formula nobody conjured. The attribute
+         rather than a stylesheet rule, so the panel is out of the layout, out
+         of the tab order and out of the accessibility tree from the first byte
+         parsed, with no frame in which it shows. The sample below stays in the
+         document either way: hiding is presentation, not removal. The leading
+         sigil band lives inside, so the idle page reads a single band between
+         the altar and the footer instead of a doubled rule (owner ruling). -->
+    <section class="manifestation" aria-labelledby="manifestation-title" hidden>
+      <div class="sigil-band" aria-hidden="true"></div>
 
-    <section class="manifestation" aria-labelledby="manifestation-title">
       <h2 class="eyebrow" id="manifestation-title">The Emanation</h2>
 
       <div class="well-stage">
