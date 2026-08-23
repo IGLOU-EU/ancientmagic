@@ -59,8 +59,16 @@ $dur-swap: 160ms;
 $dur-reveal: 420ms;
 $dur-reveal-reduced: 120ms;
 $dur-enter: 500ms;
-$dur-flare: 900ms;
 $hold-copied: 1600ms;
+
+// The veil lifting and the metal cooling, design 13.6. The reveal runs once,
+// the forge runs at every conjuration.
+$dur-veil: 640ms;
+$dur-veil-reduced: 260ms;
+$dur-backlight: 1100ms;
+$dur-circle-wake: 900ms;
+$dur-forge: 1400ms;
+$dur-forge-reduced: 600ms;
 
 // Vapor loops of the glyph glow. Breathe, drift and sway run on mismatched
 // periods so the combined cycle never reads as mechanical.
@@ -154,17 +162,26 @@ $bp: 720px;
   @return $out;
 }
 
-// Resting and flare glow of the manifested glyphs. Shared as lists so the
-// flare keyframes land exactly on the resting state without a visible jump.
+// The three temperatures of the manifested glyphs, design 13.6: struck, ember,
+// resting. Shared as lists so the forge keyframes land exactly on the resting
+// state and the sway takes over without a visible jump. Same four layers
+// throughout (core, halo, bloom, aura), and no layer is ever thinner or fainter
+// than its resting value.
 $glow-glyph-rest: (
   0 0 2px a($gold-bright, 0.85),
   0 0 12px a($gold, 0.55),
   0 0 34px a($gold, 0.3),
   0 0 70px a($violet-fill-hover, 0.5)
 );
-$glow-glyph-flare: (
-  0 0 6px a($gold-pale, 0.95),
-  0 0 30px a($gold, 0.85),
-  0 0 90px a($gold, 0.45),
-  0 0 130px a($violet-fill-hover, 0.6)
+$glow-glyph-ember: (
+  0 0 4px a($gold-bright, 0.95),
+  0 0 19px a($gold, 0.7),
+  0 0 54px a($gold, 0.4),
+  0 0 100px a($violet-fill-hover, 0.58)
+);
+$glow-glyph-strike: (
+  0 0 8px a($gold-pale, 1),
+  0 0 30px a($gold-bright, 0.9),
+  0 0 88px a($gold, 0.55),
+  0 0 140px a($violet-fill-hover, 0.68)
 );

@@ -141,13 +141,70 @@ p {
   }
 }
 
-@keyframes am-glyph-flare {
+// The formula is struck, not faded in, design 13.6. The letters carry the heat
+// in their own body and the glow cools with them. Emerge front-loads both
+// intervals, which is the shape of cooling metal: two fast drops, then a tail
+// where the glow is still coming down and nothing seems to change.
+@keyframes am-forge {
+  0% {
+    color: $gold-pale;
+    text-shadow: $glow-glyph-strike;
+  }
+
+  18% {
+    color: $gold-bright;
+    text-shadow: $glow-glyph-ember;
+  }
+
+  100% {
+    color: $gold;
+    text-shadow: $glow-glyph-rest;
+  }
+}
+
+// What the forge leaves a reader who asked for stillness: the temperature
+// without the overshoot, design 13.6 and 9.6.
+@keyframes am-forge-cool {
   from {
-    text-shadow: $glow-glyph-flare;
+    color: $gold-pale;
   }
 
   to {
-    text-shadow: $glow-glyph-rest;
+    color: $gold;
+  }
+}
+
+// The veil lifting, design 13.6. A swell rather than a rise: the header, the
+// altar and the output lines all rise already, and a third slide in the same
+// direction would read as one doubled move.
+@keyframes am-materialize {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Light before matter: the backlight is born with the panel, peaks while it is
+// still coming up, and is spent by the end.
+@keyframes am-backlight {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  22% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.14);
   }
 }
 

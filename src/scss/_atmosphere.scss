@@ -236,6 +236,11 @@ html::after {
   margin-left: calc(var(--mc-size) / -2);
   aspect-ratio: 1;
   pointer-events: none;
+  // Wakes last, behind the well, which is what gives the reveal of design 13.6
+  // its depth: the panel is legible before the mechanism lights up under it.
+  // The fill is backwards so the delay holds the circle dark and nothing is
+  // left on it afterwards, the bloom below needs its blend unisolated.
+  animation: am-fade $dur-circle-wake $ease-settle 200ms backwards;
 
   > span {
     display: block;

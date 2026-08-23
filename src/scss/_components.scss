@@ -688,12 +688,41 @@ a:focus-visible {
 }
 
 // ----------------------------------------------------- the manifestation
+// The veil of design 13.5 is the trigger of the reveal of 13.6: no animation
+// runs on a display:none subtree, and every animation under it starts on the
+// frame the script drops the hidden attribute. The fill is backwards and never
+// forwards, because a transform or an opacity left on the section would open a
+// stacking context and cut the magic circle's bloom off from the page
+// atmosphere for the rest of the session.
 .manifestation {
   position: relative;
+  animation: am-materialize $dur-veil $ease-emerge backwards;
 }
 
 .well-stage {
   position: relative;
+}
+
+// The light that arrives before the matter. One gold radial behind everything
+// in the stage, spent by the end of its own animation: its resting opacity is
+// 0, which is also what print, forced colors and any engine that does not run
+// the animation are left with. The well's fill is opaque, so what is seen of
+// this light is what escapes around it: the box is grown past the well on
+// every side, most of all above and below, and the radial fades out inside
+// that margin.
+.well-stage::before {
+  content: '';
+  position: absolute;
+  inset: -40% -12%;
+  pointer-events: none;
+  opacity: 0;
+  background-image: radial-gradient(
+    ellipse 58% 58% at 50% 50%,
+    a($gold, 0.55) 0,
+    a($gold, 0.22) 46%,
+    a($gold, 0) 80%
+  );
+  animation: am-backlight $dur-backlight $ease-emerge backwards;
 }
 
 .well {
@@ -731,12 +760,12 @@ a:focus-visible {
   overflow-wrap: anywhere;
   text-shadow: $glow-glyph-rest;
 
-  // The sway is delayed by the flare duration and both meet on the resting
+  // The sway is delayed by the forge duration and both meet on the resting
   // shadow, so the handover between the two is invisible.
   animation:
     am-reveal $dur-reveal $ease-emerge both,
-    am-glyph-flare $dur-flare $ease-emerge both,
-    am-glow-sway $dur-glow-sway ease-in-out $dur-flare infinite;
+    am-forge $dur-forge $ease-emerge both,
+    am-glow-sway $dur-glow-sway ease-in-out $dur-forge infinite;
 }
 
 // The vapor twin, design revision 1. The same text blurred behind the real
@@ -961,10 +990,31 @@ a:focus-visible {
     animation: am-fade $dur-enter $ease-emerge 80ms both;
   }
 
-  // The rich glow stays, it is static. Only the loops and the flare go.
+  // The panel appears rather than swells. A longer fade than the 120ms of the
+  // output lines: this one happens once and carries a whole section.
+  .manifestation {
+    animation: am-fade $dur-veil-reduced $ease-emerge backwards;
+  }
+
+  // A light that swells and dies is movement whatever it is made of. All that
+  // is left of the backlight is its resting opacity, which is nothing.
+  .well-stage::before {
+    animation: none;
+  }
+
+  // Arrives with the panel instead of waking behind it.
+  .magic-circle {
+    animation: none;
+  }
+
+  // The rich glow stays, it is static. Only the loops and the overshoot go.
+  // The temperature stays with them: color is not motion, and a reader who
+  // asked for stillness still gets told this formula was just forged.
   .glyph-line {
     text-shadow: $glow-glyph-rest;
-    animation: am-fade $dur-reveal-reduced $ease-emerge both;
+    animation:
+      am-fade $dur-reveal-reduced $ease-emerge both,
+      am-forge-cool $dur-forge-reduced $ease-emerge both;
   }
 
   .glyph-line--vapor {
