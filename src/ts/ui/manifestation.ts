@@ -20,11 +20,22 @@ function sizeTier(glyphs: string): 'large' | 'medium' | 'small' {
 }
 
 // Standard animation re-trigger: detach the animation, force one reflow,
-// reattach. The reveal and flare then replay from their start.
+// reattach. The reveal and the forge then replay from their start.
 function replayAnimations(element: HTMLElement): void {
   element.style.animation = 'none';
   void element.offsetWidth;
   element.style.animation = '';
+}
+
+// The spark fields of design 13.6 are pseudo-elements, and an inline animation
+// set on an element never reaches its ::before, so what is dropped and put
+// back for them is the attribute that declares them. It rides the stage rather
+// than anything inside the well, which keeps every attribute change out of the
+// live region the well announces.
+function replaySparks(stage: HTMLElement): void {
+  stage.removeAttribute('data-forge');
+  void stage.offsetWidth;
+  stage.dataset.forge = 'struck';
 }
 
 export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
@@ -32,6 +43,7 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   const glyphLine = document.getElementById('glyph-line');
   if (well === null || glyphLine === null) return;
 
+  const stage = document.querySelector<HTMLElement>('.well-stage');
   const vapor = well.querySelector<HTMLElement>('.glyph-line--vapor');
   const translit = well.querySelector<HTMLElement>('.translit');
   const gloss = well.querySelector<HTMLElement>('.gloss');
@@ -55,4 +67,5 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   replayAnimations(glyphLine);
   if (translit !== null) replayAnimations(translit);
   if (gloss !== null) replayAnimations(gloss);
+  if (stage !== null) replaySparks(stage);
 }

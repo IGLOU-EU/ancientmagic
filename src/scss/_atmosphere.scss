@@ -103,19 +103,15 @@ body::before {
 // and the field reads as random. Dot radii stay above one device pixel and
 // opacities above 0.4, anything finer is rasterized into invisibility once
 // the mask ramp dims it.
-@function star($x, $y, $radius, $tint) {
-  @return radial-gradient(circle $radius at $x $y, $tint 0, $tint 45%, a($tint, 0) 100%);
-}
-
 // One dot per layer: no constellation exists to repeat as a group. Tile
 // periods share no common factor and each layer gets its own phase offset,
 // so no two layers ever align twice the same way on screen.
 $band-stars: (
-  star(37%, 63%, 1.5px, a($star-mid, 0.8)),
-  star(71%, 23%, 1.25px, a($star-far, 0.6)),
-  star(13%, 41%, 1px, a($star-far, 0.55)),
-  star(59%, 87%, 1px, a($star-far, 0.5)),
-  star(89%, 9%, 0.75px, a($star-far, 0.45))
+  dot(37%, 63%, 1.5px, a($star-mid, 0.8)),
+  dot(71%, 23%, 1.25px, a($star-far, 0.6)),
+  dot(13%, 41%, 1px, a($star-far, 0.55)),
+  dot(59%, 87%, 1px, a($star-far, 0.5)),
+  dot(89%, 9%, 0.75px, a($star-far, 0.45))
 );
 
 // Two nested gradients rather than one, so the core reads as a glow with a

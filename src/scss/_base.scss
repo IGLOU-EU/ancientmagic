@@ -189,6 +189,46 @@ p {
   }
 }
 
+// The powder the strike throws, design 13.6. A whole field is flown by one
+// transform rather than by a vector per dot, because the source is a line and
+// not a point: the powder is born spread along the formula and pushed outward
+// from the middle, each dot travelling in proportion to how far out it was.
+// The two fields disagree on everything, direction of turn, drift and life, so
+// the burst never settles into a ring.
+@keyframes am-spark-rise {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) rotate(-5deg) translateY(0);
+  }
+
+  10% {
+    opacity: 1;
+    transform: scale(1.15) rotate(-2deg) translateY(-2px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(2.3) rotate(4deg) translateY(-16px);
+  }
+}
+
+@keyframes am-spark-fall {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) rotate(4deg) translateY(0);
+  }
+
+  16% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(2deg) translateY(1px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.85) rotate(-3deg) translateY(10px);
+  }
+}
+
 // Light before matter: the backlight is born with the panel, peaks while it is
 // still coming up, and is spent by the end.
 @keyframes am-backlight {

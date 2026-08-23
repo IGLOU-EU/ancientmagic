@@ -3,6 +3,52 @@
 
 $corner-mark: linear-gradient(a($gold, 0.4), a($gold, 0.4));
 
+// The two spark fields of design 13.6, eighteen dots each. Irregular by hand:
+// a jittered sweep across the box rather than a grid, and the two fields
+// interleave so no dot of one sits on a dot of the other. They start packed
+// against the formula and are thinned by their own expansion, which is what a
+// burst looks like.
+$spark-rise: (
+  dot(6%, 18%, 2.6px, a($gold-pale, 0.9)),
+  dot(14%, 63%, 3.1px, a($gold-pale, 1)),
+  dot(19%, 8%, 2.2px, a($gold-bright, 0.76)),
+  dot(27%, 41%, 2.8px, a($gold-pale, 0.94)),
+  dot(31%, 88%, 2.4px, a($gold-bright, 0.8)),
+  dot(38%, 14%, 3px, a($gold-pale, 0.92)),
+  dot(44%, 58%, 2.1px, a($gold-bright, 0.74)),
+  dot(49%, 92%, 2.7px, a($gold-pale, 0.88)),
+  dot(55%, 25%, 3.4px, a($gold-pale, 0.96)),
+  dot(58%, 71%, 2.2px, a($gold-bright, 0.78)),
+  dot(64%, 5%, 2.5px, a($gold-pale, 0.85)),
+  dot(69%, 47%, 3px, a($gold-bright, 0.9)),
+  dot(74%, 84%, 2.3px, a($gold-pale, 0.82)),
+  dot(79%, 31%, 2.9px, a($gold-pale, 0.95)),
+  dot(85%, 66%, 2.4px, a($gold-bright, 0.8)),
+  dot(89%, 12%, 2px, a($gold-bright, 0.72)),
+  dot(94%, 52%, 2.8px, a($gold-pale, 0.9)),
+  dot(97%, 79%, 2.2px, a($gold-bright, 0.75))
+);
+$spark-fall: (
+  dot(3%, 44%, 2.1px, a($gold, 0.8)),
+  dot(10%, 86%, 1.7px, a($gold, 0.66)),
+  dot(17%, 27%, 2.3px, a($gold-bright, 0.78)),
+  dot(23%, 70%, 1.9px, a($gold, 0.7)),
+  dot(29%, 10%, 1.6px, a($gold, 0.6)),
+  dot(34%, 53%, 2.4px, a($gold-bright, 0.82)),
+  dot(40%, 95%, 1.8px, a($gold, 0.64)),
+  dot(46%, 33%, 2.2px, a($gold, 0.76)),
+  dot(52%, 79%, 1.7px, a($gold-bright, 0.68)),
+  dot(57%, 17%, 2px, a($gold, 0.72)),
+  dot(62%, 60%, 2.3px, a($gold, 0.8)),
+  dot(67%, 90%, 1.5px, a($gold, 0.58)),
+  dot(72%, 38%, 2.1px, a($gold-bright, 0.75)),
+  dot(77%, 7%, 1.8px, a($gold, 0.62)),
+  dot(82%, 74%, 2.4px, a($gold, 0.78)),
+  dot(87%, 49%, 1.9px, a($gold-bright, 0.7)),
+  dot(92%, 25%, 2.2px, a($gold, 0.74)),
+  dot(96%, 68%, 1.6px, a($gold, 0.6))
+);
+
 // ------------------------------------------------------------------- links
 a {
   color: $gold;
@@ -747,6 +793,42 @@ a:focus-visible {
   position: relative;
 }
 
+// The spark fields of design 13.6, gold powder thrown by the strike. Two dot
+// fields on the glyph block itself, so a long formula throws a wider burst
+// than a short one without a number being touched. They take no z-index: tree
+// order leaves them under the vapor twin and under the strokes, and the
+// sharpest thing in the well stays the formula.
+//
+// Armed by the attribute, not by the stylesheet alone: a pseudo-element's
+// animation is out of reach of the inline replay the output lines use, so
+// dropping and restoring what declares it is the only way to strike twice.
+// The attribute sits on the stage, outside the well's live region.
+.glyph-stack::before,
+.glyph-stack::after {
+  content: '';
+  position: absolute;
+  inset: -20% -2%;
+  pointer-events: none;
+  opacity: 0;
+  background-repeat: no-repeat;
+}
+
+.glyph-stack::before {
+  background-image: $spark-rise;
+}
+
+.glyph-stack::after {
+  background-image: $spark-fall;
+}
+
+.well-stage[data-forge='struck'] .glyph-stack::before {
+  animation: am-spark-rise $dur-spark-rise $ease-emerge backwards;
+}
+
+.well-stage[data-forge='struck'] .glyph-stack::after {
+  animation: am-spark-fall $dur-spark-fall $ease-emerge 60ms backwards;
+}
+
 .glyph-line {
   position: relative;
   z-index: 1;
@@ -999,6 +1081,14 @@ a:focus-visible {
   // A light that swells and dies is movement whatever it is made of. All that
   // is left of the backlight is its resting opacity, which is nothing.
   .well-stage::before {
+    animation: none;
+  }
+
+  // Flying particles are the plainest motion on the page, and nothing takes
+  // their place: a shimmer would be a flash, which is the one thing a reader
+  // sensitive to it must not be handed. The attribute arms nothing here.
+  .well-stage[data-forge='struck'] .glyph-stack::before,
+  .well-stage[data-forge='struck'] .glyph-stack::after {
     animation: none;
   }
 

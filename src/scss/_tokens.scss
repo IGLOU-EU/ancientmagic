@@ -69,6 +69,11 @@ $dur-backlight: 1100ms;
 $dur-circle-wake: 900ms;
 $dur-forge: 1400ms;
 $dur-forge-reduced: 600ms;
+// The powder the strike throws. Both fields are dead long before the metal
+// reaches its resting glow, and they share no ratio so the two never die
+// together.
+$dur-spark-rise: 760ms;
+$dur-spark-fall: 900ms;
 
 // Vapor loops of the glyph glow. Breathe, drift and sway run on mismatched
 // periods so the combined cycle never reads as mechanical.
@@ -141,22 +146,20 @@ $bp: 720px;
   @return color.change($c, $alpha: $alpha);
 }
 
-// One background layer per star. A radial gradient can only place one dot per
-// tile, and the design fixes the exact dot positions inside each tile.
+// One soft dot, drawn as its own background layer: a radial gradient can only
+// place one. Every dot on this page comes from here, the stars of 13.1 and the
+// forge sparks of 13.6 alike.
+@function dot($x, $y, $radius, $tint) {
+  @return radial-gradient(circle $radius at $x $y, $tint 0, $tint 45%, a($tint, 0) 100%);
+}
+
+// A field of dots sharing one radius and one tint, at fixed positions inside
+// the tile.
 @function star-dots($positions, $radius, $tint) {
   $out: ();
 
   @each $pos in $positions {
-    $out: list.append(
-      $out,
-      radial-gradient(
-        circle $radius at list.nth($pos, 1) list.nth($pos, 2),
-        $tint 0,
-        $tint 45%,
-        a($tint, 0) 100%
-      ),
-      comma
-    );
+    $out: list.append($out, dot(list.nth($pos, 1), list.nth($pos, 2), $radius, $tint), comma);
   }
 
   @return $out;
