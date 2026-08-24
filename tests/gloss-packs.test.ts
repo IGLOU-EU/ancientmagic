@@ -125,6 +125,23 @@ for (const [language, loadPack] of GLOSS_PACKS) {
       }
     });
 
+    // The spec's wording rule (genomes.md 2.11): a declared noun sits behind
+    // an article, so a clause can write "the X" without ever producing "the
+    // what shall be". Catches the class, not the instance.
+    test(`${where}: every noun wording sits behind an article`, async () => {
+      const tables = await inventory.slice(await loadPack());
+      for (const [id, entry] of Object.entries(tables.roots)) {
+        for (const [form, word] of Object.entries(entry.forms)) {
+          if (form !== 'noun' && form !== 'plural') continue;
+          assert.doesNotMatch(
+            word,
+            /^(what|the|an?)\s/iu,
+            `${id} ${form} cannot sit behind an article: "${word}"`,
+          );
+        }
+      }
+    });
+
     test(`${where}: every root wording is real text`, async () => {
       const tables = await inventory.slice(await loadPack());
       for (const [id, entry] of Object.entries(tables.roots)) {

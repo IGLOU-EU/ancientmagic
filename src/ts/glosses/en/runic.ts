@@ -165,7 +165,7 @@ const roots: RootGlossTable = {
   urlag: { gloss: 'fate laid down', forms: { noun: 'fate laid down' } },
   hlaut: { gloss: 'the lot fallen', forms: { noun: 'fallen lot' } },
   dom: { gloss: 'doom, judgment', forms: { noun: 'doom' } },
-  skuld: { gloss: 'what shall be', forms: { noun: 'what shall be' } },
+  skuld: { gloss: 'what shall be', forms: { noun: 'thing that shall be' } },
   norn: { gloss: 'fate-woman', forms: { noun: 'fate-woman' } },
   metud: { gloss: 'the measurer', forms: { noun: 'measurer' } },
   hail: { gloss: 'good hap', forms: { noun: 'good hap', adj: 'whole' } },
