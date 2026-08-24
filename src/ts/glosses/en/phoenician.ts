@@ -8,6 +8,8 @@ import type {
   GlossTable,
   NamedPowerTable,
   PhoenicianGlosses,
+  PhoenicianDivinationAsk,
+  PhoenicianDivinationSee,
   PhoenicianInvocation,
   PhoenicianJussive,
   RootGlossTable,
@@ -125,17 +127,52 @@ const roots: RootGlossTable = {
   qdm: { gloss: 'ancient time', forms: { noun: 'ancient time', plural: 'ancient times' } },
   "'khr": { gloss: 'the after-time', forms: { noun: 'after-time', plural: 'after-times' } },
   dr: { gloss: 'generation, age', forms: { noun: 'age', plural: 'ages' } },
+  // sight
+  khzh: { gloss: 'see in vision', forms: { noun: 'seer', verb: 'behold in vision' } },
+  nbtt: { gloss: 'look upon', forms: { verb: 'look upon' } },
+  glh: { gloss: 'uncover', forms: { verb: 'uncover' } },
+  "'wr": { gloss: 'light', forms: { noun: 'light' } },
+  ngh: { gloss: 'shining', forms: { noun: 'shining' } },
+  tsph: { gloss: 'keep watch', forms: { noun: 'watchman', verb: 'watch for' } },
+  "sh'l": { gloss: 'ask after', forms: { verb: 'ask after' } },
+  ghyn: { gloss: 'eye', forms: { noun: 'eye' } },
+  pqkh: { gloss: 'lay open', forms: { verb: 'lay open' } },
+  brr: { gloss: 'clear', forms: { adj: 'clear' } },
+  // fate
+  grl: { gloss: 'cast lot', forms: { noun: 'cast lot' } },
+  khlq: { gloss: 'allotted portion', forms: { noun: 'allotted portion' } },
+  gzr: { gloss: 'decree', forms: { noun: 'decree' } },
+  dyn: { gloss: 'judgment', forms: { noun: 'judgment' } },
+  mny: { gloss: 'what is appointed', forms: { noun: 'thing appointed' } },
+  ghqb: { gloss: 'outcome', forms: { noun: 'outcome' } },
+  gdd: { gloss: 'fortune', forms: { noun: 'fortune' } },
+  ntsb: { gloss: 'fixed', forms: { adj: 'fixed' } },
+  khrts: { gloss: 'what is determined', forms: { noun: 'thing determined' } },
+  nkhl: { gloss: 'what falls to one', forms: { noun: 'share that falls to one' } },
+  // signs
+  "'t": { gloss: 'token', forms: { noun: 'token', plural: 'tokens' } },
+  spr: { gloss: 'written record', forms: { noun: 'written record', plural: 'written records' } },
+  nkhsh: { gloss: 'omen-reading', forms: { noun: 'omen-reading', plural: 'omen-readings' } },
+  qsm: { gloss: 'lot-divining', forms: { noun: 'lot-divining', plural: 'lot-divinings' } },
+  hll: { gloss: 'morning star', forms: { noun: 'morning star', plural: 'morning stars' } },
+  rmz: { gloss: 'silent hint', forms: { noun: 'silent hint', plural: 'silent hints' } },
+  bshr: { gloss: 'tidings', forms: { noun: 'tidings', plural: 'tidings' } },
+  khqq: { gloss: 'graven mark', forms: { noun: 'graven mark', plural: 'graven marks' } },
+  ghwp: { gloss: 'bird in flight', forms: { noun: 'bird in flight', plural: 'birds in flight' } },
+  smn: { gloss: 'set mark', forms: { noun: 'set mark', plural: 'set marks' } },
 };
 
+// A gender rides every name because a Divination question that does not write
+// its subject out still has to resume it with the right pronoun.
 const powers: NamedPowerTable = {
-  bghl: { name: 'Baal', gloss: 'Baal, lord of the storm.' },
-  ghshtrt: { name: 'Ashtart', gloss: 'Ashtart, lady of Sidon.' },
-  "'shmn": { name: 'Eshmun', gloss: 'Eshmun, healer of Sidon.' },
-  mlqrt: { name: 'Milqart', gloss: 'Milqart, lord of Tyre.' },
-  tnt: { name: 'Tinnit', gloss: 'Tinnit, the face of Baal.' },
-  rshp: { name: 'Reshep', gloss: 'Reshep, lord of the plague-fire.' },
-  khrn: { name: 'Horon', gloss: 'Horon, of the world below.' },
-  ssm: { name: 'Sasam', gloss: 'Sasam, named in the demon oath.' },
+  bghl: { name: 'Baal', gloss: 'Baal, lord of the storm.', gender: 'm' },
+  ghshtrt: { name: 'Ashtart', gloss: 'Ashtart, lady of Sidon.', gender: 'f' },
+  "'shmn": { name: 'Eshmun', gloss: 'Eshmun, healer of Sidon.', gender: 'm' },
+  mlqrt: { name: 'Milqart', gloss: 'Milqart, lord of Tyre.', gender: 'm' },
+  tnt: { name: 'Tinnit', gloss: 'Tinnit, the face of Baal.', gender: 'f' },
+  rshp: { name: 'Reshep', gloss: 'Reshep, lord of the plague-fire.', gender: 'm' },
+  khrn: { name: 'Horon', gloss: 'Horon, of the world below.', gender: 'm' },
+  ssm: { name: 'Sasam', gloss: 'Sasam, named in the demon oath.', gender: 'm' },
 };
 
 const epithets: GlossTable = {
@@ -155,6 +192,9 @@ const idioms: GlossTable = {
   PC1: 'For he has heard the voice, may he bless.',
   PC2: 'May they have no root below.',
   PC3: 'Forever.',
+  // Glossed without a subject on purpose, so that no closer contradicts the
+  // gender of the power the formula questioned (spec 4.11).
+  PC4: 'For the voice has been heard.',
   ELDRITCH_CLOSE: 'The gate stands open forever.',
 };
 
@@ -219,6 +259,22 @@ export const phoenicianGlosses: PhoenicianGlosses = {
     );
   },
 
+  divinationAsk: (p: PhoenicianDivinationAsk) => {
+    const god = power(powers, p.agentPower);
+    const chain = p.chainRoots.map((id) => ` of the ${form(roots, id, 'plural')}`).join('');
+    // Below tier 8 the clause does not repeat the power's name, the verb
+    // prefix resumes it, so the gloss answers with a pronoun of its gender.
+    const subject = p.named ? `${god.name}${chain}` : god.gender === 'f' ? 'she' : 'he';
+    return (
+      `Does ${subject} ${form(roots, p.intentRoot, 'verb')} the ` +
+      `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}?${adverbial(p.adverbRoot)}`
+    );
+  },
+
+  divinationSee: (p: PhoenicianDivinationSee) =>
+    `And I ${form(roots, p.intentRoot, 'verb')} the ` +
+    `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}.${adverbial(p.adverbRoot)}`,
+
   selfPresentationByName: (spokenName) => `I am ${capitalize(spokenName)}.`,
   selfPresentationByEpithet: (id) => `I belong to ${lookup(epithets, id, 'epithet')}.`,
 
@@ -226,6 +282,7 @@ export const phoenicianGlosses: PhoenicianGlosses = {
   openerToLord: (id) => `To the lord, to ${power(powers, id).name}.`,
   openerAgainst: (targetRoot, adjectiveRoot) =>
     `Incantation against the ${adjectival(adjectiveRoot)}${form(roots, targetRoot, 'plural')}.`,
+  openerQuestion: (id) => `A question to ${power(powers, id).name}.`,
 
   litanyTriple: (subject) =>
     subject.kind === 'epithet'

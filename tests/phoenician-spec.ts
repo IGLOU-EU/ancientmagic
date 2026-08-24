@@ -172,13 +172,62 @@ export const LEXICON: Readonly<
     ["'khr", 'the after-time'],
     ['dr', 'generation, age'],
   ],
+  sight: [
+    ['khzh', 'see in vision'],
+    ['nbtt', 'look upon'],
+    ['glh', 'uncover'],
+    ["'wr", 'light'],
+    ['ngh', 'shining'],
+    ['tsph', 'keep watch'],
+    ["sh'l", 'ask after'],
+    ['ghyn', 'eye'],
+    ['pqkh', 'lay open'],
+    ['brr', 'clear'],
+  ],
+  fate: [
+    ['grl', 'cast lot'],
+    ['khlq', 'allotted portion'],
+    ['gzr', 'decree'],
+    ['dyn', 'judgment'],
+    ['mny', 'what is appointed'],
+    ['ghqb', 'outcome'],
+    ['gdd', 'fortune'],
+    ['ntsb', 'fixed'],
+    ['khrts', 'what is determined'],
+    ['nkhl', 'what falls to one'],
+  ],
+  signs: [
+    ["'t", 'token'],
+    ['spr', 'written record'],
+    ['nkhsh', 'omen-reading'],
+    ['qsm', 'lot-divining'],
+    ['hll', 'morning star'],
+    ['rmz', 'silent hint'],
+    ['bshr', 'tidings'],
+    ['khqq', 'graven mark'],
+    ['ghwp', 'bird in flight'],
+    ['smn', 'set mark'],
+  ],
 };
 
 // Spec 4.3: the five roots that never fill a slot taking a direct object.
 export const INTRANSITIVE: ReadonlyArray<string> = ['nwm', 'shkhb', 'dwy', 'khdl', 'nbl'];
 
 // Spec 4.3: the biconsonantal roots the table allows, all noun material.
-export const BICONSONANTAL: ReadonlyArray<string> = ["'sh", 'dl', 'sp', 'ghd', 'ght', 'ym', 'dr'];
+export const BICONSONANTAL: ReadonlyArray<string> = [
+  "'sh",
+  'dl',
+  'sp',
+  'ghd',
+  'ght',
+  'ym',
+  'dr',
+  // Two more arrived with Divination: the token of the signs field, and the
+  // shining of the sight field, whose gh is the ain digraph, so the skeleton
+  // ngh is nun plus ain and counts two radicals like the others here.
+  "'t",
+  'ngh',
+];
 
 // Attested divine names of spec 4.7: skeleton, glyph string, spoken form.
 export const NAME_TABLE: ReadonlyArray<
@@ -195,6 +244,8 @@ export const NAME_TABLE: ReadonlyArray<
 ];
 
 export const BRIGHT_SPOKEN: ReadonlyArray<string> = ['baal', 'ashtart', 'eshmun', 'milqart', 'tinnit'];
+// The powers a divination formula questions (spec 4.7).
+export const DIVINATION_SPOKEN: ReadonlyArray<string> = ['baal', 'ashtart', 'tinnit'];
 export const DARK_SPOKEN: ReadonlyArray<string> = ['reshep', 'horon', 'sasam'];
 export const ALL_NAME_SPOKEN: ReadonlyArray<string> = NAME_TABLE.map(([, , spoken]) => spoken);
 
@@ -223,6 +274,8 @@ export const PO2_HEAD_GLYPHS = '\u{10900}\u{1090D}\u{1090A}';
 export const PO2_HEAD_SPOKEN = 'anok';
 export const PO3_HEAD_GLYPHS = '\u{1090B}\u{10900}\u{10903}\u{1090D}';
 export const PO3_HEAD_SPOKEN = 'ladon';
+export const PO4_HEAD_GLYPHS = '\u{10914}\u{10900}\u{1090B}\u{10915}';
+export const PO4_HEAD_SPOKEN = 'shaolat';
 
 export const PC1_SPOKEN: ReadonlyArray<string> = ['ki', 'shama', 'qol', 'yebarek'];
 export const PC1_GLYPHS: ReadonlyArray<string> = [
@@ -240,6 +293,13 @@ export const PC2_GLYPHS: ReadonlyArray<string> = [
   '\u{10914}\u{10913}\u{10914}',
 ];
 
+export const PC4_SPOKEN: ReadonlyArray<string> = ['ki', 'shama', 'qol'];
+export const PC4_GLYPHS: ReadonlyArray<string> = [
+  '\u{1090A}',
+  '\u{10914}\u{1090C}\u{1090F}',
+  '\u{10912}\u{1090B}',
+];
+
 export const PC3_SPOKEN: ReadonlyArray<string> = ['leolam'];
 export const PC3_GLYPHS: ReadonlyArray<string> = ['\u{1090B}\u{1090F}\u{1090B}\u{1090C}'];
 
@@ -254,6 +314,9 @@ export const ELDRITCH_CLOSE_GLYPHS: ReadonlyArray<string> = [
 export const YT_GLYPHS = '\u{10900}\u{10909}\u{10915}';
 export const YT_SPOKEN = 'et';
 export const ARTICLE = { glyph: '\u{10904}', spoken: 'ha' } as const;
+// The interrogative proclitic of spec 4.4: the same letter as the article and
+// never the same vowel.
+export const INTERROGATIVE = { glyph: '\u{10904}', spoken: 'hi' } as const;
 export const PROCLITIC_L = { glyph: '\u{1090B}', spoken: 'le' } as const;
 export const PROCLITIC_B = { glyph: '\u{10901}', spoken: 'be' } as const;
 export const PROCLITIC_W = { glyph: '\u{10905}', spoken: 'we' } as const;

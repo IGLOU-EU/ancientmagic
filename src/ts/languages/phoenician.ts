@@ -28,9 +28,11 @@ import {
   ALF,
   BRIGHT_NAMES,
   DARK_NAMES,
+  DIVINATION_NAMES,
   DREAD_POWER,
   FIELDS,
   IDIOM_WORDS,
+  INTERROGATIVE_SPOKEN,
   INVOCATION_COME,
   LETTER_MAP,
   NUMERAL_GLYPHS,
@@ -39,6 +41,7 @@ import {
   PO1_HEAD,
   PO2_HEAD,
   PO3_HEAD,
+  PO4_HEAD,
   PROCLITIC_SPOKEN,
   SEAL_HEAD,
   THEOPHORIC_SKELETON,
@@ -271,6 +274,10 @@ interface StemOptions {
   article?: boolean;
   plural?: boolean;
   proclitic?: ProcliticId;
+  // The interrogative h- of a Divination asking clause, which rides the verb
+  // and nothing else. It is kept apart from the article, the same letter in
+  // another function, because the two are spoken differently (spec 4.4).
+  question?: boolean;
 }
 
 function stemOf(root: string, eldritch: boolean, pattern: (skeleton: string) => string): string {
@@ -283,9 +290,10 @@ function stemOf(root: string, eldritch: boolean, pattern: (skeleton: string) => 
 // reaches them: they wrap an already degraded stem.
 function affix(stem: string, options: StemOptions): string {
   const proclitic = options.proclitic === undefined ? '' : PROCLITIC_SPOKEN[options.proclitic];
+  const question = options.question === true ? INTERROGATIVE_SPOKEN : '';
   const article = options.article === true ? PROCLITIC_SPOKEN.h : '';
   const plural = options.plural === true ? PLURAL_SPOKEN : '';
-  return `${proclitic}${article}${stem}${plural}`;
+  return `${proclitic}${question}${article}${stem}${plural}`;
 }
 
 function nounWord(root: PhoenicianRoot, role: PhoenicianRole, options: StemOptions): PhoenicianWord {
@@ -489,6 +497,106 @@ function realizeJussiveClause(
   };
 }
 
+// Spec 4.11. The asking clause is the interrogative proclitic written onto the
+// prefix verb, then the object. The subject is the power PO4 named, resumed by
+// the prefix, until tier 8 writes the name out with its construct chain.
+function realizeDivinationAsk(
+  plan: FormulaPlan,
+  clause: ClausePlan,
+  rng: Rng,
+  questioned: DivineName,
+  glosses: PhoenicianGlosses,
+): Realization {
+  const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
+  const target = pick(rng, nounsOf(geneField(clause, 'TARGET')));
+  const modifier = drawModifier(clause, rng, false);
+  const named = plan.difficulty >= 8;
+
+  const words: PhoenicianWord[] = [
+    verbWord(intent, questioned.feminine ? 'jussive-3fs' : 'jussive-3ms', {
+      eldritch: false,
+      question: true,
+    }),
+  ];
+
+  const chainRoots: string[] = [];
+  if (named) {
+    words.push(nameWord(questioned, 'agent'));
+    const chain = genitiveChain(
+      geneField(clause, 'AGENT'),
+      chainLength(plan.difficulty) - 1,
+      rng,
+      false,
+      new Set(),
+    );
+    words.push(...chain.words);
+    chainRoots.push(...chain.roots);
+  }
+
+  words.push(...objectPhrase(plan, target, modifier));
+  const adverb = adverbPhrase(modifier, false);
+  words.push(...adverb.words);
+
+  return {
+    words,
+    gloss: glosses.divinationAsk({
+      agentPower: questioned.skeleton,
+      named,
+      chainRoots,
+      intentRoot: intent.root,
+      targetRoot: target.root,
+      adjectiveRoot: modifier.adjective?.root ?? null,
+      adverbRoot: adverb.root,
+    }),
+  };
+}
+
+// The seeing clause is the imperfect 1sg, the form no other school draws.
+function realizeDivinationSee(
+  plan: FormulaPlan,
+  clause: ClausePlan,
+  rng: Rng,
+  glosses: PhoenicianGlosses,
+): Realization {
+  const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
+  const target = pick(rng, nounsOf(geneField(clause, 'TARGET')));
+  const modifier = drawModifier(clause, rng, false);
+
+  const words: PhoenicianWord[] = [
+    verbWord(intent, 'imperfect-1sg', { eldritch: false }),
+    ...objectPhrase(plan, target, modifier),
+  ];
+  const adverb = adverbPhrase(modifier, false);
+  words.push(...adverb.words);
+
+  return {
+    words,
+    gloss: glosses.divinationSee({
+      intentRoot: intent.root,
+      targetRoot: target.root,
+      adjectiveRoot: modifier.adjective?.root ?? null,
+      adverbRoot: adverb.root,
+    }),
+  };
+}
+
+// The object of a divination clause. Spec 4.11 puts the marker at tier 4,
+// where the opener no longer holds the target, and the article at tier 5,
+// exactly as the base tier table introduces the two.
+function objectPhrase(
+  plan: FormulaPlan,
+  target: PhoenicianRoot,
+  modifier: Modifier,
+): PhoenicianWord[] {
+  const marked = plan.difficulty >= 4;
+  const article = plan.difficulty >= 5;
+  const words: PhoenicianWord[] = [];
+  if (marked) words.push(fixed(YT, 'marker'));
+  words.push(nounWord(target, 'target', { eldritch: false, article }));
+  words.push(...adjectiveWord(modifier, false, { article, plural: false }));
+  return words;
+}
+
 function realizeInvocationClause(
   plan: FormulaPlan,
   clause: ClausePlan,
@@ -564,7 +672,10 @@ function selfPresentation(
     words.push(dreadWord(epithet, 'idiom', 'l'));
     return { words, gloss: glosses.selfPresentationByEpithet(epithet.skeleton) };
   }
-  const root = pick(rng, nounsOf('warding'));
+  // The name root draws from the warding field in every school but this one,
+  // where it comes from sight so the caster presents himself as a seer before
+  // he asks (spec 4.6).
+  const root = pick(rng, nounsOf(plan.school === 'divination' ? 'sight' : 'warding'));
   // A name drops its word-initial guttural in the spoken line. The alf is
   // already silent, so only the ain of a gh-initial root has to go.
   const stem = speak(citation(root.root)).replace(/^gh/u, '');
@@ -585,9 +696,20 @@ function schoolOpener(
   rng: Rng,
   used: Set<string>,
   glosses: PhoenicianGlosses,
+  questioned: DivineName | null,
 ): Realization & { consumed: { target: boolean; modifier: Modifier } } {
   const clause = plan.clauses[0];
   if (clause === undefined) throw new Error('plan has no clause');
+
+  // PO4 consumes the AGENT gene instead of the TARGET, so the object survives
+  // in the clause from tier 4 up (spec 4.11).
+  if (questioned !== null) {
+    return {
+      words: [fixed(PO4_HEAD), nameWord(questioned, 'idiom', 'l')],
+      gloss: glosses.openerQuestion(questioned.skeleton),
+      consumed: { target: false, modifier: NO_MODIFIER },
+    };
+  }
 
   // The register inverts the amulet opener: the incantation now speaks with
   // the demon's voice rather than against it (spec 4.10).
@@ -701,7 +823,10 @@ function litany(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses): Realiz
 // word, so it never stacks PC3 behind itself.
 function closingIdioms(plan: FormulaPlan): PhoenicianIdiomId[] {
   if (plan.eldritch) return ['ELDRITCH_CLOSE'];
-  const own = plan.school === 'curse' ? 'PC2' : 'PC1';
+  // PC4 closes Divination: the formula ends when the voice has been heard,
+  // and the blessing of PC1 belongs to the schools that ask for one.
+  const own =
+    plan.school === 'curse' ? 'PC2' : plan.school === 'divination' ? 'PC4' : 'PC1';
   return plan.difficulty >= 9 ? [own, 'PC3'] : [own];
 }
 
@@ -770,13 +895,18 @@ function composePhoenician(
   // picks stay reserved across the whole formula.
   const used = new Set<string>();
 
+  // One power is questioned per formula: the opener names it, the verb prefix
+  // resumes it, and the top tiers write it out again.
+  const questioned = plan.school === 'divination' ? pick(rng, DIVINATION_NAMES) : null;
+  if (questioned !== null) used.add(questioned.skeleton);
+
   if (plan.difficulty >= 6) {
     const presentation = selfPresentation(plan, rng, used, glosses);
     words.push(...presentation.words);
     glossParts.push(presentation.gloss);
   }
 
-  const opener = schoolOpener(plan, rng, used, glosses);
+  const opener = schoolOpener(plan, rng, used, glosses, questioned);
   words.push(...opener.words);
   glossParts.push(opener.gloss);
 
@@ -784,9 +914,17 @@ function composePhoenician(
   plan.clauses.forEach((clause, index) => {
     const consumed =
       index === 0 ? opener.consumed : { target: false, modifier: NO_MODIFIER };
-    const realized = jussive
-      ? realizeJussiveClause(plan, clause, rng, used, consumed, glosses)
-      : realizeInvocationClause(plan, clause, rng, used, glosses);
+    let realized: Realization;
+    if (questioned !== null) {
+      realized =
+        clause.kind === 'asking'
+          ? realizeDivinationAsk(plan, clause, rng, questioned, glosses)
+          : realizeDivinationSee(plan, clause, rng, glosses);
+    } else if (jussive) {
+      realized = realizeJussiveClause(plan, clause, rng, used, consumed, glosses);
+    } else {
+      realized = realizeInvocationClause(plan, clause, rng, used, glosses);
+    }
     // Spec 4.9: clauses after the first are joined by the w- proclitic, which
     // rides the first word of the clause with no separator between them.
     const first = realized.words[0];

@@ -221,6 +221,53 @@ function realizeProtectionClause(
   };
 }
 
+// Spec 2.11. The two clause kinds hold the same genes in reversed order: the
+// question fronts its verb in the third person, the answer buries it in the
+// first. That contrast is the school's whole grammatical signature here.
+function realizeDivinationClause(
+  clause: ClausePlan,
+  rng: Rng,
+  glosses: RunicGlosses,
+): ClauseRealization {
+  const keep = (root: string): string => root;
+  const agentField = requireField(clause.genes.find((g) => g.role === 'AGENT')?.field ?? null);
+  const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
+  const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
+  const agent = pick(rng, nounsOf(agentField));
+  // Both clause kinds take an object, so neither may draw an intransitive
+  // root (spec 2.3).
+  const intent = pick(rng, transitiveVerbsOf(intentField));
+  const target = pick(rng, nounsOf(targetField));
+  const mod = realizeModifier(clause, rng, keep);
+
+  const parts = {
+    agentRoot: agent.root,
+    intentRoot: intent.root,
+    targetRoot: target.root,
+    adjectiveRoot: mod.adj?.root ?? null,
+    adverbRoot: mod.adv?.root ?? null,
+  };
+
+  const words: string[] = [];
+  if (clause.kind === 'seeing') {
+    words.push(nounForm(agent.root, 'az'));
+    if (mod.adj !== null) words.push(adjectiveForm(mod.adjWord, 'an'));
+    words.push(nounForm(target.root, 'an'));
+    if (mod.adv !== null) words.push(mod.advWord);
+    words.push(verbForm(intent.root, 'o'));
+    return { words, gloss: glosses.divinationSee(parts) };
+  }
+
+  // The verb opens the question and nothing may stand before it (spec 7), so
+  // the adverb follows the verb it modifies instead of preceding it.
+  words.push(verbForm(intent.root, 'ith'));
+  if (mod.adv !== null) words.push(mod.advWord);
+  words.push(nounForm(agent.root, 'az'));
+  if (mod.adj !== null) words.push(adjectiveForm(mod.adjWord, 'an'));
+  words.push(nounForm(target.root, 'an'));
+  return { words, gloss: glosses.divinationAsk(parts) };
+}
+
 function realizeCurseClause(
   clause: ClausePlan,
   rng: Rng,
@@ -306,6 +353,16 @@ function pickOpenings(plan: FormulaPlan, rng: Rng): RunicIdiomId[] {
   if (plan.eldritch) {
     return [d < 6 ? 'ELDRITCH_OPEN_SHORT' : 'ELDRITCH_OPEN_FULL'];
   }
+  // Spec 2.11: RO4 opens every divination formula, and the cries that may
+  // precede it keep their ᛫ join inside the opening clause.
+  if (plan.school === 'divination') {
+    if (d <= 5) return ['RO4'];
+    if (d === 6) return ['RO2', 'RO4'];
+    if (d === 7) {
+      return chance(rng, 0.5) ? ['RO2', 'RO3_FIRST_AETT', 'RO4'] : ['RO2', 'RO4'];
+    }
+    return ['RO3_FULL_ROW', 'RO4'];
+  }
   if (d <= 4) return ['RO1'];
   if (d === 5) return [pick(rng, ['RO1', 'RO2'] as const)];
   if (d === 6) return ['RO2'];
@@ -317,6 +374,10 @@ function pickOpenings(plan: FormulaPlan, rng: Rng): RunicIdiomId[] {
 
 function pickClosings(plan: FormulaPlan, rng: Rng): RunicIdiomId[] {
   if (plan.eldritch) return ['ELDRITCH_CLOSE'];
+  // RC1 and RC2 stay with the schools that carve, RC4 with the one that reads.
+  if (plan.school === 'divination') {
+    return plan.difficulty >= 8 ? ['RC4', 'RC3'] : ['RC4'];
+  }
   if (plan.difficulty >= 8) return ['RC1', 'RC3'];
   return [pick(rng, ['RC1', 'RC2'] as const)];
 }
@@ -386,6 +447,11 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
   for (const id of openings) glossParts.push(glosses.idiom(id));
   const openingWords = openings.flatMap((id) => [...IDIOM_WORDS[id]]);
 
+  // RO4 is a full clause and takes ᛬ after it, so a divination opening stands
+  // as its own segment instead of joining the first clause (spec 2.2).
+  const divination = plan.school === 'divination';
+  if (divination) segments.push({ words: openingWords });
+
   plan.clauses.forEach((clause, index) => {
     // Epithets stay distinct within one clause. Across clauses the pools
     // reopen, litanies may echo a power already named.
@@ -395,6 +461,8 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
       realized = realizeProtectionClause(clause, rng, distort, glosses);
     } else if (plan.school === 'curse') {
       realized = realizeCurseClause(clause, rng, distort, glosses);
+    } else if (divination) {
+      realized = realizeDivinationClause(clause, rng, glosses);
     } else {
       realized = realizeInvocationClause(
         clause,
@@ -407,7 +475,9 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
     }
     // The opening idioms join the first clause with word separators, as in
     // the section 5 rendering. Only clause boundaries take the colon.
-    segments.push({ words: index === 0 ? [...openingWords, ...realized.words] : realized.words });
+    segments.push({
+      words: index === 0 && !divination ? [...openingWords, ...realized.words] : realized.words,
+    });
     glossParts.push(realized.gloss);
   });
 
@@ -427,6 +497,9 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
   let sealCount: SealCount | null = null;
   if (plan.seal) {
     if (plan.eldritch) sealCount = 9;
+    // The tier 7 divination seal is three and never another count: the rite
+    // lifts three lots (spec 2.11).
+    else if (plan.difficulty === 7 && divination) sealCount = 3;
     else if (plan.difficulty === 7) sealCount = pick(rng, [3, 7] as const);
     else if (plan.difficulty === 8) sealCount = pick(rng, [7, 9] as const);
     else sealCount = pick(rng, [9, 12] as const);

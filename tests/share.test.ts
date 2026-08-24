@@ -38,6 +38,21 @@ test('share: decode reads every field back', () => {
   assert.deepStrictEqual(decode('runic.protection.5.66238'), FIXTURE);
 });
 
+// The links written before Divination shipped still name what they named, and
+// the school that shipped after them is readable in a link of its own.
+test('share: a link written before the newest school still decodes', () => {
+  assert.deepStrictEqual(decode('phoenician.eldritch.9.0'), {
+    settings: { language: 'phoenician', school: 'eldritch', difficulty: 9 },
+    seed: 0,
+  });
+});
+
+test('share: a divination link round-trips', () => {
+  const settings = { language: 'runic', school: 'divination', difficulty: 3 } as const;
+  assert.strictEqual(encode(settings, 1), 'runic.divination.3.1');
+  assert.deepStrictEqual(decode('runic.divination.3.1'), { settings, seed: 1 });
+});
+
 test('share: decode accepts the leading hash the location gives it', () => {
   assert.deepStrictEqual(decode('#runic.protection.5.66238'), FIXTURE);
 });
@@ -117,7 +132,6 @@ test('share: a genome the site does not carry is not a formula', () => {
 
 test('share: a school the site does not teach is not a formula', () => {
   for (const text of [
-    'runic.divination.5.1',
     'runic.chronomancy.5.1',
     'runic.PROTECTION.5.1',
     'runic..5.1',

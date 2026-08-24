@@ -217,6 +217,46 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'dag', forms: ['noun'], runeName: true },
     { root: 'jer', forms: ['noun'], runeName: true },
   ],
+  // The three Divination fields (spec 2.3 and 2.11). Every verb here is
+  // transitive, because both divination clause kinds take an object, and a
+  // signs root is a noun alone: the school reads a sign, it never conjugates
+  // one. No root declares a past participle, no divination clause uses one.
+  sight: [
+    { root: 'seh', forms: ['verb'] },
+    { root: 'spah', forms: ['noun', 'verb'] },
+    { root: 'skaw', forms: ['noun', 'verb'] },
+    { root: 'wit', forms: ['noun', 'verb'] },
+    { root: 'witag', forms: ['noun'] },
+    { root: 'aug', forms: ['noun'] },
+    { root: 'birt', forms: ['verb', 'adj'] },
+    { root: 'bar', forms: ['verb', 'adj'] },
+    { root: 'kuth', forms: ['verb', 'adj'] },
+    { root: 'glog', forms: ['adj', 'adv'] },
+  ],
+  fate: [
+    { root: 'urlag', forms: ['noun'] },
+    { root: 'hlaut', forms: ['noun'] },
+    { root: 'dom', forms: ['noun'] },
+    { root: 'skuld', forms: ['noun'] },
+    { root: 'norn', forms: ['noun'] },
+    { root: 'metud', forms: ['noun'] },
+    { root: 'hail', forms: ['noun', 'adj'] },
+    { root: 'end', forms: ['noun'] },
+    { root: 'thrad', forms: ['noun'] },
+    { root: 'wis', forms: ['adj', 'adv'] },
+  ],
+  signs: [
+    { root: 'tein', forms: ['noun'] },
+    { root: 'taik', forms: ['noun'] },
+    { root: 'mark', forms: ['noun'] },
+    { root: 'bauk', forms: ['noun'] },
+    { root: 'fugl', forms: ['noun'] },
+    { root: 'hraf', forms: ['noun'] },
+    { root: 'spor', forms: ['noun'] },
+    { root: 'frag', forms: ['noun'] },
+    { root: 'andswar', forms: ['noun'] },
+    { root: 'rist', forms: ['noun'] },
+  ],
 };
 
 // Attested bright power words (spec 2.7). The rune row itself lives in the
@@ -256,9 +296,11 @@ export type RunicIdiomId =
   | 'RO2'
   | 'RO3_FIRST_AETT'
   | 'RO3_FULL_ROW'
+  | 'RO4'
   | 'RC1'
   | 'RC2'
   | 'RC3'
+  | 'RC4'
   | 'ELDRITCH_OPEN_SHORT'
   | 'ELDRITCH_OPEN_FULL'
   | 'ELDRITCH_CLOSE';
@@ -270,9 +312,13 @@ export const IDIOM_WORDS: Readonly<Record<RunicIdiomId, ReadonlyArray<string>>> 
   RO2: ['ek', 'erilaz'],
   RO3_FIRST_AETT: ['futharkgw'],
   RO3_FULL_ROW: ['futharkgwhnijeipzstbemlngdo'],
+  // Divination only (spec 2.6): the diviner lifts three marked strips, then
+  // reads the runes. nemido and radido are fixed idiom verbs, never drawn.
+  RO4: ['thri', 'teinoz', 'nemido'],
   RC1: ['runoz', 'faihido'],
   RC2: ['runoz', 'tawido'],
   RC3: ['alu'],
+  RC4: ['runoz', 'radido'],
   ELDRITCH_OPEN_SHORT: ['wgkrathuf'],
   ELDRITCH_OPEN_FULL: ['odnglmebtszpeijinhwgkrathuf'],
   ELDRITCH_CLOSE: ['runoz', 'gnagido'],

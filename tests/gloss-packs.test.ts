@@ -20,7 +20,13 @@ import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 
-const SCHOOLS: ReadonlyArray<School> = ['protection', 'curse', 'invocation', 'eldritch'];
+const SCHOOLS: ReadonlyArray<School> = [
+  'protection',
+  'curse',
+  'invocation',
+  'eldritch',
+  'divination',
+];
 
 interface GenomeGlossTables {
   roots: RootGlossTable;
@@ -72,7 +78,7 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     slice: (pack) => pack.egyptian(),
     bind: async (pack) => bindGenome(egyptianGenome, await pack.egyptian()),
     roots: rootsOf(egyptianData.FIELDS, (r: { skeleton: string }) => r.skeleton),
-    powers: egyptianData.BRIGHT_POWER.map((p) => p.skeleton),
+    powers: egyptianData.ALL_POWER.map((p) => p.skeleton),
     epithets: egyptianData.DREAD_POWER.map((p) => p.skeleton),
     idioms: Object.keys(egyptianData.IDIOM_WORDS),
     seals: [...egyptianData.SEAL_COUNTS],

@@ -6,6 +6,7 @@ import { form, lookup } from '../table.js';
 import type {
   GlossRef,
   RunicCurse,
+  RunicDivination,
   RunicGlosses,
   RunicInvocation,
   RunicProtection,
@@ -149,6 +150,39 @@ const roots: RootGlossTable = {
   forn: { gloss: 'ancient time', forms: { noun: 'ancient time' } },
   dag: { gloss: 'day', forms: { noun: 'day' } },
   jer: { gloss: 'harvest-year', forms: { noun: 'harvest-year' } },
+  // sight
+  seh: { gloss: 'see', forms: { verb: 'see' } },
+  spah: { gloss: 'foresee, prophesy', forms: { noun: 'seer', verb: 'foresee' } },
+  skaw: { gloss: 'behold, gaze on', forms: { noun: 'watcher', verb: 'behold' } },
+  wit: { gloss: 'know, be aware of', forms: { noun: 'knower', verb: 'know' } },
+  witag: { gloss: 'the knowing one', forms: { noun: 'prophet' } },
+  aug: { gloss: 'eye', forms: { noun: 'eye' } },
+  birt: { gloss: 'make bright, bring to light', forms: { verb: 'bring to light', adj: 'bright' } },
+  bar: { gloss: 'lay bare, uncover', forms: { verb: 'lay bare', adj: 'bare' } },
+  kuth: { gloss: 'make known', forms: { verb: 'make known', adj: 'manifest' } },
+  glog: { gloss: 'clear-sighted', forms: { adj: 'clear', adv: 'clearly' } },
+  // fate
+  urlag: { gloss: 'fate laid down', forms: { noun: 'fate laid down' } },
+  hlaut: { gloss: 'the lot fallen', forms: { noun: 'fallen lot' } },
+  dom: { gloss: 'doom, judgment', forms: { noun: 'doom' } },
+  skuld: { gloss: 'what shall be', forms: { noun: 'what shall be' } },
+  norn: { gloss: 'fate-woman', forms: { noun: 'fate-woman' } },
+  metud: { gloss: 'the measurer', forms: { noun: 'measurer' } },
+  hail: { gloss: 'good hap', forms: { noun: 'good hap', adj: 'whole' } },
+  end: { gloss: 'appointed end', forms: { noun: 'appointed end' } },
+  thrad: { gloss: 'spun thread', forms: { noun: 'spun thread' } },
+  wis: { gloss: 'certain, fated', forms: { adj: 'certain', adv: 'surely' } },
+  // signs
+  tein: { gloss: 'lot-stave', forms: { noun: 'lot-stave' } },
+  taik: { gloss: 'token', forms: { noun: 'token' } },
+  mark: { gloss: 'mark cut in', forms: { noun: 'mark' } },
+  bauk: { gloss: 'beacon', forms: { noun: 'beacon' } },
+  fugl: { gloss: 'bird', forms: { noun: 'bird' } },
+  hraf: { gloss: 'raven', forms: { noun: 'raven' } },
+  spor: { gloss: 'trace', forms: { noun: 'trace' } },
+  frag: { gloss: 'question', forms: { noun: 'question' } },
+  andswar: { gloss: 'answer', forms: { noun: 'answer' } },
+  rist: { gloss: 'cut line', forms: { noun: 'cut line' } },
 };
 
 const powers: GlossTable = {
@@ -178,9 +212,11 @@ const idioms: GlossTable = {
   RO2: 'I, the rune-master!',
   RO3_FIRST_AETT: 'The first aett of the futhark!',
   RO3_FULL_ROW: 'The full row of the futhark!',
+  RO4: 'I took up three lot-staves.',
   RC1: 'I painted these runes.',
   RC2: 'I made these runes.',
   RC3: 'Alu!',
+  RC4: 'I read the runes.',
   ELDRITCH_OPEN_SHORT: 'The first aett, spoken against its order!',
   ELDRITCH_OPEN_FULL: 'The rune row, spoken against its order!',
   ELDRITCH_CLOSE: 'It gnawed the runes.',
@@ -228,6 +264,18 @@ export const runicGlosses: RunicGlosses = {
     `${form(roots, p.intentRoot, 'verb')}` +
     `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}! ` +
     `${capitalize(p.powerWord)}!`,
+
+  divinationAsk: (p: RunicDivination) =>
+    `Does the ${noun(p.agentRoot)} ${form(roots, p.intentRoot, 'verb')}` +
+    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
+    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
+    `${noun(p.targetRoot)}?`,
+
+  divinationSee: (p: RunicDivination) =>
+    `I, the ${noun(p.agentRoot)}, ${form(roots, p.intentRoot, 'verb')}` +
+    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
+    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
+    `${noun(p.targetRoot)}.`,
 
   litanyTriple: (word) => `${capitalize(word)}, spoken three times.`,
   litanyTriangle: (word) => `${capitalize(word)}, shrinking to a single rune.`,

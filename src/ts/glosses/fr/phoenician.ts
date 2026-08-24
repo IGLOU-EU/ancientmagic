@@ -3,7 +3,8 @@
 //
 // Divine names take the French Punic-scholarship orthography (Baal, Astarté,
 // Eshmoun, Melqart, Tanit, Reshef), and each one declares its gender because
-// the PO3 opener hails its bearer by a title.
+// the PO3 opener hails its bearer by a title and a Divination question
+// resumes it with a pronoun.
 //
 // No clause of this genome renders a past participle: the jussive and the
 // imperative both call for the verb wording, and the opener calls for the
@@ -15,6 +16,8 @@ import type {
   GlossRef,
   GlossTable,
   NamedPowerTable,
+  PhoenicianDivinationAsk,
+  PhoenicianDivinationSee,
   PhoenicianGlosses,
   PhoenicianInvocation,
   PhoenicianJussive,
@@ -22,12 +25,15 @@ import type {
 } from '../types.js';
 import {
   agreed,
+  ask,
   capitalize,
   definite,
   exclaim,
   genderOf,
+  inverted,
   ofPhrase,
   plural,
+  speaker,
   that,
   toPhrase,
   vocative,
@@ -464,6 +470,80 @@ const roots: RootGlossTable = {
     gender: 'm',
   },
   dr: { gloss: 'génération, âge', forms: { noun: 'âge', plural: 'âges' }, gender: 'm' },
+  // sight. Every verb is a first-group one or of the ouvrir family, so one
+  // stored form serves the question, the first person and the imperative.
+  khzh: {
+    gloss: 'voir en vision',
+    forms: { noun: 'voyant', verb: 'contemple en vision' },
+    gender: 'm',
+  },
+  nbtt: { gloss: 'porter le regard sur', forms: { verb: 'considère' } },
+  glh: { gloss: 'dévoiler', forms: { verb: 'dévoile' } },
+  "'wr": { gloss: 'lumière', forms: { noun: 'lumière' }, gender: 'f' },
+  ngh: { gloss: 'éclat', forms: { noun: 'éclat' }, gender: 'm' },
+  tsph: {
+    gloss: 'monter la garde',
+    forms: { noun: 'guetteur', verb: 'guette' },
+    gender: 'm',
+  },
+  "sh'l": { gloss: 'demander après', forms: { verb: 'interroge' } },
+  ghyn: { gloss: 'œil', forms: { noun: 'œil' }, gender: 'm' },
+  pqkh: { gloss: 'ouvrir grand', forms: { verb: 'ouvre' } },
+  brr: { gloss: 'clair', forms: { adj: 'clair' }, feminine: { adj: 'claire' } },
+  // fate
+  grl: { gloss: 'sort jeté', forms: { noun: 'sort jeté' }, gender: 'm' },
+  khlq: { gloss: 'portion assignée', forms: { noun: 'portion assignée' }, gender: 'f' },
+  gzr: { gloss: 'décret', forms: { noun: 'décret' }, gender: 'm' },
+  dyn: { gloss: 'jugement', forms: { noun: 'jugement' }, gender: 'm' },
+  mny: { gloss: 'ce qui est assigné', forms: { noun: 'chose assignée' }, gender: 'f' },
+  ghqb: { gloss: 'issue', forms: { noun: 'issue' }, gender: 'f' },
+  gdd: { gloss: 'fortune', forms: { noun: 'fortune' }, gender: 'f' },
+  ntsb: { gloss: 'arrêté', forms: { adj: 'arrêté' }, feminine: { adj: 'arrêtée' } },
+  khrts: { gloss: 'ce qui est décidé', forms: { noun: 'chose décidée' }, gender: 'f' },
+  nkhl: { gloss: 'ce qui échoit', forms: { noun: 'part échue' }, gender: 'f' },
+  // signs
+  "'t": { gloss: 'gage', forms: { noun: 'gage', plural: 'gages' }, gender: 'm' },
+  spr: {
+    gloss: 'écrit consigné',
+    forms: { noun: 'écrit consigné', plural: 'écrits consignés' },
+    gender: 'm',
+  },
+  nkhsh: {
+    gloss: 'lecture de présage',
+    forms: { noun: 'lecture de présage', plural: 'lectures de présages' },
+    gender: 'f',
+  },
+  qsm: {
+    gloss: 'divination par le sort',
+    forms: { noun: 'divination par le sort', plural: 'divinations par le sort' },
+    gender: 'f',
+  },
+  hll: {
+    gloss: 'étoile du matin',
+    forms: { noun: 'étoile du matin', plural: 'étoiles du matin' },
+    gender: 'f',
+  },
+  rmz: {
+    gloss: 'indice muet',
+    forms: { noun: 'indice muet', plural: 'indices muets' },
+    gender: 'm',
+  },
+  bshr: { gloss: 'nouvelle', forms: { noun: 'nouvelle', plural: 'nouvelles' }, gender: 'f' },
+  khqq: {
+    gloss: 'marque gravée',
+    forms: { noun: 'marque gravée', plural: 'marques gravées' },
+    gender: 'f',
+  },
+  ghwp: {
+    gloss: 'oiseau en vol',
+    forms: { noun: 'oiseau en vol', plural: 'oiseaux en vol' },
+    gender: 'm',
+  },
+  smn: {
+    gloss: 'repère posé',
+    forms: { noun: 'repère posé', plural: 'repères posés' },
+    gender: 'm',
+  },
 };
 
 const powers: NamedPowerTable = {
@@ -495,6 +575,9 @@ const idioms: GlossTable = {
   PC1: 'Car il a entendu la voix, qu’il bénisse.',
   PC2: 'Qu’ils n’aient plus de racine en bas.',
   PC3: 'À jamais.',
+  // Deliberately without a subject, so that no closer contradicts the gender
+  // of the power the formula questioned.
+  PC4: 'Car la voix a été entendue.',
   ELDRITCH_CLOSE: 'La porte demeure ouverte à jamais.',
 };
 
@@ -577,6 +660,24 @@ export const phoenicianGlosses: PhoenicianGlosses = {
     );
   },
 
+  // The script marks its question with a proclitic on the verb, French with
+  // the inversion. Below tier 8 the name is not written and a pronoun of the
+  // power's own gender resumes it, as the verb prefix does in the script.
+  divinationAsk: (p: PhoenicianDivinationAsk) => {
+    const god = power(powers, p.agentPower);
+    const gender = god.gender === 'f' ? 'f' : 'm';
+    const asked = inverted(form(roots, p.intentRoot, 'verb'), gender);
+    const chain = p.chainRoots.map((id) => ` des ${form(roots, id, 'plural')}`).join('');
+    const head = p.named ? `${god.name}${chain} ${asked}` : capitalize(asked);
+    const object = `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}`;
+    return ask(`${head} ${object}`) + adverbial(p.adverbRoot);
+  },
+
+  divinationSee: (p: PhoenicianDivinationSee) =>
+    `Et ${speaker(form(roots, p.intentRoot, 'verb'))} ` +
+    `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}.` +
+    `${adverbial(p.adverbRoot)}`,
+
   selfPresentationByName: (spokenName) => `Je suis ${capitalize(spokenName)}.`,
   selfPresentationByEpithet: (id) =>
     `J’appartiens ${toPhrase(lookup(epithets, id, 'epithet'))}.`,
@@ -593,6 +694,7 @@ export const phoenicianGlosses: PhoenicianGlosses = {
         : ` ${plural(agreed(roots, adjectiveRoot, 'adj', genderOf(roots, targetRoot)))}`;
     return `Incantation contre les ${form(roots, targetRoot, 'plural')}${qualifier}.`;
   },
+  openerQuestion: (id) => `Question posée à ${power(powers, id).name}.`,
 
   // A name quoted rather than used is masculine in French, so the participle
   // stays in the masculine whoever the name belongs to.

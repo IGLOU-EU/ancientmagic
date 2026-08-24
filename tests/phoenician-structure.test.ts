@@ -1,19 +1,25 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { FIELDS } from '../src/ts/languages/phoenician-data.js';
-import { transitiveVerbsOf } from '../src/ts/languages/phoenician.js';
+import { citation, speak, transitiveVerbsOf } from '../src/ts/languages/phoenician.js';
 import {
   ALL_NAME_SPOKEN,
+  ARTICLE,
   BRIGHT_SPOKEN,
   DARK_SPOKEN,
+  DIVINATION_SPOKEN,
+  INTERROGATIVE,
   INTRANSITIVE,
   NUMERALS,
   PC1_SPOKEN,
   PC2_SPOKEN,
   PC3_SPOKEN,
+  PC4_SPOKEN,
   PO1_HEAD_SPOKEN,
   PO2_HEAD_SPOKEN,
   PO3_HEAD_SPOKEN,
+  PO4_HEAD_SPOKEN,
+  PROCLITIC_L,
   PROCLITIC_W,
   SEAL_HEAD_SPOKEN,
   YT_SPOKEN,
@@ -98,7 +104,12 @@ test('school openers follow the tier table', () => {
       for (const school of ALL_SCHOOLS) {
         const words = line(school, difficulty, seed);
         assert.strictEqual(words[0], PO2_HEAD_SPOKEN, label(school, difficulty, seed));
-        const head = school === 'invocation' ? PO3_HEAD_SPOKEN : PO1_HEAD_SPOKEN;
+        const head =
+          school === 'invocation'
+            ? PO3_HEAD_SPOKEN
+            : school === 'divination'
+              ? PO4_HEAD_SPOKEN
+              : PO1_HEAD_SPOKEN;
         assert.strictEqual(words[2], head, `school opener in ${label(school, difficulty, seed)}`);
       }
     }
@@ -274,9 +285,14 @@ test('the agent construct chain grows with the tier in every school', () => {
         const words = phoenicianWords(school, difficulty, seed);
         const chain = difficulty >= 9 ? 3 : difficulty >= 8 ? 2 : 1;
         const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+        // Divination writes its power out in the asking clause alone, and
+        // only from tier 8, where the construct chain has to hang on it
+        // (spec 4.11). Below that the verb prefix carries the subject.
+        const expected =
+          school === 'divination' ? (difficulty >= 8 ? chain : 0) : chain * clauses;
         assert.strictEqual(
           words.filter((w) => w.role === 'agent').length,
-          chain * clauses,
+          expected,
           `agent noun count in ${where}`,
         );
       }
@@ -387,7 +403,9 @@ test('gloss is plain english and reflects the school', () => {
       for (const seed of SEEDS) {
         const out = phoenician(school, difficulty, seed);
         const where = label(school, difficulty, seed);
-        assert.match(out.gloss, /^[A-Za-z][A-Za-z ,.!-]*[.!]$/, `gloss shape in ${where}`);
+        // The question mark joins the shape with Divination, whose asking
+        // clause is the only place any script here can put one.
+        assert.match(out.gloss, /^[A-Za-z][A-Za-z ,.!?-]*[.!?]$/, `gloss shape in ${where}`);
         if (difficulty < 3) continue;
         if (school === 'protection' || school === 'curse') {
           assert.ok(out.gloss.includes('Incantation'), `no opener in the gloss of ${where}`);
@@ -395,6 +413,10 @@ test('gloss is plain english and reflects the school', () => {
         }
         if (school === 'invocation' || school === 'eldritch') {
           assert.ok(out.gloss.includes('O '), `no vocative in the gloss of ${where}`);
+        }
+        if (school === 'divination') {
+          assert.ok(out.gloss.includes('A question to'), `no opener in the gloss of ${where}`);
+          assert.ok(out.gloss.includes('?'), `no question in the gloss of ${where}`);
         }
       }
     }
@@ -414,6 +436,147 @@ test('divine names never carry the article', () => {
           );
         }
       }
+    }
+  }
+});
+
+// --- Divination (spec 4.11) -------------------------------------------------
+
+const DIVINATION_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
+
+const divinationClauses = (difficulty: number): number =>
+  difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+
+test('the interrogative rides the verb of the asking clause and nothing else', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const words = phoenicianWords('divination', difficulty, seed);
+      const asked = words.filter((w) => (w.vocalized ?? '').startsWith(INTERROGATIVE.spoken));
+      assert.strictEqual(asked.length, 1, `one question per formula in ${where}`);
+      const verb = asked[0];
+      assert.strictEqual(verb?.role, 'intent', `the interrogative left the verb in ${where}`);
+      // It is spoken hi and never ha, so the transliteration always separates
+      // it from an article even though the glyph line never does.
+      assert.ok(verb?.spoken.startsWith(INTERROGATIVE.spoken), `spoken hi in ${where}`);
+      assert.ok(!verb?.spoken.startsWith(ARTICLE.spoken), `spoken ha in ${where}`);
+      assert.strictEqual(
+        Array.from(verb?.glyphs ?? '')[0],
+        INTERROGATIVE.glyph,
+        `the question is not written with he in ${where}`,
+      );
+      // A prefix verb, whose own prefix resumes the power the opener named.
+      const stem = (verb?.vocalized ?? '').slice(INTERROGATIVE.spoken.length);
+      assert.match(stem, /^(?:ya|ta)/u, `no prefix verb under the question in ${where}`);
+    }
+  }
+});
+
+test('every seeing clause opens on the imperfect 1sg, the form no other school draws', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const words = phoenicianWords('divination', difficulty, seed);
+      const intents = words.filter((w) => w.role === 'intent');
+      assert.strictEqual(intents.length, divinationClauses(difficulty), `clause count in ${where}`);
+      const seeing = intents.slice(1);
+      for (const verb of seeing) {
+        // The clause joiner rides in front of the prefix from tier 6 up.
+        assert.match(
+          verb.vocalized ?? '',
+          new RegExp(`^(?:${PROCLITIC_W.spoken})?'a`, 'u'),
+          `seeing verb is not the imperfect 1sg in ${where}`,
+        );
+      }
+    }
+  }
+  // The form belongs to this school alone.
+  for (const school of ALL_SCHOOLS) {
+    if (school === 'divination') continue;
+    for (const difficulty of DIFFICULTIES) {
+      for (const seed of SEEDS) {
+        for (const word of phoenicianWords(school, difficulty, seed)) {
+          if (word.role !== 'intent') continue;
+          assert.ok(
+            !/^(?:we)?'a/u.test(word.vocalized ?? ''),
+            `imperfect 1sg in ${label(school, difficulty, seed)}`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test('the divination object is marked from tier 4 and takes the article from tier 5', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const words = phoenicianWords('divination', difficulty, seed);
+      const spoken = words.map((w) => w.spoken);
+      const markers = spoken.filter((w) => w === YT_SPOKEN).length;
+      // The opener consumes the AGENT, so the object survives in every clause
+      // from tier 4 up, without the delay the PO1 schools carry.
+      assert.strictEqual(
+        markers,
+        difficulty >= 4 ? divinationClauses(difficulty) : 0,
+        `object marker count in ${where}`,
+      );
+      spoken.forEach((word, index) => {
+        if (word !== YT_SPOKEN) return;
+        const object = words[index + 1];
+        assert.strictEqual(object?.role, 'target', `no target after the marker in ${where}`);
+        assert.strictEqual(
+          object.spoken.startsWith(ARTICLE.spoken),
+          difficulty >= 5,
+          `article on the object in ${where}`,
+        );
+      });
+    }
+  }
+});
+
+test('divination openers and closers follow its own tier table', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const words = line('divination', difficulty, seed);
+      const opener = difficulty >= 6 ? 2 : 0;
+      assert.strictEqual(words[opener], PO4_HEAD_SPOKEN, `opener in ${where}`);
+      // PO4 names the power the formula questions, with the l- of dedication.
+      assert.ok(
+        DIVINATION_SPOKEN.some((name) => words[opener + 1] === `${PROCLITIC_L.spoken}${name}`),
+        `no questioned power after the opener in ${where}`,
+      );
+      if (difficulty <= 4) {
+        for (const part of [...PC1_SPOKEN, ...PC2_SPOKEN, ...PC3_SPOKEN, ...PC4_SPOKEN]) {
+          assert.ok(!words.includes(part), `closer at d${difficulty}`);
+        }
+        continue;
+      }
+      const seal = words.lastIndexOf(SEAL_HEAD_SPOKEN);
+      const end = seal > 0 ? seal : words.length;
+      const closers = difficulty >= 9 ? [...PC4_SPOKEN, ...PC3_SPOKEN] : [...PC4_SPOKEN];
+      assert.deepStrictEqual(words.slice(end - closers.length, end), closers, `closer in ${where}`);
+      // The blessing belongs to the schools that ask for one.
+      assert.ok(!words.includes('yebarek'), `blessing in ${where}`);
+    }
+  }
+});
+
+test('the caster of a divination presents himself as a seer', () => {
+  const seerNames = new Set(
+    FIELDS.sight
+      .filter((r) => r.forms.includes('noun'))
+      .map((r) => `${speak(citation(r.root)).replace(/^gh/u, '')}baal`),
+  );
+  for (const difficulty of [6, 7, 8, 9]) {
+    for (const seed of SEEDS) {
+      const words = line('divination', difficulty, seed);
+      assert.strictEqual(words[0], PO2_HEAD_SPOKEN, label('divination', difficulty, seed));
+      assert.ok(
+        seerNames.has(words[1] ?? ''),
+        `the caster name is not built on a sight root in ${label('divination', difficulty, seed)}`,
+      );
     }
   }
 });

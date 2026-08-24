@@ -1,28 +1,42 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import {
+  AGENT_POWER,
+  ALL_POWER,
   BRIGHT_POWER,
+  DIVINATION_POWER,
   DREAD_POWER,
   FIELD_DET,
   FIELDS,
+  FN_INIW,
   IDIOM_WORDS,
+  IMEN,
   NUMERAL_WORDS,
   SIGN_MAP,
 } from '../src/ts/languages/egyptian-data.js';
+import { glyphsFor } from '../src/ts/languages/egyptian.js';
 import { egyptianGlosses } from '../src/ts/glosses/en/egyptian.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
 import {
   DETERMINATIVE_TABLE,
+  DIVINATION_SPOKEN,
   DREAD_TABLE,
   EC1_GLYPHS,
   EC1_SPOKEN,
   EC2_GLYPHS,
   EC2_SPOKEN,
+  EC4_GLYPHS,
+  EC4_SPOKEN,
   ELDRITCH_CLOSE_GLYPHS,
   ELDRITCH_CLOSE_SPOKEN,
   ELDRITCH_OPEN_SPOKEN,
   EO1_GLYPHS,
   EO1_SPOKEN,
+  EO4_GLYPHS,
+  EO4_SPOKEN,
+  IMEN_ROW,
+  INIW_GLYPHS,
+  INIW_SPOKEN,
   FIELD_DET as SPEC_FIELD_DET,
   IDIOM_SIGN_TABLE,
   LEXICON,
@@ -31,9 +45,9 @@ import {
   SIGN_TABLE,
 } from './egyptian-spec.js';
 
-test('the working set is 23 phonograms, 17 determinatives and 7 closed idiom signs', () => {
+test('the working set is 23 phonograms, 19 determinatives and 7 closed idiom signs', () => {
   assert.strictEqual(SIGN_TABLE.length, 23);
-  assert.strictEqual(DETERMINATIVE_TABLE.length, 17);
+  assert.strictEqual(DETERMINATIVE_TABLE.length, 19);
   assert.strictEqual(IDIOM_SIGN_TABLE.length, 7);
   assert.strictEqual(Object.keys(SIGN_MAP).length, 23);
   for (const [token, glyph] of SIGN_TABLE) {
@@ -47,7 +61,7 @@ test('field determinatives follow the normative table', () => {
   for (const [field, glyph] of Object.entries(SPEC_FIELD_DET)) {
     assert.strictEqual(FIELD_DET[field as SemanticField], glyph, `field ${field}`);
   }
-  assert.strictEqual(new Set(Object.values(FIELD_DET)).size, 10, 'ten distinct field signs');
+  assert.strictEqual(new Set(Object.values(FIELD_DET)).size, 13, 'thirteen distinct field signs');
 });
 
 test('the coined lexicon matches the spec table, skeleton, spoken form and gloss', () => {
@@ -66,7 +80,7 @@ test('the coined lexicon matches the spec table, skeleton, spoken form and gloss
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 100, 'ten fields of ten roots');
+  assert.strictEqual(total, 130, 'thirteen fields of ten roots');
 });
 
 test('coined skeletons respect the phonotactics of the spec', () => {
@@ -83,17 +97,42 @@ test('coined skeletons respect the phonotactics of the spec', () => {
   }
 });
 
+// The Divination fields declare no past participle, because no divination
+// clause renders one (spec 3.11), and they are the only fields that may hold a
+// root offering an adjective alone.
+const DIVINATION_FIELDS: ReadonlySet<string> = new Set(['sight', 'fate', 'signs']);
+
 test('every root carries the gloss forms of the roles it can fill', () => {
-  for (const roots of Object.values(FIELDS)) {
+  for (const [field, roots] of Object.entries(FIELDS)) {
+    const divination = DIVINATION_FIELDS.has(field);
     for (const root of roots) {
       assert.ok(
-        root.forms.includes('noun') || root.forms.includes('verb'),
+        root.forms.includes('noun') ||
+          root.forms.includes('verb') ||
+          (divination && root.forms.includes('adj')),
         `${root.skeleton} fills no role`,
       );
-      if (root.forms.includes('verb')) {
+      if (root.forms.includes('verb') && !divination) {
         assert.ok(root.forms.includes('pp'), `${root.skeleton} is a verb without a participle`);
       }
+      if (divination) {
+        assert.ok(!root.forms.includes('pp'), `${root.skeleton} declares an unused participle`);
+      }
     }
+  }
+  // Divination draws its own genes from its own fields, so each must hold
+  // what the school asks of it.
+  for (const field of ['sight', 'summoning'] as const) {
+    assert.ok(FIELDS[field].some((r) => r.forms.includes('verb')), `no verb in ${field}`);
+  }
+  for (const field of ['sight', 'fate'] as const) {
+    assert.ok(FIELDS[field].some((r) => r.forms.includes('adj')), `no adjective in ${field}`);
+  }
+  for (const field of ['signs', 'sight', 'fate', 'time', 'hidden'] as const) {
+    assert.ok(
+      FIELDS[field].filter((r) => r.forms.includes('noun')).length >= 3,
+      `thin nouns in ${field}`,
+    );
   }
   // The plan draws adjectives from these three fields only, so each must offer
   // at least one, and adverbial m-phrases need nouns in theirs.
@@ -128,6 +167,29 @@ test('attested power words are written sign for sign as the spec lists them', ()
   });
 });
 
+// The ninth name of spec 3.7 ships with Divination alone, so it is written
+// with the others and drawn by no school that predates it.
+test('amun is written as the spec lists him and stays out of the other pools', () => {
+  const [skeleton, glyphs, spoken] = IMEN_ROW;
+  assert.strictEqual(IMEN.skeleton, skeleton);
+  assert.strictEqual(IMEN.glyphs, glyphs);
+  assert.strictEqual(IMEN.spoken, spoken);
+  assert.ok(!BRIGHT_POWER.some((p) => p.skeleton === skeleton), 'amun reached the bright pool');
+  assert.ok(!AGENT_POWER.some((p) => p.skeleton === skeleton), 'amun reached the agent pool');
+  assert.deepStrictEqual(ALL_POWER.map((p) => p.skeleton), [
+    ...POWER_TABLE.map(([id]) => id),
+    skeleton,
+  ]);
+  assert.deepStrictEqual(
+    DIVINATION_POWER.map((p) => p.spoken),
+    [...DIVINATION_SPOKEN],
+    'the questioned pool is Thoth and Amun',
+  );
+  // The god and the hidden-things root share a spelling and a spoken form,
+  // and stay two strings: one ends on the god flag, the other on its field.
+  assert.notStrictEqual(IMEN.glyphs, glyphsFor('imn') + FIELD_DET.hidden);
+});
+
 test('the dread pool matches the spec table and every skeleton already ends in x', () => {
   assert.strictEqual(DREAD_POWER.length, DREAD_TABLE.length);
   DREAD_TABLE.forEach(([skeleton, spoken, gloss], index) => {
@@ -149,6 +211,12 @@ test('idioms carry the attested spellings of the spec', () => {
 
   assert.deepStrictEqual(spoken('EO1'), [...EO1_SPOKEN]);
   assert.strictEqual(glyphs('EO1'), EO1_GLYPHS);
+  assert.deepStrictEqual(spoken('EO4'), [...EO4_SPOKEN]);
+  assert.strictEqual(glyphs('EO4'), EO4_GLYPHS);
+  assert.deepStrictEqual(spoken('EC4'), [...EC4_SPOKEN]);
+  assert.strictEqual(glyphs('EC4'), EC4_GLYPHS);
+  assert.strictEqual(FN_INIW.glyphs, INIW_GLYPHS);
+  assert.strictEqual(FN_INIW.spoken, INIW_SPOKEN);
   assert.deepStrictEqual(spoken('ELDRITCH_OPEN'), [...ELDRITCH_OPEN_SPOKEN]);
   assert.deepStrictEqual(spoken('EC1'), [...EC1_SPOKEN]);
   assert.strictEqual(glyphs('EC1'), EC1_GLYPHS);

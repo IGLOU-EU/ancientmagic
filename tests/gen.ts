@@ -22,8 +22,12 @@ export const ALL_SCHOOLS: ReadonlyArray<School> = [
   'curse',
   'invocation',
   'eldritch',
+  'divination',
 ];
 
+// The schools built on the base tier table of each genome: clear register,
+// openers and closers of section N.9. Divination reads against its own table
+// (section N.11) and is swept by its own assertions.
 export const BRIGHT_SCHOOLS: ReadonlyArray<School> = [
   'protection',
   'curse',

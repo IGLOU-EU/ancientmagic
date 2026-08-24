@@ -6,6 +6,8 @@ import { form, lookup, power } from '../table.js';
 import type {
   EgyptianAddress,
   EgyptianCurse,
+  EgyptianDivinationAsk,
+  EgyptianDivinationSee,
   EgyptianGlosses,
   EgyptianInvocation,
   EgyptianProtection,
@@ -127,6 +129,39 @@ const roots: RootGlossTable = {
   aHaw: { gloss: 'lifetime', forms: { noun: 'lifetime' } },
   pAwt: { gloss: 'primeval time', forms: { noun: 'primeval time' } },
   sf: { gloss: 'yesterday', forms: { noun: 'yesterday' } },
+  // sight
+  gmH: { gloss: 'glimpse', forms: { verb: 'glimpse' } },
+  sSm: { gloss: 'show', forms: { noun: 'guide', verb: 'show' } },
+  sHD: { gloss: 'illumine', forms: { verb: 'illumine' } },
+  wbA: { gloss: 'disclose', forms: { verb: 'disclose' } },
+  irt: { gloss: 'eye', forms: { noun: 'eye' } },
+  rswt: { gloss: 'dream', forms: { noun: 'dream' } },
+  sxA: { gloss: 'call to mind', forms: { verb: 'call to mind' } },
+  nwty: { gloss: 'watcher', forms: { noun: 'watcher' } },
+  wHa: { gloss: 'unriddle', forms: { verb: 'unriddle' } },
+  mAa: { gloss: 'true', forms: { adj: 'true' } },
+  // fate
+  SAy: { gloss: 'fate', forms: { noun: 'fate', adj: 'fated' } },
+  wD: { gloss: 'decree', forms: { noun: 'decree' } },
+  mxAt: { gloss: 'balance', forms: { noun: 'balance' } },
+  ip: { gloss: 'reckoning', forms: { noun: 'reckoning' } },
+  nHb: { gloss: 'allotment', forms: { noun: 'allotment' } },
+  pHwy: { gloss: 'the end of it', forms: { noun: 'end of it' } },
+  bAw: { gloss: 'manifest power', forms: { noun: 'manifest power' } },
+  xpr: { gloss: 'what comes to pass', forms: { noun: 'thing that comes to pass' } },
+  mty: { gloss: 'unerring', forms: { adj: 'unerring' } },
+  wpwt: { gloss: 'verdict sent', forms: { noun: 'verdict sent' } },
+  // signs
+  sS: { gloss: 'written sign', forms: { noun: 'written sign' } },
+  mtr: { gloss: 'witness', forms: { noun: 'witness' } },
+  bik: { gloss: 'falcon', forms: { noun: 'falcon' } },
+  Sdy: { gloss: 'reading aloud', forms: { noun: 'reading aloud' } },
+  wSd: { gloss: 'question put', forms: { noun: 'question put' } },
+  wSb: { gloss: 'answer', forms: { noun: 'answer' } },
+  smi: { gloss: 'report', forms: { noun: 'report' } },
+  psS: { gloss: 'divided lot', forms: { noun: 'divided lot' } },
+  xAy: { gloss: 'measuring out', forms: { noun: 'measuring out' } },
+  hn: { gloss: 'assent', forms: { noun: 'assent' } },
 };
 
 const powers: NamedPowerTable = {
@@ -138,6 +173,7 @@ const powers: NamedPowerTable = {
   inpw: { name: 'Inpu', gloss: 'Inpu, opener of the ways.' },
   sxmt: { name: 'Sekhmet', gloss: 'Sekhmet, plague and shield.' },
   aApp: { name: 'Aapep', gloss: 'Aapep, the serpent adversary.' },
+  imn: { name: 'Imen', gloss: 'Imen, the hidden one who answers.' },
 };
 
 const epithets: GlossTable = {
@@ -155,9 +191,11 @@ const epithets: GlossTable = {
 
 const idioms: GlossTable = {
   EO1: 'Recitation.',
+  EO4: 'As for what is seen in a dream.',
   ELDRITCH_OPEN: 'The rite spoken backwards.',
   EC1: 'Life, prosperity, health.',
   EC2: 'True of voice.',
+  EC4: 'So it is.',
   ELDRITCH_CLOSE: 'Dissolution forever.',
 };
 
@@ -217,6 +255,19 @@ export const egyptianGlosses: EgyptianGlosses = {
     const spoken = p.power.kind === 'epithet' ? capitalize(p.power.spoken) : named(p.power);
     return `O ${head}${stacked}, come${adverbial(p.adverbRoot)}! ${spoken}!`;
   },
+
+  divinationAsk: (p: EgyptianDivinationAsk) => {
+    const chain = p.chainRoots.map((id) => ` of the ${noun(id)}`).join('');
+    return (
+      `Does ${power(powers, p.agentPower).name}${chain} ` +
+      `${form(roots, p.intentRoot, 'verb')} the ` +
+      `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}${adverbial(p.adverbRoot)}?`
+    );
+  },
+
+  divinationSee: (p: EgyptianDivinationSee) =>
+    `I ${form(roots, p.intentRoot, 'verb')} the ` +
+    `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}${adverbial(p.adverbRoot)}.`,
 
   // The title keeps the epithet's own article, unlike a vocative.
   spellTitle: (subject) =>

@@ -198,6 +198,45 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<PhoenicianRoot
     { root: '\'khr', forms: ['noun', 'plural'] },
     { root: 'dr', forms: ['noun', 'plural'] },
   ],
+  // The three Divination fields (spec 4.3 and 4.11). No root declares a past
+  // participle, since no divination clause uses one, and a plural is declared
+  // only in the signs field, the one a construct chain draws from.
+  sight: [
+    { root: 'khzh', forms: ['noun', 'verb'] },
+    { root: 'nbtt', forms: ['verb'] },
+    { root: 'glh', forms: ['verb'] },
+    { root: '\'wr', forms: ['noun'] },
+    { root: 'ngh', forms: ['noun'] },
+    { root: 'tsph', forms: ['noun', 'verb'] },
+    { root: 'sh\'l', forms: ['verb'] },
+    { root: 'ghyn', forms: ['noun'] },
+    { root: 'pqkh', forms: ['verb'] },
+    { root: 'brr', forms: ['adj'] },
+  ],
+  fate: [
+    { root: 'grl', forms: ['noun'] },
+    { root: 'khlq', forms: ['noun'] },
+    { root: 'gzr', forms: ['noun'] },
+    { root: 'dyn', forms: ['noun'] },
+    { root: 'mny', forms: ['noun'] },
+    { root: 'ghqb', forms: ['noun'] },
+    { root: 'gdd', forms: ['noun'] },
+    { root: 'ntsb', forms: ['adj'] },
+    { root: 'khrts', forms: ['noun'] },
+    { root: 'nkhl', forms: ['noun'] },
+  ],
+  signs: [
+    { root: '\'t', forms: ['noun', 'plural'] },
+    { root: 'spr', forms: ['noun', 'plural'] },
+    { root: 'nkhsh', forms: ['noun', 'plural'] },
+    { root: 'qsm', forms: ['noun', 'plural'] },
+    { root: 'hll', forms: ['noun', 'plural'] },
+    { root: 'rmz', forms: ['noun', 'plural'] },
+    { root: 'bshr', forms: ['noun', 'plural'] },
+    { root: 'khqq', forms: ['noun', 'plural'] },
+    { root: 'ghwp', forms: ['noun', 'plural'] },
+    { root: 'smn', forms: ['noun', 'plural'] },
+  ],
 };
 
 export interface DivineName {
@@ -229,6 +268,13 @@ export const BRIGHT_NAMES: ReadonlyArray<DivineName> = ALL_NAMES.filter((n) =>
 
 export const DARK_NAMES: ReadonlyArray<DivineName> = ALL_NAMES.filter((n) =>
   ['rshp', 'khrn', 'ssm'].includes(n.skeleton),
+);
+
+// Spec 4.7: the pair the votive steles name together under a carved crescent
+// and disc, and the goddess the tradition ties to the evening star. The two
+// goddesses take the t- prefix wherever the asking clause resumes them.
+export const DIVINATION_NAMES: ReadonlyArray<DivineName> = ALL_NAMES.filter((n) =>
+  ['bghl', 'tnt', 'ghshtrt'].includes(n.skeleton),
 );
 
 export interface DreadEpithet {
@@ -266,12 +312,18 @@ export const PO3_HEAD: FixedWord = {
   glyphs: '\u{1090B}\u{10900}\u{10903}\u{1090D}',
   spoken: 'ladon',
 };
+// The inquiry put to a god (spec 4.6), cast in the dedication shape of PO3.
+// Divination only.
+export const PO4_HEAD: FixedWord = {
+  glyphs: '\u{10914}\u{10900}\u{1090B}\u{10915}',
+  spoken: 'shaolat',
+};
 
 // The theophoric element of the PO2 caster name (spec 4.6).
 export const THEOPHORIC_SKELETON = 'bghl';
 export const THEOPHORIC_SPOKEN = 'baal';
 
-export type PhoenicianIdiomId = 'PC1' | 'PC2' | 'PC3' | 'ELDRITCH_CLOSE';
+export type PhoenicianIdiomId = 'PC1' | 'PC2' | 'PC3' | 'PC4' | 'ELDRITCH_CLOSE';
 
 // Closing idiom word lists of spec 4.6 and 4.10. What each idiom says is in the
 // packs, under the same id.
@@ -289,6 +341,14 @@ export const IDIOM_WORDS: Readonly<Record<PhoenicianIdiomId, ReadonlyArray<Fixed
     { glyphs: '\u{10914}\u{10913}\u{10914}', spoken: 'shoresh' },
   ],
   PC3: [{ glyphs: '\u{1090B}\u{1090F}\u{1090B}\u{1090C}', spoken: 'leolam' }],
+  // The reason clause of the votive closing, standing alone (spec 4.6): a
+  // divination ends when the voice has been heard, and the blessing belongs to
+  // the schools that ask for one. Divination only.
+  PC4: [
+    { glyphs: '\u{1090A}', spoken: 'ki' },
+    { glyphs: '\u{10914}\u{1090C}\u{1090F}', spoken: 'shama' },
+    { glyphs: '\u{10912}\u{1090B}', spoken: 'qol' },
+  ],
   // The fixed dread closing of spec 4.10, built from lexicon words carrying the
   // register's own vocalization.
   ELDRITCH_CLOSE: [
@@ -315,6 +375,11 @@ export const PROCLITIC_SPOKEN: Readonly<Record<ProcliticId, string>> = {
   w: 'we',
   h: 'ha',
 };
+
+// The interrogative proclitic of the Divination asking clause (spec 4.4). It
+// is the same letter as the article and never the same vowel: the article is
+// spoken ha, the question hi, and only the transliteration tells them apart.
+export const INTERROGATIVE_SPOKEN = 'hi';
 
 export const PLURAL_SPOKEN = 'im';
 export const FEMININE_SPOKEN = 'at';

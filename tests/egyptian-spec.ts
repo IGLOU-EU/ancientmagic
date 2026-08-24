@@ -42,8 +42,10 @@ export const DETERMINATIVE_TABLE: ReadonlyArray<readonly [gardiner: string, glyp
   ['Q7', '\u{132AE}'],
   ['R11', '\u{132BD}'],
   ['S34', '\u{132F9}'],
+  ['U38', '\u{1335D}'],
   ['V17', '\u{13383}'],
   ['Y1', '\u{133DB}'],
+  ['Y3', '\u{133DE}'],
   ['Z2', '\u{133E5}'],
 ];
 
@@ -79,6 +81,9 @@ export const FIELD_DET: Readonly<Record<string, string>> = {
   death: '\u{13010}',
   gates: '\u{13280}',
   time: '\u{131F3}',
+  sight: '\u{13079}',
+  fate: '\u{1335D}',
+  signs: '\u{133DE}',
 };
 
 // The coined roots of spec 3.3: skeleton, spoken form, gloss, in table order.
@@ -205,6 +210,42 @@ export const LEXICON: Readonly<
     ['pAwt', 'paut', 'primeval time'],
     ['sf', 'sef', 'yesterday'],
   ],
+  sight: [
+    ['gmH', 'gemeh', 'glimpse'],
+    ['sSm', 'seshem', 'show'],
+    ['sHD', 'sehedj', 'illumine'],
+    ['wbA', 'weba', 'disclose'],
+    ['irt', 'iret', 'eye'],
+    ['rswt', 'resut', 'dream'],
+    ['sxA', 'sekha', 'call to mind'],
+    ['nwty', 'nuty', 'watcher'],
+    ['wHa', 'weha', 'unriddle'],
+    ['mAa', 'maa', 'true'],
+  ],
+  fate: [
+    ['SAy', 'shay', 'fate'],
+    ['wD', 'wedj', 'decree'],
+    ['mxAt', 'mekhat', 'balance'],
+    ['ip', 'ip', 'reckoning'],
+    ['nHb', 'neheb', 'allotment'],
+    ['pHwy', 'pehuy', 'the end of it'],
+    ['bAw', 'bau', 'manifest power'],
+    ['xpr', 'kheper', 'what comes to pass'],
+    ['mty', 'mety', 'unerring'],
+    ['wpwt', 'weput', 'verdict sent'],
+  ],
+  signs: [
+    ['sS', 'sesh', 'written sign'],
+    ['mtr', 'meter', 'witness'],
+    ['bik', 'bik', 'falcon'],
+    ['Sdy', 'shedy', 'reading aloud'],
+    ['wSd', 'weshed', 'question put'],
+    ['wSb', 'wesheb', 'answer'],
+    ['smi', 'semi', 'report'],
+    ['psS', 'pesesh', 'divided lot'],
+    ['xAy', 'khay', 'measuring out'],
+    ['hn', 'hen', 'assent'],
+  ],
 };
 
 // Attested power words of spec 3.7: skeleton, glyph string, spoken form.
@@ -222,6 +263,17 @@ export const POWER_TABLE: ReadonlyArray<
 ];
 
 export const BRIGHT_SPOKEN: ReadonlyArray<string> = POWER_TABLE.map(([, , spoken]) => spoken);
+
+// Amun, the ninth name of spec 3.7. He arrived with Divination and is the one
+// power the shipped schools never draw, so he stands outside POWER_TABLE.
+export const IMEN_ROW: readonly [skeleton: string, glyphs: string, spoken: string] = [
+  'imn',
+  '\u{131CB}\u{13153}\u{13216}\u{132B9}',
+  'imen',
+];
+
+// The two powers a divination formula questions (spec 3.7).
+export const DIVINATION_SPOKEN: ReadonlyArray<string> = ['djehuty', 'imen'];
 
 // Dread epithet pool of spec 3.10: skeleton, spoken form, gloss.
 export const DREAD_TABLE: ReadonlyArray<
@@ -259,6 +311,9 @@ export const X_SIEVE = '\u{1340D}';
 
 // Idiom spoken forms of spec 3.6 and 3.10.
 export const EO1_SPOKEN: ReadonlyArray<string> = ['djed', 'medu'];
+export const EO4_SPOKEN: ReadonlyArray<string> = ['ir', 'maa', 'em', 'resut'];
+export const EC4_SPOKEN: ReadonlyArray<string> = ['iuef', 'pu'];
+export const INIW_SPOKEN = 'iniu';
 export const ELDRITCH_OPEN_SPOKEN: ReadonlyArray<string> = ['medu', 'djed'];
 export const EO2_HEAD_SPOKEN: ReadonlyArray<string> = ['ra', 'en'];
 export const EC1_SPOKEN: ReadonlyArray<string> = ['ankh', 'wedja', 'seneb'];
@@ -266,6 +321,10 @@ export const EC2_SPOKEN: ReadonlyArray<string> = ['maa', 'kheru'];
 export const ELDRITCH_CLOSE_SPOKEN: ReadonlyArray<string> = ['isefet', 'djet'];
 
 export const EO1_GLYPHS = '\u{13193}\u{130A7}\u{13303}';
+export const EO4_GLYPHS =
+  '\u{131CB}\u{1308B}\u{13079}\u{133E4}\u{13153}\u{1308B}\u{132F4}\u{13171}\u{133CF}\u{13079}';
+export const EC4_GLYPHS = '\u{131CB}\u{13171}\u{13191}\u{132AA}\u{13171}';
+export const INIW_GLYPHS = '\u{131CB}\u{13216}\u{131CB}\u{13171}';
 export const EC1_GLYPHS = '\u{132F9}\u{13351}\u{132F4}';
 export const EC2_GLYPHS = '\u{13419}\u{132A4}';
 export const ELDRITCH_CLOSE_GLYPHS =

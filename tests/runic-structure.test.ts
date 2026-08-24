@@ -321,7 +321,9 @@ test('invocation clauses end on an attested power word', () => {
 test('gloss is plain english and reflects the school', () => {
   sweep(ALL_SCHOOLS, (out, school, difficulty, seed) => {
     const where = label(school, difficulty, seed);
-    assert.match(out.gloss, /^[A-Za-z][A-Za-z ,.!-]*[.!]$/, `gloss shape in ${where}`);
+    // The question mark joins the shape with Divination, whose asking clause
+    // is the only place any script here can put one.
+    assert.match(out.gloss, /^[A-Za-z][A-Za-z ,.!?-]*[.!?]$/, `gloss shape in ${where}`);
     if (difficulty < 3) return;
     if (school === 'protection') {
       assert.ok(out.gloss.includes('against'), `protection gloss in ${where}`);
@@ -332,5 +334,117 @@ test('gloss is plain english and reflects the school', () => {
     if (school === 'invocation' || school === 'eldritch') {
       assert.ok(out.gloss.includes('O '), `vocative gloss in ${where}`);
     }
+    if (school === 'divination') {
+      assert.ok(out.gloss.includes('lot-staves'), `no opener in the gloss of ${where}`);
+      assert.ok(out.gloss.includes('?'), `no question in the gloss of ${where}`);
+    }
   });
+});
+
+// --- Divination (spec 2.11) -------------------------------------------------
+
+const DIVINATION_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
+
+test('divination opens on RO4, which stands as its own clause', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const { segments } = alignSegments(runic('divination', difficulty, seed));
+      const opening = segments[0] ?? [];
+      // RO4 is a full clause and takes ᛬ after it, so the opening never runs
+      // into the question. The cries that may precede it keep their ᛫ join.
+      assert.deepStrictEqual(opening.slice(-3), ['thri', 'teinoz', 'nemido'], where);
+      if (difficulty === 6) assert.deepStrictEqual(opening.slice(0, 2), ['ek', 'erilaz'], where);
+      if (difficulty >= 8) assert.strictEqual(opening[0], 'futharkgwhnijeipzstbemlngdo', where);
+    }
+  }
+});
+
+test('divination clause and closing segments follow its own tier table', () => {
+  // The opening clause, the school clauses, the repetition clause at the top
+  // two tiers, then RC4 and RC3.
+  const expected = (d: number): number => {
+    if (d <= 4) return 2;
+    if (d === 5) return 3;
+    if (d <= 7) return 4;
+    return 7;
+  };
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const { segments } = alignSegments(runic('divination', difficulty, seed));
+      assert.strictEqual(segments.length, expected(difficulty), where);
+      if (difficulty >= 5) {
+        const closing = segments[difficulty >= 8 ? segments.length - 2 : segments.length - 1];
+        assert.deepStrictEqual(closing, ['runoz', 'radido'], `RC4 in ${where}`);
+      }
+      if (difficulty >= 8) {
+        assert.deepStrictEqual(segments[segments.length - 1], ['alu'], `RC3 in ${where}`);
+      }
+    }
+  }
+});
+
+test('the question fronts its verb in -ith, the answer buries it in -o', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const { segments } = alignSegments(runic('divination', difficulty, seed));
+      const asking = segments[1] ?? [];
+      assert.match(asking[0] ?? '', /ith$/u, `question not verb initial in ${where}`);
+      // The subject follows the verb, and the object closes the clause.
+      assert.match(asking[asking.length - 1] ?? '', /an$/u, `question object in ${where}`);
+      assert.ok(
+        asking.some((word) => /az$/u.test(word)),
+        `question subject in ${where}`,
+      );
+      for (let c = 2; c < 1 + clauseCount(difficulty); c += 1) {
+        const seeing = segments[c] ?? [];
+        assert.match(seeing[seeing.length - 1] ?? '', /o$/u, `answer not verb final in ${where}`);
+        assert.match(seeing[0] ?? '', /az$/u, `answer subject in ${where}`);
+      }
+      // One question per formula, whatever the tier allows after it.
+      const ithWords = segments
+        .slice(1, 1 + clauseCount(difficulty))
+        .flat()
+        .filter((word) => /ith$/u.test(word));
+      assert.strictEqual(ithWords.length, 1, `question count in ${where}`);
+    }
+  }
+});
+
+test('a divination adjective copies the ending of the noun it precedes', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (let seed = 0; seed < 60; seed += 1) {
+      const where = label('divination', difficulty, seed);
+      const { segments } = alignSegments(runic('divination', difficulty, seed));
+      for (let c = 1; c < 1 + clauseCount(difficulty); c += 1) {
+        const clause = segments[c] ?? [];
+        // The object phrase is the only accusative of the clause: the object
+        // alone, or the adjective in -an immediately before it.
+        const accusatives = clause
+          .map((word, index) => (/an$/u.test(word) ? index : -1))
+          .filter((index) => index >= 0);
+        assert.ok(
+          accusatives.length === 1 || accusatives.length === 2,
+          `accusative count in ${where}`,
+        );
+        if (accusatives.length === 2) {
+          assert.strictEqual(
+            accusatives[1],
+            (accusatives[0] ?? 0) + 1,
+            `adjective not before its noun in ${where}`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test('the tier 7 divination seal is three lots and never another count', () => {
+  for (const seed of SEEDS) {
+    const out = runic('divination', 7, seed);
+    const { sealWord } = alignSegments(out);
+    assert.strictEqual(sealWord, NUMERAL_WORDS[3], label('divination', 7, seed));
+  }
 });

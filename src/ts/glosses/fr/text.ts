@@ -26,8 +26,10 @@ const APOSTROPHE = '’';
 // hiding as a blank nobody can tell from a space.
 const NARROW_NO_BREAK = '\u202F';
 
-// Vowels plus the mute h, the openings that force elision.
-const ELIDES = /^[aàâeéèêëiîïoôöuùûüyh]/iu;
+// Vowels plus the mute h, the openings that force elision. The ligature is
+// listed with them because a word that opens on it elides like its vowel
+// (l’œil).
+const ELIDES = /^[aàâeéèêëiîïoôöuùûüyhœ]/iu;
 
 // The articles a vocative drops off an epithet, longest first so les never
 // matches as le.
@@ -88,6 +90,20 @@ export function after(word: string | null): string {
 // in the pack goes through here, so none of them can be written without one.
 export function exclaim(text: string): string {
   return `${text}${NARROW_NO_BREAK}!`;
+}
+
+// The question mark takes the same narrow no-break space, and only a
+// Divination asking clause ever reaches it.
+export function ask(text: string): string {
+  return `${text}${NARROW_NO_BREAK}?`;
+}
+
+// The interrogative inversion, which is how elevated French asks: the subject
+// pronoun rides behind the verb, with the euphonic t between two vowels
+// (« le fanal proclame-t-il », « dévoile-t-elle »).
+export function inverted(verb: string, gender: Gender): string {
+  const pronoun = gender === 'f' ? 'elle' : 'il';
+  return /[aeiouyéèêà]$/iu.test(verb) ? `${verb}-t-${pronoun}` : `${verb}-${pronoun}`;
 }
 
 // The gender a clause agrees with. A root reached as a noun always declares

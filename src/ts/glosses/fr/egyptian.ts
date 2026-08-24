@@ -3,13 +3,15 @@
 //
 // Divine names take the French Egyptological orthography (Rê, Djéhouty, Ousir,
 // Inpou), which is the pack's own choice of spelling and not a translation of
-// the English one. No clause here addresses a god by a title, so the named
-// powers carry no gender.
+// the English one. Each one carries a gender, because a Divination question
+// resumes the power it names with a pronoun.
 
 import { form, lookup, power } from '../table.js';
 import type {
   EgyptianAddress,
   EgyptianCurse,
+  EgyptianDivinationAsk,
+  EgyptianDivinationSee,
   EgyptianGlosses,
   EgyptianInvocation,
   EgyptianProtection,
@@ -21,10 +23,12 @@ import type {
 import {
   after,
   agreed,
+  ask,
   capitalize,
   definite,
   exclaim,
   genderOf,
+  inverted,
   ofDefinite,
   ofPhrase,
   speaker,
@@ -475,17 +479,59 @@ const roots: RootGlossTable = {
   aHaw: { gloss: 'durée de vie', forms: { noun: 'durée de vie' }, gender: 'f' },
   pAwt: { gloss: 'temps primordial', forms: { noun: 'temps primordial' }, gender: 'm' },
   sf: { gloss: 'hier', forms: { noun: 'jour d’hier' }, gender: 'm' },
+  // sight. Every verb is a first-group one, so one stored form serves the
+  // question, the first person and the imperative alike.
+  gmH: { gloss: 'entrevoir', forms: { verb: 'décèle' } },
+  sSm: { gloss: 'montrer', forms: { noun: 'guide', verb: 'montre' }, gender: 'm' },
+  sHD: { gloss: 'illuminer', forms: { verb: 'illumine' } },
+  wbA: { gloss: 'dévoiler', forms: { verb: 'dévoile' } },
+  irt: { gloss: 'œil', forms: { noun: 'œil' }, gender: 'm' },
+  rswt: { gloss: 'rêve', forms: { noun: 'rêve' }, gender: 'm' },
+  sxA: { gloss: 'rappeler à la mémoire', forms: { verb: 'remémore' } },
+  nwty: { gloss: 'veilleur', forms: { noun: 'veilleur' }, gender: 'm' },
+  wHa: { gloss: 'déchiffrer', forms: { verb: 'déchiffre' } },
+  mAa: { gloss: 'véridique', forms: { adj: 'véridique' } },
+  // fate
+  SAy: {
+    gloss: 'destin',
+    forms: { noun: 'destin', adj: 'promis' },
+    gender: 'm',
+    feminine: { adj: 'promise' },
+  },
+  wD: { gloss: 'décret', forms: { noun: 'décret' }, gender: 'm' },
+  mxAt: { gloss: 'balance', forms: { noun: 'balance' }, gender: 'f' },
+  ip: { gloss: 'compte', forms: { noun: 'compte' }, gender: 'm' },
+  nHb: { gloss: 'part assignée', forms: { noun: 'part assignée' }, gender: 'f' },
+  pHwy: { gloss: 'le terme de la chose', forms: { noun: 'terme' }, gender: 'm' },
+  bAw: { gloss: 'puissance manifeste', forms: { noun: 'puissance manifeste' }, gender: 'f' },
+  xpr: { gloss: 'ce qui advient', forms: { noun: 'chose qui advient' }, gender: 'f' },
+  mty: { gloss: 'infaillible', forms: { adj: 'infaillible' } },
+  wpwt: { gloss: 'verdict transmis', forms: { noun: 'verdict transmis' }, gender: 'm' },
+  // signs
+  sS: { gloss: 'signe écrit', forms: { noun: 'signe écrit' }, gender: 'm' },
+  mtr: { gloss: 'témoin', forms: { noun: 'témoin' }, gender: 'm' },
+  bik: { gloss: 'faucon', forms: { noun: 'faucon' }, gender: 'm' },
+  Sdy: { gloss: 'lecture à voix haute', forms: { noun: 'lecture à voix haute' }, gender: 'f' },
+  wSd: { gloss: 'question posée', forms: { noun: 'question posée' }, gender: 'f' },
+  wSb: { gloss: 'réponse', forms: { noun: 'réponse' }, gender: 'f' },
+  smi: { gloss: 'rapport', forms: { noun: 'rapport' }, gender: 'm' },
+  psS: { gloss: 'lot partagé', forms: { noun: 'lot partagé' }, gender: 'm' },
+  xAy: { gloss: 'mesure prise', forms: { noun: 'mesure prise' }, gender: 'f' },
+  hn: { gloss: 'assentiment', forms: { noun: 'assentiment' }, gender: 'm' },
 };
 
+// A gender rides every name because the interrogative inversion of a
+// Divination clause resumes its subject with a pronoun.
 const powers: NamedPowerTable = {
-  HkA: { name: 'Héka', gloss: 'Héka, la magie même.' },
-  ra: { name: 'Rê', gloss: 'Rê, le soleil d’en haut.' },
-  DHwty: { name: 'Djéhouty', gloss: 'Djéhouty, maître de l’écriture.' },
-  Ast: { name: 'Aset', gloss: 'Aset, grande de magie.' },
-  wsir: { name: 'Ousir', gloss: 'Ousir, maître des morts.' },
-  inpw: { name: 'Inpou', gloss: 'Inpou, ouvreur des chemins.' },
-  sxmt: { name: 'Sekhmet', gloss: 'Sekhmet, la peste et le bouclier.' },
-  aApp: { name: 'Apep', gloss: 'Apep, le serpent adversaire.' },
+  HkA: { name: 'Héka', gloss: 'Héka, la magie même.', gender: 'm' },
+  ra: { name: 'Rê', gloss: 'Rê, le soleil d’en haut.', gender: 'm' },
+  DHwty: { name: 'Djéhouty', gloss: 'Djéhouty, maître de l’écriture.', gender: 'm' },
+  Ast: { name: 'Aset', gloss: 'Aset, grande de magie.', gender: 'f' },
+  wsir: { name: 'Ousir', gloss: 'Ousir, maître des morts.', gender: 'm' },
+  inpw: { name: 'Inpou', gloss: 'Inpou, ouvreur des chemins.', gender: 'm' },
+  sxmt: { name: 'Sekhmet', gloss: 'Sekhmet, la peste et le bouclier.', gender: 'f' },
+  aApp: { name: 'Apep', gloss: 'Apep, le serpent adversaire.', gender: 'm' },
+  imn: { name: 'Imen', gloss: 'Imen, le caché qui répond.', gender: 'm' },
 };
 
 // Each epithet keeps the article a title needs and a vocative drops.
@@ -504,9 +550,11 @@ const epithets: GlossTable = {
 
 const idioms: GlossTable = {
   EO1: 'Récitation.',
+  EO4: 'Quant à ce qui est vu en rêve.',
   ELDRITCH_OPEN: 'Le rite prononcé à rebours.',
   EC1: 'Vie, prospérité, santé.',
   EC2: 'Juste de voix.',
+  EC4: 'Ainsi en est-il.',
   ELDRITCH_CLOSE: 'Dissolution à jamais.',
 };
 
@@ -584,6 +632,27 @@ export const egyptianGlosses: EgyptianGlosses = {
       ) + ` ${exclaim(spoken)}`
     );
   },
+
+  // The particle in-iw opens the question in the script, and French asks by
+  // inverting: the named power stands first and a pronoun resumes it behind
+  // the verb.
+  divinationAsk: (p: EgyptianDivinationAsk) => {
+    const god = power(powers, p.agentPower);
+    const chain = p.chainRoots
+      .map((id) => ` ${ofDefinite(noun(id), genderOf(roots, id))}`)
+      .join('');
+    return ask(
+      `${god.name}${chain} ` +
+        `${inverted(form(roots, p.intentRoot, 'verb'), god.gender === 'f' ? 'f' : 'm')} ` +
+        `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}` +
+        `${adverbial(p.adverbRoot)}`,
+    );
+  },
+
+  divinationSee: (p: EgyptianDivinationSee) =>
+    `${capitalize(speaker(form(roots, p.intentRoot, 'verb')))} ` +
+    `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}` +
+    `${adverbial(p.adverbRoot)}.`,
 
   // The title keeps the epithet's own article, unlike a vocative.
   spellTitle: (subject) =>

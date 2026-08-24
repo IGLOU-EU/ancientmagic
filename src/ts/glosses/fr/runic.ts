@@ -10,6 +10,7 @@ import { form, lookup } from '../table.js';
 import type {
   GlossRef,
   RunicCurse,
+  RunicDivination,
   RunicGlosses,
   RunicInvocation,
   RunicProtection,
@@ -19,10 +20,12 @@ import type {
 import {
   after,
   agreed,
+  ask,
   capitalize,
   definite,
   exclaim,
   genderOf,
+  inverted,
   speaker,
   vocative,
 } from './text.js';
@@ -232,6 +235,69 @@ const roots: RootGlossTable = {
   forn: { gloss: 'temps ancien', forms: { noun: 'temps ancien' }, gender: 'm' },
   dag: { gloss: 'jour', forms: { noun: 'jour' }, gender: 'm' },
   jer: { gloss: 'année de récolte', forms: { noun: 'année de récolte' }, gender: 'f' },
+  // sight. Every verb here is a first-group one, so the single stored form
+  // serves the question, the first person and the imperative alike.
+  seh: { gloss: 'voir', forms: { verb: 'contemple' } },
+  spah: {
+    gloss: 'prévoir, prophétiser',
+    forms: { noun: 'voyant', verb: 'présage' },
+    gender: 'm',
+  },
+  skaw: {
+    gloss: 'contempler, fixer du regard',
+    forms: { noun: 'guetteur', verb: 'observe' },
+    gender: 'm',
+  },
+  wit: {
+    gloss: 'savoir, avoir connaissance de',
+    forms: { noun: 'savant', verb: 'discerne' },
+    gender: 'm',
+  },
+  witag: { gloss: 'celui qui sait', forms: { noun: 'prophète' }, gender: 'm' },
+  aug: { gloss: 'œil', forms: { noun: 'œil' }, gender: 'm' },
+  birt: {
+    gloss: 'éclairer, mettre en lumière',
+    forms: { verb: 'révèle', adj: 'lumineux' },
+    feminine: { adj: 'lumineuse' },
+  },
+  bar: { gloss: 'mettre à nu, découvrir', forms: { verb: 'dévoile', adj: 'à découvert' } },
+  kuth: { gloss: 'faire connaître', forms: { verb: 'proclame', adj: 'manifeste' } },
+  glog: {
+    gloss: 'à la vue claire',
+    forms: { adj: 'clair', adv: 'clairement' },
+    feminine: { adj: 'claire' },
+  },
+  // fate
+  urlag: { gloss: 'destin fixé', forms: { noun: 'destin fixé' }, gender: 'm' },
+  hlaut: { gloss: 'le lot tombé', forms: { noun: 'lot échu' }, gender: 'm' },
+  dom: { gloss: 'arrêt, jugement', forms: { noun: 'jugement' }, gender: 'm' },
+  skuld: { gloss: 'ce qui adviendra', forms: { noun: 'chose à venir' }, gender: 'f' },
+  norn: { gloss: 'femme du destin', forms: { noun: 'fileuse du destin' }, gender: 'f' },
+  metud: { gloss: 'celui qui mesure', forms: { noun: 'mesureur' }, gender: 'm' },
+  hail: {
+    gloss: 'heureux sort',
+    forms: { noun: 'bonne fortune', adj: 'intact' },
+    gender: 'f',
+    feminine: { adj: 'intacte' },
+  },
+  end: { gloss: 'fin assignée', forms: { noun: 'fin assignée' }, gender: 'f' },
+  thrad: { gloss: 'fil filé', forms: { noun: 'fil filé' }, gender: 'm' },
+  wis: {
+    gloss: 'certain, fixé',
+    forms: { adj: 'certain', adv: 'assurément' },
+    feminine: { adj: 'certaine' },
+  },
+  // signs
+  tein: { gloss: 'baguette de sort', forms: { noun: 'baguette du sort' }, gender: 'f' },
+  taik: { gloss: 'signe', forms: { noun: 'signe' }, gender: 'm' },
+  mark: { gloss: 'marque entaillée', forms: { noun: 'marque entaillée' }, gender: 'f' },
+  bauk: { gloss: 'balise', forms: { noun: 'fanal' }, gender: 'm' },
+  fugl: { gloss: 'oiseau', forms: { noun: 'oiseau' }, gender: 'm' },
+  hraf: { gloss: 'corbeau', forms: { noun: 'corbeau' }, gender: 'm' },
+  spor: { gloss: 'trace', forms: { noun: 'trace' }, gender: 'f' },
+  frag: { gloss: 'question', forms: { noun: 'question' }, gender: 'f' },
+  andswar: { gloss: 'réponse', forms: { noun: 'réponse' }, gender: 'f' },
+  rist: { gloss: 'trait entaillé', forms: { noun: 'trait tracé' }, gender: 'm' },
 };
 
 const powers: GlossTable = {
@@ -261,9 +327,11 @@ const idioms: GlossTable = {
   RO2: exclaim('Moi, le maître des runes'),
   RO3_FIRST_AETT: exclaim('Le premier aett du futhark'),
   RO3_FULL_ROW: exclaim('La rangée entière du futhark'),
+  RO4: 'J’ai levé trois baguettes de sort.',
   RC1: 'J’ai peint ces runes.',
   RC2: 'J’ai fait ces runes.',
   RC3: exclaim('Alu'),
+  RC4: 'J’ai lu les runes.',
   ELDRITCH_OPEN_SHORT: exclaim('Le premier aett, prononcé contre son ordre'),
   ELDRITCH_OPEN_FULL: exclaim('La rangée des runes, prononcée contre son ordre'),
   ELDRITCH_CLOSE: 'Cela a rongé les runes.',
@@ -325,6 +393,22 @@ export const runicGlosses: RunicGlosses = {
         `${form(roots, p.intentRoot, 'verb')}${after(adverb(p.adverbRoot))}`,
     ) +
     ` ${exclaim(capitalize(p.powerWord))}`,
+
+  // The question fronts its verb in the runes, and French asks by inverting
+  // its own way: the subject stands first and a pronoun resumes it behind the
+  // verb.
+  divinationAsk: (p: RunicDivination) =>
+    ask(
+      `${capitalize(theNoun(p.agentRoot))} ` +
+        `${inverted(form(roots, p.intentRoot, 'verb'), genderOf(roots, p.agentRoot))}` +
+        `${after(adverb(p.adverbRoot))} ${theNoun(p.targetRoot)}` +
+        `${after(adjective(p.adjectiveRoot, p.targetRoot))}`,
+    ),
+
+  divinationSee: (p: RunicDivination) =>
+    `Moi, ${theNoun(p.agentRoot)}, ` +
+    `${speaker(form(roots, p.intentRoot, 'verb'))}${after(adverb(p.adverbRoot))}` +
+    ` ${theNoun(p.targetRoot)}${after(adjective(p.adjectiveRoot, p.targetRoot))}.`,
 
   litanyTriple: (word) => `${capitalize(word)}, prononcé trois fois.`,
   litanyTriangle: (word) => `${capitalize(word)}, réduit à une seule rune.`,

@@ -25,12 +25,14 @@ import {
   A14_ENEMY,
   AGENT_POWER,
   BRIGHT_POWER,
+  DIVINATION_POWER,
   DREAD_POWER,
   EO2_HEAD,
   FIELD_DET,
   FIELDS,
   FN_I,
   FN_IN,
+  FN_INIW,
   FN_IR,
   FN_M,
   FN_MY,
@@ -472,6 +474,133 @@ function realizeCurseClause(
   };
 }
 
+// Spec 3.9 counts the AGENT chain in nouns, a head plus its n-genitives. The
+// Divination head is the divine name, and the chain only grows at the top two
+// tiers, where the litany gives it something to hang on.
+function divinationGenitives(difficulty: number): number {
+  if (difficulty >= 9) return 3;
+  if (difficulty >= 8) return 2;
+  return 0;
+}
+
+// The asking clause opens on the particle in-iw, then the verb in its bare
+// form, then the divine name as a full noun subject, then the object. It
+// carries no suffix pronoun and no in agent phrase (spec 3.11).
+function realizeDivinationAsk(
+  plan: FormulaPlan,
+  clause: ClausePlan,
+  rng: Rng,
+  questioned: PowerWord,
+  glosses: EgyptianGlosses,
+): Realization {
+  const intentField = geneField(clause, 'INTENT');
+  const targetField = geneField(clause, 'TARGET');
+  const chainField = geneField(clause, 'AGENT');
+  const intent = pick(rng, verbsOf(intentField));
+  const target = pick(rng, nounsOf(targetField));
+  const modifier = drawModifier(clause, rng);
+  const adverb = adverbPhrase(modifier, clause, false);
+
+  const words: EgyptianWord[] = [
+    fixed(FN_INIW),
+    contentWord({
+      skeleton: intent.skeleton,
+      spoken: intent.spoken,
+      field: intentField,
+      eldritch: false,
+      verb: true,
+    }),
+    powerWord(questioned),
+  ];
+
+  const chainRoots: string[] = [];
+  const used = new Set<string>();
+  for (let i = 0; i < divinationGenitives(plan.difficulty); i += 1) {
+    const root = pick(rng, nounsOf(chainField).filter((r) => !used.has(r.skeleton)));
+    used.add(root.skeleton);
+    words.push(fixed(FN_N));
+    words.push(
+      contentWord({
+        skeleton: root.skeleton,
+        spoken: root.spoken,
+        field: chainField,
+        eldritch: false,
+        verb: false,
+      }),
+    );
+    chainRoots.push(root.skeleton);
+  }
+
+  words.push(
+    contentWord({
+      skeleton: target.skeleton,
+      spoken: target.spoken,
+      field: targetField,
+      eldritch: false,
+      verb: false,
+    }),
+    ...adjectiveWord(modifier, targetField, false),
+    ...adverb.words,
+  );
+
+  return {
+    words,
+    gloss: glosses.divinationAsk({
+      agentPower: questioned.skeleton,
+      chainRoots,
+      intentRoot: intent.skeleton,
+      targetRoot: target.skeleton,
+      adjectiveRoot: modifier.adjective?.skeleton ?? null,
+      adverbRoot: adverb.root,
+    }),
+  };
+}
+
+// The seeing clause is the sedjem-ef of Protection: the verb, the =i suffix,
+// the object, and no nominal subject at all (spec 3.11).
+function realizeDivinationSee(
+  clause: ClausePlan,
+  rng: Rng,
+  glosses: EgyptianGlosses,
+): Realization {
+  const intentField = geneField(clause, 'INTENT');
+  const targetField = geneField(clause, 'TARGET');
+  const intent = pick(rng, verbsOf(intentField));
+  const target = pick(rng, nounsOf(targetField));
+  const modifier = drawModifier(clause, rng);
+  const adverb = adverbPhrase(modifier, clause, false);
+
+  const words: EgyptianWord[] = [
+    contentWord({
+      skeleton: intent.skeleton,
+      spoken: intent.spoken,
+      field: intentField,
+      eldritch: false,
+      verb: true,
+      suffix: 'i',
+    }),
+    contentWord({
+      skeleton: target.skeleton,
+      spoken: target.spoken,
+      field: targetField,
+      eldritch: false,
+      verb: false,
+    }),
+    ...adjectiveWord(modifier, targetField, false),
+    ...adverb.words,
+  ];
+
+  return {
+    words,
+    gloss: glosses.divinationSee({
+      intentRoot: intent.skeleton,
+      targetRoot: target.skeleton,
+      adjectiveRoot: modifier.adjective?.skeleton ?? null,
+      adverbRoot: adverb.root,
+    }),
+  };
+}
+
 function realizeInvocationClause(
   clause: ClausePlan,
   rng: Rng,
@@ -570,8 +699,14 @@ function openingWords(
       return;
     }
     const clause = plan.clauses[0];
+    // The Divination title noun comes from the signs field, so the spell is
+    // titled by what it reads (spec 3.11). That field is the asking clause's
+    // own AGENT, which is where the genome looks for it.
     const gene =
-      clause?.genes.find((g) => g.role === 'TARGET') ?? clause?.genes.find((g) => g.role === 'AGENT');
+      plan.school === 'divination'
+        ? clause?.genes.find((g) => g.role === 'AGENT')
+        : clause?.genes.find((g) => g.role === 'TARGET') ??
+          clause?.genes.find((g) => g.role === 'AGENT');
     const field = requireField(gene?.field ?? null);
     const root = pick(rng, nounsOf(field));
     words.push(
@@ -586,7 +721,16 @@ function openingWords(
     glossParts.push(glosses.spellTitle({ kind: 'root', id: root.skeleton }));
   };
 
-  if (difficulty <= 4) {
+  // The dream opener carries the school on its own up to tier 7, where the
+  // title line and the oracle litany take over (spec 3.11).
+  if (plan.school === 'divination') {
+    if (difficulty <= 7) {
+      pushIdiom('EO4');
+    } else {
+      pushIdiom('EO1');
+      pushTitle();
+    }
+  } else if (difficulty <= 4) {
     pushTitle();
   } else if (difficulty <= 7) {
     pushIdiom(plan.eldritch ? 'ELDRITCH_OPEN' : 'EO1');
@@ -616,8 +760,18 @@ function singleAddress(
   rng: Rng,
   used: Set<string>,
   glosses: EgyptianGlosses,
+  questioned: PowerWord | null,
 ): Realization | null {
   if (plan.school === 'curse') return null;
+  // Divination addresses the power it is about to question, and no other.
+  if (questioned !== null) {
+    return nameKnowledgeLine(
+      plan,
+      [powerWord(questioned)],
+      { kind: 'power', id: questioned.skeleton },
+      glosses,
+    );
+  }
   if (plan.eldritch) {
     const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
     used.add(epithet.skeleton);
@@ -677,9 +831,15 @@ function gateLitany(
       glossParts.push(line.gloss);
       continue;
     }
-    const head = pick(rng, nounsOf('gates').filter((r) => !heads.has(r.skeleton)));
+    // Divination reads its litany instead of passing through it: an oracle
+    // name is a signs or sight head over a fate or time noun (spec 3.11).
+    const divination = plan.school === 'divination';
+    const headField = divination ? pick(rng, ['signs', 'sight'] as const) : 'gates';
+    const head = pick(rng, nounsOf(headField).filter((r) => !heads.has(r.skeleton)));
     heads.add(head.skeleton);
-    const tailField = pick(rng, ['night', 'death'] as const);
+    const tailField = divination
+      ? pick(rng, ['fate', 'time'] as const)
+      : pick(rng, ['night', 'death'] as const);
     const tail = pick(rng, nounsOf(tailField));
     const line = nameKnowledgeLine(
       plan,
@@ -687,7 +847,7 @@ function gateLitany(
         contentWord({
           skeleton: head.skeleton,
           spoken: head.spoken,
-          field: 'gates',
+          field: headField,
           eldritch: false,
           verb: false,
         }),
@@ -712,6 +872,11 @@ function gateLitany(
 
 function closingIdioms(plan: FormulaPlan): EgyptianIdiomId[] {
   if (plan.eldritch) return ['ELDRITCH_CLOSE'];
+  // The colophon closes the question at every tier it appears, and the
+  // justification stacks behind it at the last one (spec 3.11).
+  if (plan.school === 'divination') {
+    return plan.difficulty >= 9 ? ['EC4', 'EC2'] : ['EC4'];
+  }
   if (plan.difficulty <= 6) return ['EC2'];
   if (plan.difficulty <= 8) return ['EC1'];
   return ['EC1', 'EC2'];
@@ -719,6 +884,9 @@ function closingIdioms(plan: FormulaPlan): EgyptianIdiomId[] {
 
 function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
   if (plan.eldritch) return 9;
+  // The tier 7 divination seal is two and never another count: the oracle
+  // received its question on two tickets (spec 3.11).
+  if (plan.difficulty === 7 && plan.school === 'divination') return 2;
   if (plan.difficulty === 7) return pick(rng, [2, 4] as const);
   if (plan.difficulty === 8) return 7;
   return pick(rng, [9, 12] as const);
@@ -778,6 +946,11 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses):
   // never both the invoked agent and the free power word.
   const used = new Set<string>();
 
+  // One power is questioned per formula, named by the address that precedes
+  // the question and by the question itself, so it is drawn before either.
+  const questioned = plan.school === 'divination' ? pick(rng, DIVINATION_POWER) : null;
+  if (questioned !== null) used.add(questioned.skeleton);
+
   const opening = openingWords(plan, rng, used, glosses);
   words.push(...opening.words);
   glossParts.push(opening.gloss);
@@ -787,7 +960,7 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses):
     words.push(...litany.words);
     glossParts.push(litany.gloss);
   } else if (plan.difficulty >= 6) {
-    const address = singleAddress(plan, rng, used, glosses);
+    const address = singleAddress(plan, rng, used, glosses, questioned);
     if (address !== null) {
       words.push(...address.words);
       glossParts.push(address.gloss);
@@ -801,6 +974,11 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses):
       realized = realizeProtectionClause(clause, rng, clauseUsed, glosses);
     } else if (plan.school === 'curse') {
       realized = realizeCurseClause(clause, rng, glosses);
+    } else if (questioned !== null) {
+      realized =
+        clause.kind === 'asking'
+          ? realizeDivinationAsk(plan, clause, rng, questioned, glosses)
+          : realizeDivinationSee(clause, rng, glosses);
     } else {
       realized = realizeInvocationClause(clause, rng, plan, clauseUsed, glosses);
     }

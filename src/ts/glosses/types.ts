@@ -85,6 +85,16 @@ export interface RunicCurse {
   readonly adverbRoot: string | null;
 }
 
+// The two Divination clause kinds carry the same participants, so one shape
+// serves both and the method that receives it says which mood it writes.
+export interface RunicDivination {
+  readonly agentRoot: string;
+  readonly intentRoot: string;
+  readonly targetRoot: string;
+  readonly adjectiveRoot: string | null;
+  readonly adverbRoot: string | null;
+}
+
 export interface RunicInvocation {
   readonly agents: ReadonlyArray<GlossRef>;
   readonly intentRoot: string;
@@ -103,6 +113,10 @@ export interface RunicGlosses extends GenomeGlosses {
   protectionClause(parts: RunicProtection): string;
   curseClause(parts: RunicCurse): string;
   invocationClause(parts: RunicInvocation): string;
+  // The question, then what the seer answers. Only the asking gloss carries a
+  // question mark, since no script in this site writes one.
+  divinationAsk(parts: RunicDivination): string;
+  divinationSee(parts: RunicDivination): string;
   litanyTriple(word: string): string;
   litanyTriangle(word: string): string;
   tierOne(word: string, eldritch: boolean): string;
@@ -133,8 +147,28 @@ export interface EgyptianInvocation {
   readonly power: GlossRef;
 }
 
+// The asking clause questions a named god, with the n-genitive chain its tier
+// gives it. The seeing clause carries the caster in the verb alone, so it
+// names no agent at all.
+export interface EgyptianDivinationAsk {
+  readonly agentPower: string;
+  readonly chainRoots: ReadonlyArray<string>;
+  readonly intentRoot: string;
+  readonly targetRoot: string;
+  readonly adjectiveRoot: string | null;
+  readonly adverbRoot: string | null;
+}
+
+export interface EgyptianDivinationSee {
+  readonly intentRoot: string;
+  readonly targetRoot: string;
+  readonly adjectiveRoot: string | null;
+  readonly adverbRoot: string | null;
+}
+
 // Who an EO3 name-knowledge line addresses. The gate form is the coined
-// "X of the Y" name of the tier 8 litany.
+// "X of the Y" name of the tier 8 litany, which the oracle names of the
+// Divination litany borrow: the two read through the same shape.
 export type EgyptianAddress =
   | GlossRef
   | { readonly kind: 'gate'; readonly headRoot: string; readonly tailRoot: string };
@@ -149,6 +183,8 @@ export interface EgyptianGlosses extends GenomeGlosses {
   protectionClause(parts: EgyptianProtection): string;
   curseClause(parts: EgyptianCurse): string;
   invocationClause(parts: EgyptianInvocation): string;
+  divinationAsk(parts: EgyptianDivinationAsk): string;
+  divinationSee(parts: EgyptianDivinationSee): string;
   // The EO2 title line, over a dread epithet or a coined root.
   spellTitle(subject: GlossRef): string;
   // The EO3 line. The register inverts who knows whose name.
@@ -172,6 +208,27 @@ export interface PhoenicianJussive {
   readonly adverbRoot: string | null;
 }
 
+// Below tier 8 the asking clause does not repeat the power's name, the verb
+// prefix resumes it, so the pack is handed the power either way: named tells
+// it whether to write the name or to speak of it in the third person, and its
+// gender is what makes that pronoun agree.
+export interface PhoenicianDivinationAsk {
+  readonly agentPower: string;
+  readonly named: boolean;
+  readonly chainRoots: ReadonlyArray<string>;
+  readonly intentRoot: string;
+  readonly targetRoot: string;
+  readonly adjectiveRoot: string | null;
+  readonly adverbRoot: string | null;
+}
+
+export interface PhoenicianDivinationSee {
+  readonly intentRoot: string;
+  readonly targetRoot: string;
+  readonly adjectiveRoot: string | null;
+  readonly adverbRoot: string | null;
+}
+
 export interface PhoenicianInvocation {
   readonly agents: ReadonlyArray<GlossRef>;
   readonly intentRoot: string;
@@ -188,6 +245,8 @@ export interface PhoenicianGlosses extends GenomeGlosses {
 
   jussiveClause(parts: PhoenicianJussive): string;
   invocationClause(parts: PhoenicianInvocation): string;
+  divinationAsk(parts: PhoenicianDivinationAsk): string;
+  divinationSee(parts: PhoenicianDivinationSee): string;
   // PO2, the royal self presentation. The bright form names the caster by the
   // coined theophoric name the genome spelled, so it arrives spoken.
   selfPresentationByName(spokenName: string): string;
@@ -196,6 +255,8 @@ export interface PhoenicianGlosses extends GenomeGlosses {
   openerByEpithet(epithetId: string): string;
   openerToLord(powerId: string): string;
   openerAgainst(targetRoot: string, adjectiveRoot: string | null): string;
+  // PO4, the inquiry put to a god, which names the power the formula asks.
+  openerQuestion(powerId: string): string;
   litanyTriple(subject: GlossRef): string;
   litanyTriangle(spoken: string): string;
   tierOne(subject: GlossRef): string;

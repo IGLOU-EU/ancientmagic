@@ -52,8 +52,10 @@ export const O32_GATE = '\u{13280}';
 export const Q7_BRAZIER = '\u{132AE}';
 export const R11_DJED = '\u{132BD}';
 export const S34_ANKH = '\u{132F9}';
+export const U38_BALANCE = '\u{1335D}';
 export const V17_SHELTER = '\u{13383}';
 export const Y1_ROLL = '\u{133DB}';
+export const Y3_SCRIBE = '\u{133DE}';
 export const Z2_PLURAL = '\u{133E5}';
 
 export const DETERMINATIVES: ReadonlyArray<string> = [
@@ -71,8 +73,12 @@ export const DETERMINATIVES: ReadonlyArray<string> = [
   Q7_BRAZIER,
   R11_DJED,
   S34_ANKH,
+  // The balance and the scribe's kit entered with Divination, which needs a
+  // sign for what is decreed and one for what is read (spec 3.1).
+  U38_BALANCE,
   V17_SHELTER,
   Y1_ROLL,
+  Y3_SCRIBE,
   Z2_PLURAL,
 ];
 
@@ -108,6 +114,9 @@ export const FIELD_DET: Readonly<Record<SemanticField, string>> = {
   death: A14_ENEMY,
   gates: O32_GATE,
   time: N5_SUN,
+  sight: D4_EYE,
+  fate: U38_BALANCE,
+  signs: Y3_SCRIBE,
 };
 
 export interface EgyptianRoot {
@@ -241,6 +250,45 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<EgyptianRoot>>
     { skeleton: 'pAwt', spoken: 'paut', forms: ['noun'] },
     { skeleton: 'sf', spoken: 'sef', forms: ['noun'] },
   ],
+  // The three Divination fields (spec 3.3 and 3.11). No root declares a past
+  // participle, no divination clause uses one, and a signs root is a noun
+  // alone: the school reads a sign, it never conjugates one.
+  sight: [
+    { skeleton: 'gmH', spoken: 'gemeh', forms: ['verb'] },
+    { skeleton: 'sSm', spoken: 'seshem', forms: ['noun', 'verb'] },
+    { skeleton: 'sHD', spoken: 'sehedj', forms: ['verb'] },
+    { skeleton: 'wbA', spoken: 'weba', forms: ['verb'] },
+    { skeleton: 'irt', spoken: 'iret', forms: ['noun'] },
+    { skeleton: 'rswt', spoken: 'resut', forms: ['noun'] },
+    { skeleton: 'sxA', spoken: 'sekha', forms: ['verb'] },
+    { skeleton: 'nwty', spoken: 'nuty', forms: ['noun'] },
+    { skeleton: 'wHa', spoken: 'weha', forms: ['verb'] },
+    { skeleton: 'mAa', spoken: 'maa', forms: ['adj'] },
+  ],
+  fate: [
+    { skeleton: 'SAy', spoken: 'shay', forms: ['noun', 'adj'] },
+    { skeleton: 'wD', spoken: 'wedj', forms: ['noun'] },
+    { skeleton: 'mxAt', spoken: 'mekhat', forms: ['noun'] },
+    { skeleton: 'ip', spoken: 'ip', forms: ['noun'] },
+    { skeleton: 'nHb', spoken: 'neheb', forms: ['noun'] },
+    { skeleton: 'pHwy', spoken: 'pehuy', forms: ['noun'] },
+    { skeleton: 'bAw', spoken: 'bau', forms: ['noun'] },
+    { skeleton: 'xpr', spoken: 'kheper', forms: ['noun'] },
+    { skeleton: 'mty', spoken: 'mety', forms: ['adj'] },
+    { skeleton: 'wpwt', spoken: 'weput', forms: ['noun'] },
+  ],
+  signs: [
+    { skeleton: 'sS', spoken: 'sesh', forms: ['noun'] },
+    { skeleton: 'mtr', spoken: 'meter', forms: ['noun'] },
+    { skeleton: 'bik', spoken: 'bik', forms: ['noun'] },
+    { skeleton: 'Sdy', spoken: 'shedy', forms: ['noun'] },
+    { skeleton: 'wSd', spoken: 'weshed', forms: ['noun'] },
+    { skeleton: 'wSb', spoken: 'wesheb', forms: ['noun'] },
+    { skeleton: 'smi', spoken: 'semi', forms: ['noun'] },
+    { skeleton: 'psS', spoken: 'pesesh', forms: ['noun'] },
+    { skeleton: 'xAy', spoken: 'khay', forms: ['noun'] },
+    { skeleton: 'hn', spoken: 'hen', forms: ['noun'] },
+  ],
 };
 
 export interface PowerWord {
@@ -260,6 +308,26 @@ export const BRIGHT_POWER: ReadonlyArray<PowerWord> = [
   { skeleton: 'inpw', glyphs: '\u{131CB}\u{13216}\u{132AA}\u{13171}\u{132B9}', spoken: 'inpu' },
   { skeleton: 'sxmt', glyphs: '\u{132F4}\u{1340D}\u{13153}\u{133CF}\u{132B9}', spoken: 'sekhmet' },
   { skeleton: 'aApp', glyphs: '\u{1309D}\u{1313F}\u{132AA}\u{13010}', spoken: 'aapep' },
+];
+
+// Amun, whose barque oracle answered the questions put to it (spec 3.7). He
+// arrived with Divination and stays inside it: the schools that shipped before
+// draw their powers from BRIGHT_POWER, which is unchanged.
+export const IMEN: PowerWord = {
+  skeleton: 'imn',
+  glyphs: '\u{131CB}\u{13153}\u{13216}\u{132B9}',
+  spoken: 'imen',
+};
+
+// Every attested name the packs must gloss, the eight of the shipped schools
+// plus the one Divination questions.
+export const ALL_POWER: ReadonlyArray<PowerWord> = [...BRIGHT_POWER, IMEN];
+
+// The god who writes and reckons, and the god whose oracle answered: the two
+// powers a divination formula puts its question to (spec 3.7).
+export const DIVINATION_POWER: ReadonlyArray<PowerWord> = [
+  ...BRIGHT_POWER.filter((p) => p.skeleton === 'DHwty'),
+  IMEN,
 ];
 
 // The in-agent slot invokes a power that acts for the caster, so the serpent
@@ -298,6 +366,10 @@ export const FN_R: FixedWord = { glyphs: '\u{1308B}', spoken: 'er' };
 export const FN_N: FixedWord = { glyphs: '\u{13216}', spoken: 'en' };
 export const FN_M: FixedWord = { glyphs: '\u{13153}', spoken: 'em' };
 export const FN_IN: FixedWord = { glyphs: '\u{131CB}\u{13216}', spoken: 'in' };
+// The question particle jn-jw, which opens a Divination asking clause and
+// stands first in it (spec 3.4). It shares its first two signs with the agent
+// marker, which is the language's own doing: position separates them.
+export const FN_INIW: FixedWord = { glyphs: '\u{131CB}\u{13216}\u{131CB}\u{13171}', spoken: 'iniu' };
 export const FN_IR: FixedWord = { glyphs: '\u{131CB}\u{1308B}', spoken: 'ir' };
 export const FN_I: FixedWord = { glyphs: '\u{131CB}\u{13001}', spoken: 'i' };
 export const FN_MY: FixedWord = { glyphs: '\u{13153}\u{131CC}', spoken: 'mi' };
@@ -324,7 +396,14 @@ export const SUFFIX_SKELETON: Readonly<Record<SuffixId, string>> = {
   sn: 'sn',
 };
 
-export type EgyptianIdiomId = 'EO1' | 'ELDRITCH_OPEN' | 'EC1' | 'EC2' | 'ELDRITCH_CLOSE';
+export type EgyptianIdiomId =
+  | 'EO1'
+  | 'EO4'
+  | 'ELDRITCH_OPEN'
+  | 'EC1'
+  | 'EC2'
+  | 'EC4'
+  | 'ELDRITCH_CLOSE';
 
 // Idiom word lists of spec 3.6 and 3.10. EO2 and EO3 take a slot filled at
 // realization, so only their fixed parts live here. What each idiom says is in
@@ -333,6 +412,15 @@ export const IDIOM_WORDS: Readonly<Record<EgyptianIdiomId, ReadonlyArray<FixedWo
   EO1: [
     { glyphs: '\u{13193}\u{130A7}', spoken: 'djed' },
     { glyphs: S43_STAFF, spoken: 'medu' },
+  ],
+  // The Dream Book opener (spec 3.6), Divination only. mAA is written with the
+  // eye plus the logogram stroke and rswt with the same eye as determinative,
+  // both fixed idiom spellings that take no further sign.
+  EO4: [
+    FN_IR,
+    { glyphs: `${D4_EYE}${Z1_STROKE}`, spoken: 'maa' },
+    FN_M,
+    { glyphs: `\u{1308B}\u{132F4}\u{13171}\u{133CF}${D4_EYE}`, spoken: 'resut' },
   ],
   // EO1 read against its order is the Eldritch opener (spec 3.10).
   ELDRITCH_OPEN: [
@@ -347,6 +435,12 @@ export const IDIOM_WORDS: Readonly<Record<EgyptianIdiomId, ReadonlyArray<FixedWo
   EC2: [
     { glyphs: AA11_PLATFORM, spoken: 'maa' },
     { glyphs: P8_OAR, spoken: 'kheru' },
+  ],
+  // The scribal colophon (spec 3.6), read here as the verdict on the question.
+  // Built from function-word signs alone, so it takes no determinative either.
+  EC4: [
+    { glyphs: '\u{131CB}\u{13171}\u{13191}', spoken: 'iuef' },
+    { glyphs: '\u{132AA}\u{13171}', spoken: 'pu' },
   ],
   // The fixed Eldritch closing (spec 3.10): isft and Dt with the register's
   // double determinatives, keeping their normal spoken forms.

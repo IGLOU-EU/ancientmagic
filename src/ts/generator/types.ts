@@ -5,7 +5,7 @@ import type { Rng } from './rng.js';
 
 export type LanguageId = 'runic' | 'egyptian' | 'phoenician';
 
-export type School = 'protection' | 'curse' | 'invocation' | 'eldritch';
+export type School = 'protection' | 'curse' | 'invocation' | 'eldritch' | 'divination';
 
 export type GeneRole =
   | 'INTENT'
@@ -25,7 +25,12 @@ export type SemanticField =
   | 'night'
   | 'death'
   | 'gates'
-  | 'time';
+  | 'time'
+  // The last three arrived with Divination, which is the only school that
+  // draws from them (genomes.md 1.5).
+  | 'sight'
+  | 'fate'
+  | 'signs';
 
 export type ModifierKind = 'adjective' | 'adverb';
 
@@ -33,14 +38,20 @@ export interface GeneInstance {
   role: GeneRole;
   field: SemanticField | null;
   // Grammatical flavor fixed by the school, the genome maps it to endings.
-  flavor: 'first-person' | 'optative' | 'imperative' | null;
+  flavor: 'first-person' | 'optative' | 'imperative' | 'interrogative' | null;
 }
+
+// Divination holds the same genes in two moods: the formula asks once, then
+// says what it sees. Every other school builds clauses of one shape and
+// leaves this null.
+export type ClauseKind = 'asking' | 'seeing';
 
 export interface ClausePlan {
   genes: GeneInstance[];
   modifier: ModifierKind | null;
   modifierField: SemanticField | null;
   agentCount: number;
+  kind: ClauseKind | null;
 }
 
 export type PowerWordStyle = 'none' | 'triple' | 'triangle';

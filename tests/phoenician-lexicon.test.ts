@@ -2,10 +2,12 @@ import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import {
   ALL_NAMES,
+  DIVINATION_NAMES,
   DREAD_POWER,
   FEMININE_SPOKEN,
   FIELDS,
   IDIOM_WORDS,
+  INTERROGATIVE_SPOKEN,
   LETTER_MAP,
   NUMERAL_GLYPHS,
   NUMERAL_WORDS,
@@ -13,6 +15,7 @@ import {
   PO1_HEAD,
   PO2_HEAD,
   PO3_HEAD,
+  PO4_HEAD,
   PROCLITIC_SPOKEN,
   SEAL_HEAD,
   YT,
@@ -23,6 +26,8 @@ import { phoenicianGlosses } from '../src/ts/glosses/en/phoenician.js';
 import {
   ARTICLE,
   BICONSONANTAL,
+  DIVINATION_SPOKEN,
+  INTERROGATIVE,
   DREAD_TABLE,
   ELDRITCH_CLOSE_GLYPHS,
   ELDRITCH_CLOSE_SPOKEN,
@@ -38,6 +43,8 @@ import {
   PC2_SPOKEN,
   PC3_GLYPHS,
   PC3_SPOKEN,
+  PC4_GLYPHS,
+  PC4_SPOKEN,
   PO1_HEAD_GLYPHS,
   PO1_HEAD_SPOKEN,
   PO2_HEAD_GLYPHS,
@@ -45,6 +52,8 @@ import {
   PLURAL_SPOKEN as PLURAL,
   PO3_HEAD_GLYPHS,
   PO3_HEAD_SPOKEN,
+  PO4_HEAD_GLYPHS,
+  PO4_HEAD_SPOKEN,
   PROCLITIC_B,
   PROCLITIC_L,
   PROCLITIC_W,
@@ -80,7 +89,7 @@ test('the coined lexicon matches the spec table, skeleton and gloss', () => {
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 100, 'ten fields of ten roots');
+  assert.strictEqual(total, 130, 'thirteen fields of ten roots');
 });
 
 test('root shape follows the phonotactics of the spec', () => {
@@ -134,21 +143,57 @@ test('the intransitive flag sits on exactly the five roots of the spec', () => {
   }
 });
 
+// The Divination fields declare no past participle, because no divination
+// clause renders one, and a plural only where a construct chain draws from,
+// which is the signs field alone (spec 4.11).
+const DIVINATION_FIELDS: ReadonlySet<string> = new Set(['sight', 'fate', 'signs']);
+
 test('every root carries the gloss forms of the roles it can fill', () => {
-  for (const roots of Object.values(FIELDS)) {
+  for (const [field, roots] of Object.entries(FIELDS)) {
+    const divination = DIVINATION_FIELDS.has(field);
     for (const root of roots) {
       assert.ok(
-        root.forms.includes('noun') || root.forms.includes('verb'),
+        root.forms.includes('noun') ||
+          root.forms.includes('verb') ||
+          (divination && root.forms.includes('adj')),
         `${root.root} fills no role`,
       );
-      if (root.forms.includes('noun')) {
+      if (root.forms.includes('noun') && (!divination || field === 'signs')) {
         assert.ok(root.forms.includes('plural'), `${root.root} is a noun without a plural`);
       }
-      if (root.forms.includes('verb')) {
+      if (root.forms.includes('verb') && !divination) {
         assert.ok(root.forms.includes('pp'), `${root.root} is a verb without a participle`);
+      }
+      if (divination) {
+        assert.ok(!root.forms.includes('pp'), `${root.root} declares an unused participle`);
+      }
+      if (field === 'sight' || field === 'fate') {
+        assert.ok(!root.forms.includes('plural'), `${root.root} declares an unused plural`);
       }
     }
   }
+  // Divination draws its own genes from its own fields, so each must hold
+  // what the school asks of it.
+  for (const field of ['sight', 'summoning'] as const) {
+    const transitive = FIELDS[field].filter(
+      (r) => r.forms.includes('verb') && r.intransitive !== true,
+    );
+    assert.ok(transitive.length >= 3, `thin transitive verbs in ${field}`);
+  }
+  for (const field of ['sight', 'fate'] as const) {
+    assert.ok(FIELDS[field].some((r) => r.forms.includes('adj')), `no adjective in ${field}`);
+  }
+  // The construct chain of an asking clause draws plural signs nouns, and the
+  // caster of PO2 draws a sight noun.
+  assert.strictEqual(
+    FIELDS.signs.filter((r) => r.forms.includes('plural')).length,
+    10,
+    'a signs root without a plural',
+  );
+  assert.ok(
+    FIELDS.sight.filter((r) => r.forms.includes('noun')).length >= 3,
+    'thin sight nouns for the caster name',
+  );
   // The plan draws verbs from these fields and adjectives from those three.
   for (const field of ['warding', 'binding', 'harm', 'summoning'] as const) {
     const transitive = FIELDS[field].filter(
@@ -179,6 +224,18 @@ test('attested divine names are written letter for letter as the spec lists them
   // ssm keeps both semks, the collapse rule does not touch attested spellings.
   const sasam = ALL_NAMES.find((n) => n.skeleton === 'ssm');
   assert.strictEqual(Array.from(sasam?.glyphs ?? '').length, 3, 'sasam lost a semk');
+});
+
+test('divination questions the three names the spec names', () => {
+  assert.deepStrictEqual(
+    DIVINATION_NAMES.map((n) => n.spoken),
+    [...DIVINATION_SPOKEN],
+  );
+  // Two of the three are goddesses, which is what the t- prefix resumes.
+  assert.deepStrictEqual(
+    DIVINATION_NAMES.filter((n) => n.feminine).map((n) => n.spoken),
+    ['ashtart', 'tinnit'],
+  );
 });
 
 test('the dread pool matches the spec table and every skeleton is quadriliteral', () => {
@@ -219,6 +276,12 @@ test('idioms carry the attested spellings of the spec', () => {
   assert.deepStrictEqual(glyphs('PC2'), [...PC2_GLYPHS]);
   assert.deepStrictEqual(spoken('PC3'), [...PC3_SPOKEN]);
   assert.deepStrictEqual(glyphs('PC3'), [...PC3_GLYPHS]);
+  assert.deepStrictEqual(spoken('PC4'), [...PC4_SPOKEN]);
+  assert.deepStrictEqual(glyphs('PC4'), [...PC4_GLYPHS]);
+  assert.strictEqual(PO4_HEAD.glyphs, PO4_HEAD_GLYPHS);
+  assert.strictEqual(PO4_HEAD.spoken, PO4_HEAD_SPOKEN);
+  // PC4 is the first half of PC1 and nothing else (spec 4.6).
+  assert.deepStrictEqual(PC4_SPOKEN, PC1_SPOKEN.slice(0, 3));
   assert.deepStrictEqual(spoken('ELDRITCH_CLOSE'), [...ELDRITCH_CLOSE_SPOKEN]);
   assert.deepStrictEqual(glyphs('ELDRITCH_CLOSE'), [...ELDRITCH_CLOSE_GLYPHS]);
 
@@ -229,6 +292,11 @@ test('idioms carry the attested spellings of the spec', () => {
 test('the affixes carry the listed spoken values, the only source of their vowels', () => {
   // Spec 4.4: nothing about an affix vowel is inferred anywhere else.
   assert.strictEqual(PROCLITIC_SPOKEN.h, ARTICLE.spoken);
+  // The interrogative is the same letter in another function, and the two are
+  // one vowel apart in the transliteration and identical in the script.
+  assert.strictEqual(INTERROGATIVE_SPOKEN, INTERROGATIVE.spoken);
+  assert.notStrictEqual(INTERROGATIVE_SPOKEN, PROCLITIC_SPOKEN.h);
+  assert.strictEqual(INTERROGATIVE.glyph, ARTICLE.glyph);
   assert.strictEqual(PROCLITIC_SPOKEN.l, PROCLITIC_L.spoken);
   assert.strictEqual(PROCLITIC_SPOKEN.b, PROCLITIC_B.spoken);
   assert.strictEqual(PROCLITIC_SPOKEN.w, PROCLITIC_W.spoken);

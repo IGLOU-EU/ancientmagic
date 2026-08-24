@@ -3,10 +3,14 @@ import * as assert from 'node:assert/strict';
 import {
   A1_MAN,
   BRIGHT_SPOKEN,
+  DIVINATION_SPOKEN,
   EC1_SPOKEN,
   EC2_SPOKEN,
+  EC4_SPOKEN,
   EO1_SPOKEN,
   EO2_HEAD_SPOKEN,
+  EO4_SPOKEN,
+  INIW_SPOKEN,
   NUMERALS,
   SEAL_SIGN,
   codePoints,
@@ -344,7 +348,9 @@ test('gloss is plain english and reflects the school', () => {
       for (const seed of SEEDS) {
         const out = egyptian(school, difficulty, seed);
         const where = label(school, difficulty, seed);
-        assert.match(out.gloss, /^[A-Za-z][A-Za-z ,.!-]*[.!]$/, `gloss shape in ${where}`);
+        // The question mark joins the shape with Divination, whose asking
+        // clause is the only place any script here can put one.
+        assert.match(out.gloss, /^[A-Za-z][A-Za-z ,.!?-]*[.!?]$/, `gloss shape in ${where}`);
         if (difficulty < 3) continue;
         if (school === 'protection') {
           assert.ok(out.gloss.includes('against'), `protection gloss in ${where}`);
@@ -353,6 +359,9 @@ test('gloss is plain english and reflects the school', () => {
         if (school === 'curse') assert.ok(out.gloss.includes('May the'), `curse gloss in ${where}`);
         if (school === 'invocation' || school === 'eldritch') {
           assert.ok(out.gloss.includes('O '), `vocative gloss in ${where}`);
+        }
+        if (school === 'divination') {
+          assert.ok(out.gloss.includes('?'), `no question in the gloss of ${where}`);
         }
       }
     }
@@ -378,6 +387,118 @@ test('the seal count is written with repeated strokes, exempt from collapse', ()
         const strokes = codePoints(out.glyphs.slice(at + SEAL_SIGN.length));
         assert.ok(strokes.length >= 2, `seal without a count in ${label(school, difficulty, seed)}`);
       }
+    }
+  }
+});
+
+// --- Divination (spec 3.11) -------------------------------------------------
+
+const DIVINATION_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
+
+const divinationClauses = (difficulty: number): number =>
+  difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+
+test('the question particle opens the asking clause and stands first in it', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const list = egyptianWords('divination', difficulty, seed);
+      const line = list.map((w) => w.spoken);
+      const at = line.indexOf(INIW_SPOKEN);
+      assert.ok(at >= 0, `no question particle in ${where}`);
+      assert.strictEqual(
+        line.filter((w) => w === INIW_SPOKEN).length,
+        1,
+        `one question per formula in ${where}`,
+      );
+      // The verb follows the particle, bare: no suffix pronoun rides it.
+      const verb = list[at + 1];
+      assert.strictEqual(verb?.role, 'content', `no verb after the particle in ${where}`);
+      assert.strictEqual(verb?.suffix, '', `asking verb takes a suffix in ${where}`);
+      // Then the divine name as a full noun subject, written with its flag.
+      assert.ok(
+        DIVINATION_SPOKEN.includes(line[at + 2] ?? ''),
+        `no questioned power after the verb in ${where}`,
+      );
+      // A Divination asking clause carries no in agent phrase at all.
+      assert.ok(!line.includes('in'), `in-agent phrase in ${where}`);
+    }
+  }
+});
+
+test('every seeing clause carries the caster suffix and no nominal subject', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const list = egyptianWords('divination', difficulty, seed);
+      const suffixed = list.filter((w) => w.suffix !== '');
+      assert.strictEqual(
+        suffixed.length,
+        divinationClauses(difficulty) - 1,
+        `seeing clause count in ${where}`,
+      );
+      for (const verb of suffixed) {
+        assert.ok(verb.glyphs.endsWith(A1_MAN), `suffix is not the seated man in ${where}`);
+      }
+    }
+  }
+});
+
+test('divination openers, closers and seals follow its own tier table', () => {
+  for (const difficulty of DIVINATION_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const line = words('divination', difficulty, seed);
+      if (difficulty <= 7) {
+        assert.deepStrictEqual(line.slice(0, 4), [...EO4_SPOKEN], `opener in ${where}`);
+      } else {
+        // The title line takes over at the top, and titles the spell by what
+        // it reads: a signs noun, written with the scribe's kit.
+        assert.deepStrictEqual(line.slice(0, 2), [...EO1_SPOKEN], `opener in ${where}`);
+        const list = egyptianWords('divination', difficulty, seed);
+        assert.strictEqual(list[4]?.field, 'signs', `title noun in ${where}`);
+      }
+      if (difficulty <= 4) {
+        // Read on the last word, not on membership: maa opens the dream and
+        // also closes EC2, and the lexicon holds a sight adjective spoken
+        // alike. Where a closer would be is the only place that settles it.
+        assert.ok(
+          !['pu', 'kheru', 'seneb'].includes(line[line.length - 1] ?? ''),
+          `closer at d${difficulty}`,
+        );
+        continue;
+      }
+      // The lexicon holds a time root spoken sep, so the seal word is only
+      // the last one, and only from the tier where a seal exists.
+      const seal = difficulty >= 7 ? line.lastIndexOf('sep') : -1;
+      const end = seal > 0 ? seal : line.length;
+      const closers = difficulty >= 9 ? [...EC4_SPOKEN, ...EC2_SPOKEN] : [...EC4_SPOKEN];
+      assert.deepStrictEqual(line.slice(end - closers.length, end), closers, `closer in ${where}`);
+      if (difficulty === 7) {
+        // The oracle received its question on two tickets.
+        assert.deepStrictEqual(line.slice(seal + 1), ['senu'], `tier 7 seal in ${where}`);
+      }
+    }
+  }
+});
+
+test('the oracle litany reads three different heads, each over a fate or a time noun', () => {
+  for (const difficulty of [8, 9]) {
+    for (const seed of SEEDS) {
+      const where = label('divination', difficulty, seed);
+      const list = egyptianWords('divination', difficulty, seed);
+      const heads: string[] = [];
+      list.forEach((word, index) => {
+        if (word.spoken !== 'i' || index === 0) return;
+        const head = list[index + 1];
+        if (head?.field !== 'signs' && head?.field !== 'sight') return;
+        heads.push(head.spoken);
+        assert.strictEqual(list[index + 2]?.spoken, 'en', `genitive in ${where}`);
+        const tail = list[index + 3]?.field;
+        assert.ok(tail === 'fate' || tail === 'time', `oracle tail field in ${where}`);
+      });
+      assert.strictEqual(heads.length, 3, `litany size in ${where}`);
+      assert.strictEqual(new Set(heads).size, 3, `repeated oracle head in ${where}`);
     }
   }
 });
