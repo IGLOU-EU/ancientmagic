@@ -6,7 +6,7 @@
 // must cover exactly the forms declared here, no more and no less, which the
 // pack completeness tests check.
 
-import type { SemanticField } from '../generator/types.js';
+import type { SemanticField, TimeDirection } from '../generator/types.js';
 import type { RootForm } from '../glosses/types.js';
 
 // Uniliteral phonograms (spec 3.1). Manuel de Codage tokens are case
@@ -117,6 +117,10 @@ export const FIELD_DET: Readonly<Record<SemanticField, string>> = {
   sight: D4_EYE,
   fate: U38_BALANCE,
   signs: Y3_SCRIBE,
+  // The walking legs were in the sign table from the start and no field had
+  // claimed them, which is exactly the sign a school of moving through time
+  // wants (spec 3.1).
+  course: D54_LEGS,
 };
 
 export interface EgyptianRoot {
@@ -277,6 +281,20 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<EgyptianRoot>>
     { skeleton: 'mty', spoken: 'mety', forms: ['adj'] },
     { skeleton: 'wpwt', spoken: 'weput', forms: ['noun'] },
   ],
+  // The Chronomancy field (spec 3.3 and 3.12). No pp, every verb transitive,
+  // every noun able to sit behind an article.
+  course: [
+    { skeleton: 'DA', spoken: 'dja', forms: ['verb'] },
+    { skeleton: 'an', spoken: 'an', forms: ['verb'] },
+    { skeleton: 'As', spoken: 'as', forms: ['verb'] },
+    { skeleton: 'wsf', spoken: 'wesef', forms: ['verb'] },
+    { skeleton: 'aHa', spoken: 'aha', forms: ['verb'] },
+    { skeleton: 'Ts', spoken: 'tjes', forms: ['verb'] },
+    { skeleton: 'nmt', spoken: 'nemet', forms: ['noun'] },
+    { skeleton: 'Smt', spoken: 'shemet', forms: ['noun'] },
+    { skeleton: 'xAx', spoken: 'khakh', forms: ['adj'] },
+    { skeleton: 'mAwy', spoken: 'mauy', forms: ['verb', 'adj'] },
+  ],
   signs: [
     { skeleton: 'sS', spoken: 'sesh', forms: ['noun'] },
     { skeleton: 'mtr', spoken: 'meter', forms: ['noun'] },
@@ -379,7 +397,10 @@ export const RX_K: FixedWord = { glyphs: '\u{1308B}\u{1340D}\u{133DB}\u{133A1}',
 export const RN_K: FixedWord = { glyphs: '\u{1308B}\u{13216}\u{133E4}\u{133A1}', spoken: 'renek' };
 export const RN_I: FixedWord = { glyphs: '\u{1308B}\u{13216}\u{133E4}\u{13000}', spoken: 'reni' };
 
-export type SuffixId = 'i' | 'k' | 'f' | 'sn';
+// The last id is the sedjem-en-ef of spec 3.4, the form that states a thing
+// done: the water ripple stands between the determinative and the suffix, and
+// Chronomancy alone draws it.
+export type SuffixId = 'i' | 'k' | 'f' | 'sn' | 'n.i';
 
 // A suffix pronoun attaches after the verb's determinative (spec 3.4).
 export const SUFFIX_GLYPHS: Readonly<Record<SuffixId, string>> = {
@@ -387,6 +408,7 @@ export const SUFFIX_GLYPHS: Readonly<Record<SuffixId, string>> = {
   k: '\u{133A1}',
   f: '\u{13191}',
   sn: `\u{132F4}\u{13216}${Z2_PLURAL}`,
+  'n.i': `\u{13216}${A1_MAN}`,
 };
 
 export const SUFFIX_SKELETON: Readonly<Record<SuffixId, string>> = {
@@ -394,6 +416,17 @@ export const SUFFIX_SKELETON: Readonly<Record<SuffixId, string>> = {
   k: 'k',
   f: 'f',
   sn: 'sn',
+  'n.i': 'ni',
+};
+
+// Four function words, Chronomancy only (spec 3.4), determinative free like
+// the rest of that table. Backward is written with the word for in front:
+// Egyptian puts what came before at the head.
+export const DIRECTION_WORDS: Readonly<Record<TimeDirection, FixedWord>> = {
+  back: { glyphs: '\u{1340D}\u{13216}\u{133CF}', spoken: 'khenet' },
+  forth: { glyphs: '\u{13153}\u{1340D}\u{133CF}', spoken: 'emkhet' },
+  again: { glyphs: '\u{13171}\u{1339B}\u{13153}', spoken: 'wehem' },
+  still: { glyphs: '\u{133BC}\u{1308B}', spoken: 'ger' },
 };
 
 export type EgyptianIdiomId =
@@ -452,6 +485,13 @@ export const IDIOM_WORDS: Readonly<Record<EgyptianIdiomId, ReadonlyArray<FixedWo
     { glyphs: `\u{13193}\u{133CF}${N5_SUN}${G37_EVIL}`, spoken: 'djet' },
   ],
 };
+
+// EC5, the return anchor (spec 3.6): prt written with its phonograms plus the
+// walking legs, then m, then a time-field anchor which carries its own N5.
+export const EC5_HEAD: ReadonlyArray<FixedWord> = [
+  { glyphs: `\u{132AA}\u{1308B}\u{133CF}${D54_LEGS}`, spoken: 'peret' },
+  FN_M,
+];
 
 export const EO2_HEAD: ReadonlyArray<FixedWord> = [
   { glyphs: `\u{1308B}${Z1_STROKE}`, spoken: 'ra' },

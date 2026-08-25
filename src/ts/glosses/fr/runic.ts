@@ -8,6 +8,8 @@
 
 import { form, lookup } from '../table.js';
 import type {
+  ChronomancyBind,
+  ChronomancyCross,
   GlossRef,
   RunicCurse,
   RunicDivination,
@@ -26,7 +28,9 @@ import {
   exclaim,
   genderOf,
   inverted,
+  ofDefinite,
   speaker,
+  toPhrase,
   vocative,
 } from './text.js';
 
@@ -298,6 +302,34 @@ const roots: RootGlossTable = {
   frag: { gloss: 'question', forms: { noun: 'question' }, gender: 'f' },
   andswar: { gloss: 'réponse', forms: { noun: 'réponse' }, gender: 'f' },
   rist: { gloss: 'trait entaillé', forms: { noun: 'trait tracé' }, gender: 'm' },
+  // course. First-group verbs again, so one stored form serves the command of
+  // a crossing clause and the first person of a binding one.
+  far: { gloss: 'traverser, voyager', forms: { verb: 'traverse' } },
+  wend: {
+    gloss: 'faire demi-tour',
+    forms: { noun: 'retour', verb: 'ramène' },
+    gender: 'm',
+  },
+  skund: { gloss: 'hâter', forms: { verb: 'presse' } },
+  lat: {
+    gloss: 'ralentir',
+    forms: { verb: 'retarde', adj: 'tardif' },
+    feminine: { adj: 'tardive' },
+  },
+  stand: { gloss: 'arrêter, tenir ferme', forms: { verb: 'arrête' } },
+  hef: { gloss: 'soulever hors', forms: { verb: 'soulève' } },
+  gang: { gloss: 'marche, cours', forms: { noun: 'cours' }, gender: 'm' },
+  stap: { gloss: 'pas', forms: { noun: 'pas' }, gender: 'm' },
+  rath: {
+    gloss: 'rapide',
+    forms: { adj: 'prompt', adv: 'promptement' },
+    feminine: { adj: 'prompte' },
+  },
+  niw: {
+    gloss: 'renouveler',
+    forms: { verb: 'renouvelle', adj: 'neuf' },
+    feminine: { adj: 'neuve' },
+  },
 };
 
 const powers: GlossTable = {
@@ -345,6 +377,23 @@ const seals: GlossTable = {
   12: 'Scellé douze fois.',
 };
 
+// The same counts read as how far a crossing went (spec 1.6).
+const depths: GlossTable = {
+  3: 'Trois heures de profondeur.',
+  7: 'Sept heures de profondeur.',
+  9: 'Neuf heures de profondeur.',
+  12: 'Douze heures de profondeur.',
+};
+
+// French says a direction with an adverbial phrase, which the crossing clause
+// fronts: « En arrière, traverse l'heure ! »
+const directions: GlossTable = {
+  back: 'en arrière',
+  forth: 'en avant',
+  again: 'de nouveau',
+  still: 'en suspens',
+};
+
 function noun(id: string): string {
   return form(roots, id, 'noun');
 }
@@ -371,9 +420,13 @@ export const runicGlosses: RunicGlosses = {
   powers,
   idioms,
   seals,
+  depths,
+  directions,
 
   idiom: (id) => lookup(idioms, id, 'idiom'),
   seal: (count) => lookup(seals, String(count), 'seal'),
+  sealDepth: (count) => lookup(depths, String(count), 'depth'),
+  direction: (id) => lookup(directions, id, 'direction'),
   sentences: (parts) => parts.join(' '),
 
   protectionClause: (p: RunicProtection) =>
@@ -409,6 +462,26 @@ export const runicGlosses: RunicGlosses = {
     `Moi, ${theNoun(p.agentRoot)}, ` +
     `${speaker(form(roots, p.intentRoot, 'verb'))}${after(adverb(p.adverbRoot))}` +
     ` ${theNoun(p.targetRoot)}${after(adjective(p.adjectiveRoot, p.targetRoot))}.`,
+
+  // The direction opens the command, where French puts an adverbial it wants
+  // heard first. The binding clause is marked « Par ces mots »: the French
+  // performative present already performs, but every other school of this
+  // pack speaks in it too, so the deed is named as done by the saying.
+  chronomancyCross: (p: ChronomancyCross) =>
+    exclaim(
+      `${capitalize(lookup(directions, p.direction, 'direction'))}, ` +
+        `${form(roots, p.intentRoot, 'verb')}${after(adverb(p.adverbRoot))} ` +
+        `${theNoun(p.targetRoot)}${after(adjective(p.adjectiveRoot, p.targetRoot))}`,
+    ),
+
+  chronomancyBind: (p: ChronomancyBind) =>
+    `Par ces mots, ${speaker(form(roots, p.intentRoot, 'verb'))}` +
+    `${after(adverb(p.adverbRoot))} ${theNoun(p.targetRoot)}` +
+    `${after(adjective(p.adjectiveRoot, p.targetRoot))}.`,
+
+  returnAnchor: (anchorRoot, genitiveRoot) =>
+    `Je reviens ${toPhrase(theNoun(anchorRoot))}` +
+    `${genitiveRoot === null ? '' : ` ${ofDefinite(noun(genitiveRoot), genderOf(roots, genitiveRoot))}`}.`,
 
   litanyTriple: (word) => `${capitalize(word)}, prononcé trois fois.`,
   litanyTriangle: (word) => `${capitalize(word)}, réduit à une seule rune.`,

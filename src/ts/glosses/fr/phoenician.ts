@@ -13,6 +13,8 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
+  ChronomancyBind,
+  ChronomancyCross,
   GlossRef,
   GlossTable,
   NamedPowerTable,
@@ -31,6 +33,7 @@ import {
   exclaim,
   genderOf,
   inverted,
+  ofDefinite,
   ofPhrase,
   plural,
   speaker,
@@ -544,6 +547,18 @@ const roots: RootGlossTable = {
     forms: { noun: 'repère posé', plural: 'repères posés' },
     gender: 'm',
   },
+  // course. First-group verbs again, one stored form for the command and the
+  // first person alike.
+  khlp: { gloss: 'franchir', forms: { verb: 'traverse' } },
+  shwb: { gloss: 'faire demi-tour', forms: { verb: 'ramène' } },
+  mhr: { gloss: 'hâter', forms: { verb: 'presse' } },
+  mshk: { gloss: 'étirer', forms: { verb: 'étire' } },
+  ghmd: { gloss: 'arrêter', forms: { verb: 'arrête' } },
+  nsgh: { gloss: 'soulever hors', forms: { verb: 'soulève' } },
+  tsghd: { gloss: 'pas', forms: { noun: 'pas' }, gender: 'm' },
+  hlk: { gloss: 'cours', forms: { noun: 'cours' }, gender: 'm' },
+  khpz: { gloss: 'rapide', forms: { adj: 'prompt' }, feminine: { adj: 'prompte' } },
+  shny: { gloss: 'répéter', forms: { verb: 'répète' } },
 };
 
 const powers: NamedPowerTable = {
@@ -579,6 +594,21 @@ const idioms: GlossTable = {
   // of the power the formula questioned.
   PC4: 'Car la voix a été entendue.',
   ELDRITCH_CLOSE: 'La porte demeure ouverte à jamais.',
+};
+
+// The same counts read as how far a crossing went (spec 1.6).
+const depths: GlossTable = {
+  3: 'Trois heures de profondeur.',
+  7: 'Sept heures de profondeur.',
+  9: 'Neuf heures de profondeur.',
+  12: 'Douze heures de profondeur.',
+};
+
+const directions: GlossTable = {
+  back: 'en arrière',
+  forth: 'en avant',
+  again: 'de nouveau',
+  still: 'en suspens',
 };
 
 const seals: GlossTable = {
@@ -627,9 +657,13 @@ export const phoenicianGlosses: PhoenicianGlosses = {
   epithets,
   idioms,
   seals,
+  depths,
+  directions,
 
   idiom: (id) => lookup(idioms, id, 'idiom'),
   seal: (count) => lookup(seals, String(count), 'seal'),
+  sealDepth: (count) => lookup(depths, String(count), 'depth'),
+  direction: (id) => lookup(directions, id, 'direction'),
   // Ordinary spaces only: collapsing every whitespace would eat the narrow
   // no-break space French sets before an exclamation mark.
   sentences: (parts) => parts.join(' ').replace(/ +/gu, ' ').trim(),
@@ -678,6 +712,22 @@ export const phoenicianGlosses: PhoenicianGlosses = {
     `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}.` +
     `${adverbial(p.adverbRoot)}`,
 
+  chronomancyCross: (p: ChronomancyCross) =>
+    exclaim(
+      `${capitalize(lookup(directions, p.direction, 'direction'))}, ` +
+        `${form(roots, p.intentRoot, 'verb')} ${theNoun(p.targetRoot)}` +
+        `${adjectival(p.adjectiveRoot, p.targetRoot)}`,
+    ) + adverbial(p.adverbRoot),
+
+  chronomancyBind: (p: ChronomancyBind) =>
+    `Et par ces mots, ${speaker(form(roots, p.intentRoot, 'verb'))} ` +
+    `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}.` +
+    `${adverbial(p.adverbRoot)}`,
+
+  returnAnchor: (anchorRoot, genitiveRoot) =>
+    `Je suis venu ${toPhrase(theNoun(anchorRoot))}` +
+    `${genitiveRoot === null ? '' : ` ${ofDefinite(noun(genitiveRoot), genderOf(roots, genitiveRoot))}`}.`,
+
   selfPresentationByName: (spokenName) => `Je suis ${capitalize(spokenName)}.`,
   selfPresentationByEpithet: (id) =>
     `J’appartiens ${toPhrase(lookup(epithets, id, 'epithet'))}.`,
@@ -695,6 +745,8 @@ export const phoenicianGlosses: PhoenicianGlosses = {
     return `Incantation contre les ${form(roots, targetRoot, 'plural')}${qualifier}.`;
   },
   openerQuestion: (id) => `Question posée à ${power(powers, id).name}.`,
+  openerYear: (timeRoot) =>
+    `En l’année ${ofDefinite(noun(timeRoot), genderOf(roots, timeRoot))}.`,
 
   // A name quoted rather than used is masculine in French, so the participle
   // stays in the masculine whoever the name belongs to.

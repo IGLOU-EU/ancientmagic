@@ -11,8 +11,10 @@
 // what the genome chose and composes the sentence itself, so a language with
 // gender, agreement or another word order has everything it needs.
 //
-// This module imports nothing on purpose. It is the contract both the
+// This module imports one type and nothing else. It is the contract both the
 // generator and every pack depend on, so it must sit under both.
+
+import type { TimeDirection } from '../generator/types.js';
 
 // The grammatical roles a root can fill. A genome declares, per root, which of
 // these it offers; the pack must supply exactly those and no others.
@@ -58,14 +60,39 @@ export type GlossRef =
   // A dread epithet: the pack may want its gloss, its spoken form, or both.
   | { readonly kind: 'epithet'; readonly id: string; readonly spoken: string };
 
-// Every pack of every genome offers these three.
+// Every pack of every genome offers these.
 interface GenomeGlosses {
   // Fixed idiom of the genome's spec, by id.
   idiom(id: string): string;
   // Repetition count of a seal.
   seal(count: number): string;
+  // The same count read as a depth in time, which is how Chronomancy words
+  // the seal it shares with the other schools (genomes.md 1.6). Two methods
+  // rather than one parameterized by a school, so that a pack that forgets a
+  // wording fails the completeness sweep by name instead of quietly answering
+  // the other school's sentence.
+  sealDepth(count: number): string;
+  // The four directions of a crossing clause, by their plan-level id.
+  direction(id: TimeDirection): string;
   // Joins the gloss parts of one formula into the displayed line.
   sentences(parts: ReadonlyArray<string>): string;
+}
+
+// What a Chronomancy clause hands its pack. The crossing clause carries a
+// direction and the binding clause never does (genomes.md 1.6).
+export interface ChronomancyCross {
+  readonly intentRoot: string;
+  readonly targetRoot: string;
+  readonly adjectiveRoot: string | null;
+  readonly adverbRoot: string | null;
+  readonly direction: TimeDirection;
+}
+
+export interface ChronomancyBind {
+  readonly intentRoot: string;
+  readonly targetRoot: string;
+  readonly adjectiveRoot: string | null;
+  readonly adverbRoot: string | null;
 }
 
 // --- Runic -----------------------------------------------------------------
@@ -109,6 +136,8 @@ export interface RunicGlosses extends GenomeGlosses {
   readonly powers: GlossTable;
   readonly idioms: GlossTable;
   readonly seals: GlossTable;
+  readonly depths: GlossTable;
+  readonly directions: GlossTable;
 
   protectionClause(parts: RunicProtection): string;
   curseClause(parts: RunicCurse): string;
@@ -117,6 +146,14 @@ export interface RunicGlosses extends GenomeGlosses {
   // question mark, since no script in this site writes one.
   divinationAsk(parts: RunicDivination): string;
   divinationSee(parts: RunicDivination): string;
+  // The command that opens the way, then the deed done in the saying. Only
+  // the binding gloss is marked for its mood, and how it is marked is the
+  // pack's business, as the question is.
+  chronomancyCross(parts: ChronomancyCross): string;
+  chronomancyBind(parts: ChronomancyBind): string;
+  // The closing idiom that takes an argument: the time the caster returns to,
+  // with a second noun hung behind it at tier 9.
+  returnAnchor(anchorRoot: string, genitiveRoot: string | null): string;
   litanyTriple(word: string): string;
   litanyTriangle(word: string): string;
   tierOne(word: string, eldritch: boolean): string;
@@ -179,12 +216,17 @@ export interface EgyptianGlosses extends GenomeGlosses {
   readonly epithets: GlossTable;
   readonly idioms: GlossTable;
   readonly seals: GlossTable;
+  readonly depths: GlossTable;
+  readonly directions: GlossTable;
 
   protectionClause(parts: EgyptianProtection): string;
   curseClause(parts: EgyptianCurse): string;
   invocationClause(parts: EgyptianInvocation): string;
   divinationAsk(parts: EgyptianDivinationAsk): string;
   divinationSee(parts: EgyptianDivinationSee): string;
+  chronomancyCross(parts: ChronomancyCross): string;
+  chronomancyBind(parts: ChronomancyBind): string;
+  returnAnchor(anchorRoot: string, genitiveRoot: string | null): string;
   // The EO2 title line, over a dread epithet or a coined root.
   spellTitle(subject: GlossRef): string;
   // The EO3 line. The register inverts who knows whose name.
@@ -242,11 +284,16 @@ export interface PhoenicianGlosses extends GenomeGlosses {
   readonly epithets: GlossTable;
   readonly idioms: GlossTable;
   readonly seals: GlossTable;
+  readonly depths: GlossTable;
+  readonly directions: GlossTable;
 
   jussiveClause(parts: PhoenicianJussive): string;
   invocationClause(parts: PhoenicianInvocation): string;
   divinationAsk(parts: PhoenicianDivinationAsk): string;
   divinationSee(parts: PhoenicianDivinationSee): string;
+  chronomancyCross(parts: ChronomancyCross): string;
+  chronomancyBind(parts: ChronomancyBind): string;
+  returnAnchor(anchorRoot: string, genitiveRoot: string | null): string;
   // PO2, the royal self presentation. The bright form names the caster by the
   // coined theophoric name the genome spelled, so it arrives spoken.
   selfPresentationByName(spokenName: string): string;
@@ -257,6 +304,8 @@ export interface PhoenicianGlosses extends GenomeGlosses {
   openerAgainst(targetRoot: string, adjectiveRoot: string | null): string;
   // PO4, the inquiry put to a god, which names the power the formula asks.
   openerQuestion(powerId: string): string;
+  // PO5, the dating formula, which stamps the formula with its year.
+  openerYear(timeRoot: string): string;
   litanyTriple(subject: GlossRef): string;
   litanyTriangle(spoken: string): string;
   tierOne(subject: GlossRef): string;

@@ -4,6 +4,8 @@
 
 import { form, lookup } from '../table.js';
 import type {
+  ChronomancyBind,
+  ChronomancyCross,
   GlossRef,
   RunicCurse,
   RunicDivination,
@@ -183,6 +185,17 @@ const roots: RootGlossTable = {
   frag: { gloss: 'question', forms: { noun: 'question' } },
   andswar: { gloss: 'answer', forms: { noun: 'answer' } },
   rist: { gloss: 'cut line', forms: { noun: 'cut line' } },
+  // course
+  far: { gloss: 'cross, travel', forms: { verb: 'cross' } },
+  wend: { gloss: 'turn back', forms: { noun: 'turning', verb: 'turn back' } },
+  skund: { gloss: 'hasten', forms: { verb: 'hasten' } },
+  lat: { gloss: 'slow', forms: { verb: 'slow', adj: 'late' } },
+  stand: { gloss: 'halt, stand fast', forms: { verb: 'halt' } },
+  hef: { gloss: 'lift out', forms: { verb: 'lift out' } },
+  gang: { gloss: 'going, course', forms: { noun: 'course' } },
+  stap: { gloss: 'step', forms: { noun: 'step' } },
+  rath: { gloss: 'swift', forms: { adj: 'swift', adv: 'swiftly' } },
+  niw: { gloss: 'renew', forms: { verb: 'renew', adj: 'new' } },
 };
 
 const powers: GlossTable = {
@@ -229,6 +242,21 @@ const seals: GlossTable = {
   12: 'Sealed twelve times.',
 };
 
+// The same counts read as how far a crossing went (spec 1.6).
+const depths: GlossTable = {
+  3: 'Three hours deep.',
+  7: 'Seven hours deep.',
+  9: 'Nine hours deep.',
+  12: 'Twelve hours deep.',
+};
+
+const directions: GlossTable = {
+  back: 'backward',
+  forth: 'forward',
+  again: 'again',
+  still: 'still',
+};
+
 function noun(id: string): string {
   return form(roots, id, 'noun');
 }
@@ -242,9 +270,13 @@ export const runicGlosses: RunicGlosses = {
   powers,
   idioms,
   seals,
+  depths,
+  directions,
 
   idiom: (id) => lookup(idioms, id, 'idiom'),
   seal: (count) => lookup(seals, String(count), 'seal'),
+  sealDepth: (count) => lookup(depths, String(count), 'depth'),
+  direction: (id) => lookup(directions, id, 'direction'),
   sentences: (parts) => parts.join(' '),
 
   protectionClause: (p: RunicProtection) =>
@@ -276,6 +308,25 @@ export const runicGlosses: RunicGlosses = {
     `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
     ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
     `${noun(p.targetRoot)}.`,
+
+  // English has no performative verb form, so the mood is marked with an
+  // adverb: a binding clause that reads like a plain report has lost the
+  // school (spec 1.6).
+  chronomancyCross: (p: ChronomancyCross) =>
+    `${capitalize(form(roots, p.intentRoot, 'verb'))} ${directions[p.direction] ?? ''}` +
+    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
+    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
+    `${noun(p.targetRoot)}!`,
+
+  chronomancyBind: (p: ChronomancyBind) =>
+    `I hereby ${form(roots, p.intentRoot, 'verb')}` +
+    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
+    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
+    `${noun(p.targetRoot)}.`,
+
+  returnAnchor: (anchorRoot, genitiveRoot) =>
+    `I turn back to the ${noun(anchorRoot)}` +
+    `${genitiveRoot === null ? '' : ` of the ${noun(genitiveRoot)}`}.`,
 
   litanyTriple: (word) => `${capitalize(word)}, spoken three times.`,
   litanyTriangle: (word) => `${capitalize(word)}, shrinking to a single rune.`,

@@ -47,6 +47,12 @@ test('share: a link written before the newest school still decodes', () => {
   });
 });
 
+test('share: a chronomancy link round-trips', () => {
+  const settings = { language: 'egyptian', school: 'chronomancy', difficulty: 7 } as const;
+  assert.strictEqual(encode(settings, 3), 'egyptian.chronomancy.7.3');
+  assert.deepStrictEqual(decode('egyptian.chronomancy.7.3'), { settings, seed: 3 });
+});
+
 test('share: a divination link round-trips', () => {
   const settings = { language: 'runic', school: 'divination', difficulty: 3 } as const;
   assert.strictEqual(encode(settings, 1), 'runic.divination.3.1');
@@ -132,7 +138,7 @@ test('share: a genome the site does not carry is not a formula', () => {
 
 test('share: a school the site does not teach is not a formula', () => {
   for (const text of [
-    'runic.chronomancy.5.1',
+    'runic.necromancy.5.1',
     'runic.PROTECTION.5.1',
     'runic..5.1',
   ]) {

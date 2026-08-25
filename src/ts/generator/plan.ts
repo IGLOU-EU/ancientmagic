@@ -11,6 +11,7 @@ import type {
   PowerWordStyle,
   School,
   SemanticField,
+  TimeDirection,
 } from './types.js';
 
 // Field pools per school. The school fixes the flavor of each gene, the
@@ -34,6 +35,20 @@ const ADJECTIVE_FIELDS: ReadonlyArray<SemanticField> = ['night', 'harm', 'death'
 const ADVERB_FIELDS: ReadonlyArray<SemanticField> = ['hidden', 'night', 'harm'];
 const DIVINATION_ADJECTIVE_FIELDS: ReadonlyArray<SemanticField> = ['night', 'sight', 'fate'];
 const DIVINATION_ADVERB_FIELDS: ReadonlyArray<SemanticField> = ['sight', 'night', 'hidden'];
+
+// Chronomancy commands time directly and names no god to do it for the caster
+// (spec 1.6), so it carries no AGENT gene at all and its clause is verb,
+// object, qualifier. Fate is the one field it shares with Divination: the one
+// reads what is decreed, the other acts on it.
+const CHRONOMANCY_INTENT: ReadonlyArray<SemanticField> = ['course', 'binding'];
+const CHRONOMANCY_TARGET: ReadonlyArray<SemanticField> = ['time', 'gates', 'fate'];
+const CHRONOMANCY_ADJECTIVE_FIELDS: ReadonlyArray<SemanticField> = ['course', 'night', 'fate'];
+const CHRONOMANCY_ADVERB_FIELDS: ReadonlyArray<SemanticField> = ['course', 'night', 'hidden'];
+
+// The four values a crossing clause moves by, in the order the spec lists
+// them. Exported because the packs must gloss exactly these four and the
+// genomes must map exactly these four to words of their own.
+export const DIRECTIONS: ReadonlyArray<TimeDirection> = ['back', 'forth', 'again', 'still'];
 
 function clauseCount(difficulty: number): number {
   if (difficulty <= 5) return 1;
@@ -59,6 +74,7 @@ function buildClause(
 ): ClausePlan {
   const genes: GeneInstance[] = [];
   let invocationLike = false;
+  let direction: TimeDirection | null = null;
 
   if (school === 'protection') {
     genes.push({ role: 'AGENT', field: 'warding', flavor: null });
@@ -81,6 +97,16 @@ function buildClause(
       flavor: kind === 'asking' ? 'interrogative' : 'first-person',
     });
     genes.push({ role: 'TARGET', field: pick(rng, DIVINATION_TARGET), flavor: null });
+  } else if (school === 'chronomancy') {
+    // The crossing clause commands and carries its direction, the binding
+    // clause performs. No AGENT: the school addresses time itself.
+    genes.push({
+      role: 'INTENT',
+      field: pick(rng, CHRONOMANCY_INTENT),
+      flavor: kind === 'crossing' ? 'imperative' : 'performative',
+    });
+    genes.push({ role: 'TARGET', field: pick(rng, CHRONOMANCY_TARGET), flavor: null });
+    if (kind === 'crossing') direction = pick(rng, DIRECTIONS);
   } else {
     // Invocation carries the same skeleton with or without the Eldritch
     // register, per genomes.md 1.3.
@@ -101,9 +127,18 @@ function buildClause(
     // Invocation epithets stay uninflected under Eldritch, so the
     // invocation family only takes adverbs and dodges agreement entirely.
     modifier = invocationLike ? 'adverb' : pick(rng, ['adjective', 'adverb'] as const);
-    const divination = school === 'divination';
-    const adjectives = divination ? DIVINATION_ADJECTIVE_FIELDS : ADJECTIVE_FIELDS;
-    const adverbs = divination ? DIVINATION_ADVERB_FIELDS : ADVERB_FIELDS;
+    const adjectives =
+      school === 'divination'
+        ? DIVINATION_ADJECTIVE_FIELDS
+        : school === 'chronomancy'
+          ? CHRONOMANCY_ADJECTIVE_FIELDS
+          : ADJECTIVE_FIELDS;
+    const adverbs =
+      school === 'divination'
+        ? DIVINATION_ADVERB_FIELDS
+        : school === 'chronomancy'
+          ? CHRONOMANCY_ADVERB_FIELDS
+          : ADVERB_FIELDS;
     modifierField = pick(rng, modifier === 'adjective' ? adjectives : adverbs);
     genes.push({ role: 'MODIFIER', field: modifierField, flavor: null });
   }
@@ -114,6 +149,7 @@ function buildClause(
     modifierField,
     agentCount: invocationLike ? agentCount(difficulty) : 0,
     kind,
+    direction,
   };
 }
 
@@ -139,6 +175,7 @@ export function buildPlan(school: School, difficulty: number, rng: Rng): Formula
           modifierField: null,
           agentCount: 0,
           kind: null,
+          direction: null,
         },
       ],
     };
@@ -155,6 +192,9 @@ export function buildPlan(school: School, difficulty: number, rng: Rng): Formula
     } else if (school === 'divination') {
       genes.push({ role: 'INTENT', field: pick(rng, DIVINATION_INTENT), flavor: 'imperative' });
       genes.push({ role: 'TARGET', field: pick(rng, DIVINATION_TARGET), flavor: null });
+    } else if (school === 'chronomancy') {
+      genes.push({ role: 'INTENT', field: pick(rng, CHRONOMANCY_INTENT), flavor: 'imperative' });
+      genes.push({ role: 'TARGET', field: pick(rng, CHRONOMANCY_TARGET), flavor: null });
     } else {
       genes.push({ role: 'INTENT', field: 'summoning', flavor: 'imperative' });
       genes.push({
@@ -168,16 +208,19 @@ export function buildPlan(school: School, difficulty: number, rng: Rng): Formula
       opening: false,
       closing: false,
       seal: false,
-      clauses: [{ genes, modifier: null, modifierField: null, agentCount: 0, kind: null }],
+      clauses: [
+        { genes, modifier: null, modifierField: null, agentCount: 0, kind: null, direction: null },
+      ],
     };
   }
 
   const clauses: ClausePlan[] = [];
   for (let i = 0; i < clauseCount(difficulty); i += 1) {
-    // Spec 1.5: the first clause of a divination formula asks, every clause
-    // after it sees.
-    const kind: ClauseKind | null =
-      school === 'divination' ? (i === 0 ? 'asking' : 'seeing') : null;
+    // Spec 1.5 and 1.6: a divination formula asks once then sees, a
+    // chronomantic one crosses once then binds. The index is the kind.
+    let kind: ClauseKind | null = null;
+    if (school === 'divination') kind = i === 0 ? 'asking' : 'seeing';
+    else if (school === 'chronomancy') kind = i === 0 ? 'crossing' : 'binding';
     clauses.push(buildClause(school, difficulty, rng, kind));
   }
 

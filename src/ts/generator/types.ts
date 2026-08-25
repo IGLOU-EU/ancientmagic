@@ -5,7 +5,13 @@ import type { Rng } from './rng.js';
 
 export type LanguageId = 'runic' | 'egyptian' | 'phoenician';
 
-export type School = 'protection' | 'curse' | 'invocation' | 'eldritch' | 'divination';
+export type School =
+  | 'protection'
+  | 'curse'
+  | 'invocation'
+  | 'eldritch'
+  | 'divination'
+  | 'chronomancy';
 
 export type GeneRole =
   | 'INTENT'
@@ -30,7 +36,11 @@ export type SemanticField =
   // draws from them (genomes.md 1.5).
   | 'sight'
   | 'fate'
-  | 'signs';
+  | 'signs'
+  // Course arrived with Chronomancy and is likewise its own: the verbs and
+  // nouns of moving through time (genomes.md 1.6). Fate is the one field the
+  // two schools share.
+  | 'course';
 
 export type ModifierKind = 'adjective' | 'adverb';
 
@@ -38,13 +48,27 @@ export interface GeneInstance {
   role: GeneRole;
   field: SemanticField | null;
   // Grammatical flavor fixed by the school, the genome maps it to endings.
-  flavor: 'first-person' | 'optative' | 'imperative' | 'interrogative' | null;
+  flavor:
+    | 'first-person'
+    | 'optative'
+    | 'imperative'
+    | 'interrogative'
+    // The mood where saying is doing, which every genome maps to a form it
+    // spends on no other school (genomes.md 1.6).
+    | 'performative'
+    | null;
 }
 
 // Divination holds the same genes in two moods: the formula asks once, then
-// says what it sees. Every other school builds clauses of one shape and
-// leaves this null.
-export type ClauseKind = 'asking' | 'seeing';
+// says what it sees. Chronomancy does the same with two moods of its own: it
+// opens the way, then does the deed. Every other school builds clauses of one
+// shape and leaves this null.
+export type ClauseKind = 'asking' | 'seeing' | 'crossing' | 'binding';
+
+// Which way a crossing clause moves through time. Closed and language
+// independent, so one clause plan gives the same direction in all three
+// genomes (genomes.md 1.6).
+export type TimeDirection = 'back' | 'forth' | 'again' | 'still';
 
 export interface ClausePlan {
   genes: GeneInstance[];
@@ -52,6 +76,8 @@ export interface ClausePlan {
   modifierField: SemanticField | null;
   agentCount: number;
   kind: ClauseKind | null;
+  // Set on a crossing clause and on nothing else.
+  direction: TimeDirection | null;
 }
 
 export type PowerWordStyle = 'none' | 'triple' | 'triangle';

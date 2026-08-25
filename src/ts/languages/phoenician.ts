@@ -28,6 +28,7 @@ import {
   ALF,
   BRIGHT_NAMES,
   DARK_NAMES,
+  DIRECTION_WORDS,
   DIVINATION_NAMES,
   DREAD_POWER,
   FIELDS,
@@ -40,8 +41,10 @@ import {
   PLURAL_SPOKEN,
   PO1_HEAD,
   PO2_HEAD,
+  PC5_HEAD,
   PO3_HEAD,
   PO4_HEAD,
+  PO5_HEAD,
   PROCLITIC_SPOKEN,
   SEAL_HEAD,
   THEOPHORIC_SKELETON,
@@ -142,7 +145,10 @@ export type VerbForm =
   | 'jussive-3fs'
   | 'imperfect-1sg'
   | 'imperative'
-  | 'perfect';
+  | 'perfect'
+  // The voice every royal inscription speaks in, the king saying I built.
+  // Chronomancy's binding clause and nothing else (spec 4.4).
+  | 'perfect-1sg';
 
 // A prefixed form clusters every radical but the last, then takes its vowel.
 const PREFIXED: Readonly<Record<string, readonly [prefix: string, vowel: string]>> = {
@@ -155,7 +161,12 @@ const PREFIXED: Readonly<Record<string, readonly [prefix: string, vowel: string]
 const BARE: Readonly<Record<string, readonly [first: string, last: string]>> = {
   imperative: ['e', 'o'],
   perfect: ['a', 'a'],
+  'perfect-1sg': ['a', 'a'],
 };
+
+// The perfect 1sg adds one letter to the written root, the tau of its suffix,
+// which is what keeps it apart from the perfect 3ms on the page (spec 4.4).
+const PERFECT_1SG_SUFFIX = 'ti';
 
 function conjugate(root: string, form: VerbForm): string {
   const c = radicals(root);
@@ -171,7 +182,8 @@ function conjugate(root: string, form: VerbForm): string {
   const bare = BARE[form];
   if (bare === undefined) throw new Error(`unknown verb form: ${form}`);
   const [first, second] = bare;
-  return `${c[0] ?? ''}${first}${c.slice(1, -1).join('')}${second}${last}`;
+  const stem = `${c[0] ?? ''}${first}${c.slice(1, -1).join('')}${second}${last}`;
+  return form === 'perfect-1sg' ? `${stem}${PERFECT_1SG_SUFFIX}` : stem;
 }
 
 // Eldritch rule 3: a becomes o and e becomes u. Radicals carry no a and no e,
@@ -196,6 +208,9 @@ export type PhoenicianRole =
   | 'target'
   | 'agent'
   | 'power'
+  // The direction word of a crossing clause, which is a function word of the
+  // school and never the MODIFIER gene.
+  | 'direction'
   | 'modifier'
   | 'adverb'
   | 'litany'
@@ -597,6 +612,71 @@ function objectPhrase(
   return words;
 }
 
+// Spec 4.12. The crossing clause is the imperative with its direction behind
+// it, where a l- or b- phrase sits in a command. The binding clause is the
+// perfect 1sg, the deed stated as done by the one who states it.
+function realizeChronomancyClause(
+  plan: FormulaPlan,
+  clause: ClausePlan,
+  rng: Rng,
+  glosses: PhoenicianGlosses,
+): Realization {
+  const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
+  const target = pick(rng, nounsOf(geneField(clause, 'TARGET')));
+  const modifier = drawModifier(clause, rng, false);
+  const crossing = clause.kind === 'crossing';
+
+  const words: PhoenicianWord[] = [
+    verbWord(intent, crossing ? 'imperative' : 'perfect-1sg', { eldritch: false }),
+  ];
+
+  const direction = clause.direction;
+  if (crossing) {
+    if (direction === null) throw new Error('a crossing clause carries no direction');
+    words.push(fixed(DIRECTION_WORDS[direction], 'direction'));
+  }
+
+  words.push(...objectPhrase(plan, target, modifier));
+  const adverb = adverbPhrase(modifier, false);
+  words.push(...adverb.words);
+
+  const parts = {
+    intentRoot: intent.root,
+    targetRoot: target.root,
+    adjectiveRoot: modifier.adjective?.root ?? null,
+    adverbRoot: adverb.root,
+  };
+
+  return {
+    words,
+    gloss:
+      crossing && direction !== null
+        ? glosses.chronomancyCross({ ...parts, direction })
+        : glosses.chronomancyBind(parts),
+  };
+}
+
+// PC5, the return anchor: the perfect 1sg of bw' plus l- and a time-field
+// noun, which becomes a construct pair at tier 9 (spec 4.6).
+function returnAnchor(
+  plan: FormulaPlan,
+  rng: Rng,
+  glosses: PhoenicianGlosses,
+): Realization {
+  const anchor = pick(rng, nounsOf('time'));
+  const words: PhoenicianWord[] = [
+    fixed(PC5_HEAD),
+    nounWord(anchor, 'target', { eldritch: false, proclitic: 'l' }),
+  ];
+  let genitive: string | null = null;
+  if (plan.difficulty >= 9) {
+    const held = pick(rng, nounsOf('time').filter((r) => r.root !== anchor.root));
+    genitive = held.root;
+    words.push(nounWord(held, 'target', { eldritch: false }));
+  }
+  return { words, gloss: glosses.returnAnchor(anchor.root, genitive) };
+}
+
 function realizeInvocationClause(
   plan: FormulaPlan,
   clause: ClausePlan,
@@ -675,7 +755,9 @@ function selfPresentation(
   // The name root draws from the warding field in every school but this one,
   // where it comes from sight so the caster presents himself as a seer before
   // he asks (spec 4.6).
-  const root = pick(rng, nounsOf(plan.school === 'divination' ? 'sight' : 'warding'));
+  const nameField =
+    plan.school === 'divination' ? 'sight' : plan.school === 'chronomancy' ? 'course' : 'warding';
+  const root = pick(rng, nounsOf(nameField));
   // A name drops its word-initial guttural in the spoken line. The alf is
   // already silent, so only the ain of a gh-initial root has to go.
   const stem = speak(citation(root.root)).replace(/^gh/u, '');
@@ -700,6 +782,17 @@ function schoolOpener(
 ): Realization & { consumed: { target: boolean; modifier: Modifier } } {
   const clause = plan.clauses[0];
   if (clause === undefined) throw new Error('plan has no clause');
+
+  // PO5 stamps the formula with its year and consumes no gene of the clause,
+  // so the object survives from tier 4 up as it does under PO4 (spec 4.12).
+  if (plan.school === 'chronomancy') {
+    const year = pick(rng, nounsOf('time'));
+    return {
+      words: [fixed(PO5_HEAD), nounWord(year, 'target', { eldritch: false })],
+      gloss: glosses.openerYear(year.root),
+      consumed: { target: false, modifier: NO_MODIFIER },
+    };
+  }
 
   // PO4 consumes the AGENT gene instead of the TARGET, so the object survives
   // in the clause from tier 4 up (spec 4.11).
@@ -825,6 +918,9 @@ function closingIdioms(plan: FormulaPlan): PhoenicianIdiomId[] {
   if (plan.eldritch) return ['ELDRITCH_CLOSE'];
   // PC4 closes Divination: the formula ends when the voice has been heard,
   // and the blessing of PC1 belongs to the schools that ask for one.
+  // Chronomancy's closer is built rather than listed, so its list holds only
+  // what stacks behind the anchor (spec 4.12).
+  if (plan.school === 'chronomancy') return plan.difficulty >= 9 ? ['PC3'] : [];
   const own =
     plan.school === 'curse' ? 'PC2' : plan.school === 'divination' ? 'PC4' : 'PC1';
   return plan.difficulty >= 9 ? [own, 'PC3'] : [own];
@@ -832,6 +928,11 @@ function closingIdioms(plan: FormulaPlan): PhoenicianIdiomId[] {
 
 function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
   if (plan.eldritch) return 9;
+  // Twelve at tiers 7 and 8, for the twelve months the year turns through.
+  // Only tier 9 chooses (spec 4.12).
+  if (plan.school === 'chronomancy') {
+    return plan.difficulty <= 8 ? 12 : pick(rng, [9, 12] as const);
+  }
   if (plan.difficulty === 7) return pick(rng, [3, 7] as const);
   if (plan.difficulty === 8) return pick(rng, [7, 9] as const);
   return pick(rng, [9, 12] as const);
@@ -915,7 +1016,9 @@ function composePhoenician(
     const consumed =
       index === 0 ? opener.consumed : { target: false, modifier: NO_MODIFIER };
     let realized: Realization;
-    if (questioned !== null) {
+    if (plan.school === 'chronomancy') {
+      realized = realizeChronomancyClause(plan, clause, rng, glosses);
+    } else if (questioned !== null) {
       realized =
         clause.kind === 'asking'
           ? realizeDivinationAsk(plan, clause, rng, questioned, glosses)
@@ -942,6 +1045,11 @@ function composePhoenician(
   }
 
   if (plan.closing) {
+    if (plan.school === 'chronomancy') {
+      const anchor = returnAnchor(plan, rng, glosses);
+      words.push(...anchor.words);
+      glossParts.push(anchor.gloss);
+    }
     for (const id of closingIdioms(plan)) {
       for (const word of IDIOM_WORDS[id]) words.push(fixed(word));
       glossParts.push(glosses.idiom(id));
@@ -959,7 +1067,10 @@ function composePhoenician(
       vocalized: null,
       root: null,
     });
-    glossParts.push(glosses.seal(count));
+    // Chronomancy reads the count as a depth in time (spec 1.6).
+    glossParts.push(
+      plan.school === 'chronomancy' ? glosses.sealDepth(count) : glosses.seal(count),
+    );
   }
 
   return { words, gloss: glosses.sentences(glossParts) };

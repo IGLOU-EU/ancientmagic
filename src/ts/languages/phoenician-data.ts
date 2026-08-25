@@ -6,7 +6,7 @@
 // must cover exactly the forms declared here, no more and no less, which the
 // pack completeness tests check.
 
-import type { SemanticField } from '../generator/types.js';
+import type { SemanticField, TimeDirection } from '../generator/types.js';
 import type { RootForm } from '../glosses/types.js';
 
 // The 22 letters of the abjad (spec 4.1). Tokens are the ASCII romanization
@@ -225,6 +225,20 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<PhoenicianRoot
     { root: 'khrts', forms: ['noun'] },
     { root: 'nkhl', forms: ['noun'] },
   ],
+  // The Chronomancy field (spec 4.3 and 4.12). No pp and no plural: this
+  // school builds no construct chain, the only place a plural was drawn.
+  course: [
+    { root: 'khlp', forms: ['verb'] },
+    { root: 'shwb', forms: ['verb'] },
+    { root: 'mhr', forms: ['verb'] },
+    { root: 'mshk', forms: ['verb'] },
+    { root: 'ghmd', forms: ['verb'] },
+    { root: 'nsgh', forms: ['verb'] },
+    { root: 'tsghd', forms: ['noun'] },
+    { root: 'hlk', forms: ['noun'] },
+    { root: 'khpz', forms: ['adj'] },
+    { root: 'shny', forms: ['verb'] },
+  ],
   signs: [
     { root: '\'t', forms: ['noun', 'plural'] },
     { root: 'spr', forms: ['noun', 'plural'] },
@@ -356,6 +370,31 @@ export const IDIOM_WORDS: Readonly<Record<PhoenicianIdiomId, ReadonlyArray<Fixed
     { glyphs: '\u{10914}\u{1090F}\u{10913}', spoken: 'shoghur' },
     { glyphs: '\u{1090B}\u{1090F}\u{1090B}\u{1090C}', spoken: 'leolam' },
   ],
+};
+
+// Four adverbials, Chronomancy only (spec 4.4). Three are built the way
+// Semitic builds an adverbial, a proclitic on a noun the lexicon already
+// holds, so they coin nothing. Backward is toward qdm, the front and the
+// ancient time at once, exactly as Egyptian does it with xnt.
+export const DIRECTION_WORDS: Readonly<Record<TimeDirection, FixedWord>> = {
+  back: { glyphs: '\u{1090B}\u{10912}\u{10903}\u{1090C}', spoken: 'leqadom' },
+  forth: { glyphs: '\u{1090B}\u{10900}\u{10907}\u{10913}', spoken: 'leakhor' },
+  again: { glyphs: '\u{1090F}\u{10905}\u{10903}', spoken: 'ghod' },
+  // The two mems of bdmm collapse to one glyph while the transliteration
+  // keeps both, which is the doubling rule of 4.2.
+  still: { glyphs: '\u{10901}\u{10903}\u{1090C}', spoken: 'bedamom' },
+};
+
+// PO5, the dating formula, and PC5, the return anchor (spec 4.6). Both take
+// an argument: the year the formula is stamped with, and the time the caster
+// came back to. PC5 is the summoning root bw' in the perfect 1sg.
+export const PO5_HEAD: FixedWord = {
+  glyphs: '\u{10901}\u{10914}\u{1090D}\u{10915}',
+  spoken: 'beshanot',
+};
+export const PC5_HEAD: FixedWord = {
+  glyphs: '\u{10901}\u{10905}\u{10900}\u{10915}',
+  spoken: 'bawati',
 };
 
 // The direct object marker of spec 4.4, a separate word before definite

@@ -19,6 +19,7 @@ const SHIPPED_SCHOOLS: ReadonlyArray<School> = [
   'invocation',
   'eldritch',
   'divination',
+  'chronomancy',
 ];
 
 type CopyState = 'idle' | 'copied' | 'failed';

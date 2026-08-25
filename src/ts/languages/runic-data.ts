@@ -6,7 +6,7 @@
 // must cover exactly the forms declared here, no more and no less, which the
 // pack completeness tests check.
 
-import type { SemanticField } from '../generator/types.js';
+import type { SemanticField, TimeDirection } from '../generator/types.js';
 import type { RootForm } from '../glosses/types.js';
 
 export interface RunicRoot {
@@ -245,6 +245,21 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'thrad', forms: ['noun'] },
     { root: 'wis', forms: ['adj', 'adv'] },
   ],
+  // The Chronomancy field (spec 2.3 and 2.12): the verbs and nouns of moving
+  // through time. No pp, every verb transitive, every noun able to sit behind
+  // an article.
+  course: [
+    { root: 'far', forms: ['verb'] },
+    { root: 'wend', forms: ['noun', 'verb'] },
+    { root: 'skund', forms: ['verb'] },
+    { root: 'lat', forms: ['verb', 'adj'] },
+    { root: 'stand', forms: ['verb'] },
+    { root: 'hef', forms: ['verb'] },
+    { root: 'gang', forms: ['noun'] },
+    { root: 'stap', forms: ['noun'] },
+    { root: 'rath', forms: ['adj', 'adv'] },
+    { root: 'niw', forms: ['verb', 'adj'] },
+  ],
   signs: [
     { root: 'tein', forms: ['noun'] },
     { root: 'taik', forms: ['noun'] },
@@ -290,6 +305,20 @@ export const DREAD_POWER: ReadonlyArray<string> = [
   'thulgzar',
   'kruthmol',
 ];
+
+// Four uninflected adverbs, Chronomancy only (spec 2.4). They are function
+// words, never lexicon roots, and are never drawn as a MODIFIER. Backward is
+// written with the word for in front, the orientation the culture held.
+export const DIRECTION_WORDS: Readonly<Record<TimeDirection, string>> = {
+  back: 'aftar',
+  forth: 'fram',
+  again: 'eft',
+  still: 'stil',
+};
+
+// The fixed tail of RC5 (spec 2.6), the one Runic idiom that takes an
+// argument: the anchor stands in front of it, in the accusative.
+export const RC5_TAIL: ReadonlyArray<string> = ['aftar', 'wendo'];
 
 export type RunicIdiomId =
   | 'RO1'

@@ -4,6 +4,8 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
+  ChronomancyBind,
+  ChronomancyCross,
   EgyptianAddress,
   EgyptianCurse,
   EgyptianDivinationAsk,
@@ -162,6 +164,17 @@ const roots: RootGlossTable = {
   psS: { gloss: 'divided lot', forms: { noun: 'divided lot' } },
   xAy: { gloss: 'measuring out', forms: { noun: 'measuring out' } },
   hn: { gloss: 'assent', forms: { noun: 'assent' } },
+  // course
+  DA: { gloss: 'cross', forms: { verb: 'cross' } },
+  an: { gloss: 'turn back', forms: { verb: 'turn back' } },
+  As: { gloss: 'hasten', forms: { verb: 'hasten' } },
+  wsf: { gloss: 'slow', forms: { verb: 'slow' } },
+  aHa: { gloss: 'halt', forms: { verb: 'halt' } },
+  Ts: { gloss: 'lift out', forms: { verb: 'lift out' } },
+  nmt: { gloss: 'step', forms: { noun: 'step' } },
+  Smt: { gloss: 'course', forms: { noun: 'course' } },
+  xAx: { gloss: 'swift', forms: { adj: 'swift' } },
+  mAwy: { gloss: 'renew', forms: { verb: 'renew', adj: 'new' } },
 };
 
 const powers: NamedPowerTable = {
@@ -199,6 +212,23 @@ const idioms: GlossTable = {
   ELDRITCH_CLOSE: 'Dissolution forever.',
 };
 
+// The same counts read as how far a crossing went (spec 1.6).
+const depths: GlossTable = {
+  2: 'Two hours deep.',
+  3: 'Three hours deep.',
+  4: 'Four hours deep.',
+  7: 'Seven hours deep.',
+  9: 'Nine hours deep.',
+  12: 'Twelve hours deep.',
+};
+
+const directions: GlossTable = {
+  back: 'backward',
+  forth: 'forward',
+  again: 'again',
+  still: 'still',
+};
+
 const seals: GlossTable = {
   2: 'Recited two times.',
   3: 'Recited three times.',
@@ -234,9 +264,13 @@ export const egyptianGlosses: EgyptianGlosses = {
   epithets,
   idioms,
   seals,
+  depths,
+  directions,
 
   idiom: (id) => lookup(idioms, id, 'idiom'),
   seal: (count) => lookup(seals, String(count), 'seal'),
+  sealDepth: (count) => lookup(depths, String(count), 'depth'),
+  direction: (id) => lookup(directions, id, 'direction'),
   sentences: (parts) => parts.join(' '),
 
   protectionClause: (p: EgyptianProtection) =>
@@ -268,6 +302,19 @@ export const egyptianGlosses: EgyptianGlosses = {
   divinationSee: (p: EgyptianDivinationSee) =>
     `I ${form(roots, p.intentRoot, 'verb')} the ` +
     `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}${adverbial(p.adverbRoot)}.`,
+
+  chronomancyCross: (p: ChronomancyCross) =>
+    `${capitalize(form(roots, p.intentRoot, 'verb'))} ${directions[p.direction] ?? ''} the ` +
+    `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}${adverbial(p.adverbRoot)}!`,
+
+  // English has no performative verb form and marks the mood with an adverb.
+  chronomancyBind: (p: ChronomancyBind) =>
+    `I hereby ${form(roots, p.intentRoot, 'verb')} the ` +
+    `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}${adverbial(p.adverbRoot)}.`,
+
+  returnAnchor: (anchorRoot, genitiveRoot) =>
+    `Coming forth in the ${noun(anchorRoot)}` +
+    `${genitiveRoot === null ? '' : ` of the ${noun(genitiveRoot)}`}.`,
 
   // The title keeps the epithet's own article, unlike a vocative.
   spellTitle: (subject) =>

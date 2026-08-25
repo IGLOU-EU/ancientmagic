@@ -196,6 +196,18 @@ export const LEXICON: Readonly<
     ['khrts', 'what is determined'],
     ['nkhl', 'what falls to one'],
   ],
+  course: [
+    ['khlp', 'pass over'],
+    ['shwb', 'turn back'],
+    ['mhr', 'hasten'],
+    ['mshk', 'draw out'],
+    ['ghmd', 'halt'],
+    ['nsgh', 'lift out'],
+    ['tsghd', 'step'],
+    ['hlk', 'course'],
+    ['khpz', 'swift'],
+    ['shny', 'repeat'],
+  ],
   signs: [
     ["'t", 'token'],
     ['spr', 'written record'],
@@ -276,6 +288,25 @@ export const PO3_HEAD_GLYPHS = '\u{1090B}\u{10900}\u{10903}\u{1090D}';
 export const PO3_HEAD_SPOKEN = 'ladon';
 export const PO4_HEAD_GLYPHS = '\u{10914}\u{10900}\u{1090B}\u{10915}';
 export const PO4_HEAD_SPOKEN = 'shaolat';
+export const PO5_HEAD_GLYPHS = '\u{10901}\u{10914}\u{1090D}\u{10915}';
+export const PO5_HEAD_SPOKEN = 'beshanot';
+export const PC5_HEAD_GLYPHS = '\u{10901}\u{10905}\u{10900}\u{10915}';
+export const PC5_HEAD_SPOKEN = 'bawati';
+
+// The four direction words of spec 4.4, three of them a proclitic on a noun
+// the lexicon already holds.
+export const DIRECTION_SPOKEN: Readonly<Record<string, string>> = {
+  back: 'leqadom',
+  forth: 'leakhor',
+  again: 'ghod',
+  still: 'bedamom',
+};
+export const DIRECTION_GLYPHS: Readonly<Record<string, string>> = {
+  back: '\u{1090B}\u{10912}\u{10903}\u{1090C}',
+  forth: '\u{1090B}\u{10900}\u{10907}\u{10913}',
+  again: '\u{1090F}\u{10905}\u{10903}',
+  still: '\u{10901}\u{10903}\u{1090C}',
+};
 
 export const PC1_SPOKEN: ReadonlyArray<string> = ['ki', 'shama', 'qol', 'yebarek'];
 export const PC1_GLYPHS: ReadonlyArray<string> = [

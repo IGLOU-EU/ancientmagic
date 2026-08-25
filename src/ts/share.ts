@@ -21,6 +21,7 @@ export const SCHOOLS: ReadonlyArray<School> = [
   'invocation',
   'eldritch',
   'divination',
+  'chronomancy',
 ];
 
 export interface SharedFormula {

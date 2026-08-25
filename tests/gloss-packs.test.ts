@@ -26,12 +26,15 @@ const SCHOOLS: ReadonlyArray<School> = [
   'invocation',
   'eldritch',
   'divination',
+  'chronomancy',
 ];
 
 interface GenomeGlossTables {
   roots: RootGlossTable;
   idioms: GlossTable;
   seals: GlossTable;
+  depths: GlossTable;
+  directions: GlossTable;
   powers: GlossTable | NamedPowerTable;
   epithets?: GlossTable;
 }
@@ -49,6 +52,7 @@ interface Inventory {
   epithets: ReadonlyArray<string>;
   idioms: ReadonlyArray<string>;
   seals: ReadonlyArray<number>;
+  directions: ReadonlyArray<string>;
 }
 
 function rootsOf(
@@ -72,6 +76,7 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     epithets: [],
     idioms: Object.keys(runicData.IDIOM_WORDS),
     seals: [...runicData.SEAL_COUNTS],
+    directions: Object.keys(runicData.DIRECTION_WORDS),
   },
   {
     genome: 'egyptian',
@@ -82,6 +87,7 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     epithets: egyptianData.DREAD_POWER.map((p) => p.skeleton),
     idioms: Object.keys(egyptianData.IDIOM_WORDS),
     seals: [...egyptianData.SEAL_COUNTS],
+    directions: Object.keys(egyptianData.DIRECTION_WORDS),
   },
   {
     genome: 'phoenician',
@@ -92,6 +98,7 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     epithets: phoenicianData.DREAD_POWER.map((p) => p.skeleton),
     idioms: Object.keys(phoenicianData.IDIOM_WORDS),
     seals: [...phoenicianData.SEAL_COUNTS],
+    directions: Object.keys(phoenicianData.DIRECTION_WORDS),
   },
 ];
 
@@ -174,6 +181,31 @@ for (const [language, loadPack] of GLOSS_PACKS) {
         sorted(inventory.seals.map(String)),
         'seal coverage',
       );
+      // A seal is read two ways: as a count of repetitions, and as a depth in
+      // time when Chronomancy speaks it (spec 1.6). Both readings cover the
+      // genome's own counts, so a pack that forgets one fails here by name
+      // instead of quietly answering the other school's sentence.
+      assert.deepStrictEqual(
+        sorted(Object.keys(tables.depths)),
+        sorted(inventory.seals.map(String)),
+        'depth coverage',
+      );
+      assert.deepStrictEqual(
+        sorted(Object.keys(tables.directions)),
+        sorted(inventory.directions),
+        'direction coverage',
+      );
+    });
+
+    test(`${where}: the two readings of a seal are different sentences`, async () => {
+      const tables = await inventory.slice(await loadPack());
+      for (const count of inventory.seals) {
+        assert.notStrictEqual(
+          tables.seals[String(count)],
+          tables.depths[String(count)],
+          `count ${count} reads alike both ways`,
+        );
+      }
     });
   }
 

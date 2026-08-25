@@ -36,8 +36,10 @@ import {
 const label = (school: string, difficulty: number, seed: number): string =>
   `${school} d${difficulty} seed ${seed}`;
 
-// The three fields the school brought with it (spec 1.5).
-const DIVINATION_FIELDS: ReadonlyArray<SemanticField> = ['sight', 'fate', 'signs'];
+// The three fields the school brought with it (spec 1.5). Fate is the one it
+// shares with Chronomancy, which acts on what Divination reads, so only the
+// other two are exclusive to it.
+const DIVINATION_FIELDS: ReadonlyArray<SemanticField> = ['sight', 'signs'];
 
 const GENOMES = [
   { id: 'runic', write: runic, dread: RUNIC_DREAD },
@@ -84,12 +86,14 @@ test('no other school emits an asking or a seeing clause', () => {
     for (const difficulty of DIFFICULTIES) {
       for (const seed of SEEDS) {
         for (const clause of plan(school, difficulty, seed).clauses) {
-          assert.strictEqual(clause.kind, null, `clause kind in ${label(school, difficulty, seed)}`);
+          const where = label(school, difficulty, seed);
+          assert.notStrictEqual(clause.kind, 'asking', `asking clause in ${where}`);
+          assert.notStrictEqual(clause.kind, 'seeing', `seeing clause in ${where}`);
           for (const gene of clause.genes) {
             assert.notStrictEqual(
               gene.flavor,
               'interrogative',
-              `interrogative flavor in ${label(school, difficulty, seed)}`,
+              `interrogative flavor in ${where}`,
             );
           }
         }
@@ -98,7 +102,7 @@ test('no other school emits an asking or a seeing clause', () => {
   }
 });
 
-test('the sight, fate and signs fields are reached by divination and by nothing else', () => {
+test('the sight and signs fields are reached by divination and by nothing else', () => {
   const fieldsOf = (school: School, difficulty: number, seed: number): SemanticField[] =>
     plan(school, difficulty, seed)
       .clauses.flatMap((c) => c.genes)
@@ -125,7 +129,7 @@ test('the sight, fate and signs fields are reached by divination and by nothing 
 
 // The Egyptian and Phoenician word lists carry the field a word was written
 // with, so the ban is checkable on the output and not only on the plan.
-test('no word of another school is written with a divination field', () => {
+test('no word of another school is written with a divination-only field', () => {
   for (const school of ALL_SCHOOLS) {
     if (school === 'divination') continue;
     for (const difficulty of DIFFICULTIES) {

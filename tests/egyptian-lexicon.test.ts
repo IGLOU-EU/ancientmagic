@@ -5,7 +5,9 @@ import {
   ALL_POWER,
   BRIGHT_POWER,
   DIVINATION_POWER,
+  DIRECTION_WORDS,
   DREAD_POWER,
+  EC5_HEAD,
   FIELD_DET,
   FIELDS,
   FN_INIW,
@@ -19,7 +21,11 @@ import { egyptianGlosses } from '../src/ts/glosses/en/egyptian.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
 import {
   DETERMINATIVE_TABLE,
+  DIRECTION_GLYPHS,
+  DIRECTION_SPOKEN,
   DIVINATION_SPOKEN,
+  EC5_HEAD_GLYPHS,
+  EC5_HEAD_SPOKEN,
   DREAD_TABLE,
   EC1_GLYPHS,
   EC1_SPOKEN,
@@ -61,7 +67,7 @@ test('field determinatives follow the normative table', () => {
   for (const [field, glyph] of Object.entries(SPEC_FIELD_DET)) {
     assert.strictEqual(FIELD_DET[field as SemanticField], glyph, `field ${field}`);
   }
-  assert.strictEqual(new Set(Object.values(FIELD_DET)).size, 13, 'thirteen distinct field signs');
+  assert.strictEqual(new Set(Object.values(FIELD_DET)).size, 14, 'fourteen distinct field signs');
 });
 
 test('the coined lexicon matches the spec table, skeleton, spoken form and gloss', () => {
@@ -80,7 +86,7 @@ test('the coined lexicon matches the spec table, skeleton, spoken form and gloss
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 130, 'thirteen fields of ten roots');
+  assert.strictEqual(total, 140, 'fourteen fields of ten roots');
 });
 
 test('coined skeletons respect the phonotactics of the spec', () => {
@@ -97,10 +103,10 @@ test('coined skeletons respect the phonotactics of the spec', () => {
   }
 });
 
-// The Divination fields declare no past participle, because no divination
-// clause renders one (spec 3.11), and they are the only fields that may hold a
-// root offering an adjective alone.
-const DIVINATION_FIELDS: ReadonlySet<string> = new Set(['sight', 'fate', 'signs']);
+// The Divination and Chronomancy fields declare no past participle, because
+// neither school renders one (spec 3.11, 3.12), and they are the only fields
+// that may hold a root offering an adjective alone.
+const DIVINATION_FIELDS: ReadonlySet<string> = new Set(['sight', 'fate', 'signs', 'course']);
 
 test('every root carries the gloss forms of the roles it can fill', () => {
   for (const [field, roots] of Object.entries(FIELDS)) {
@@ -122,10 +128,10 @@ test('every root carries the gloss forms of the roles it can fill', () => {
   }
   // Divination draws its own genes from its own fields, so each must hold
   // what the school asks of it.
-  for (const field of ['sight', 'summoning'] as const) {
+  for (const field of ['sight', 'summoning', 'course', 'binding'] as const) {
     assert.ok(FIELDS[field].some((r) => r.forms.includes('verb')), `no verb in ${field}`);
   }
-  for (const field of ['sight', 'fate'] as const) {
+  for (const field of ['sight', 'fate', 'course'] as const) {
     assert.ok(FIELDS[field].some((r) => r.forms.includes('adj')), `no adjective in ${field}`);
   }
   for (const field of ['signs', 'sight', 'fate', 'time', 'hidden'] as const) {
@@ -134,6 +140,13 @@ test('every root carries the gloss forms of the roles it can fill', () => {
       `thin nouns in ${field}`,
     );
   }
+  // Course is a field of verbs before it is a field of nouns: it exists
+  // because the time field cannot conjugate (spec 1.6). Its two nouns are
+  // what the adverbial m-phrase draws, and two is enough for that.
+  assert.ok(
+    FIELDS.course.filter((r) => r.forms.includes('noun')).length >= 2,
+    'thin nouns in course',
+  );
   // The plan draws adjectives from these three fields only, so each must offer
   // at least one, and adverbial m-phrases need nouns in theirs.
   for (const field of ['night', 'harm', 'death'] as const) {
@@ -217,6 +230,12 @@ test('idioms carry the attested spellings of the spec', () => {
   assert.strictEqual(glyphs('EC4'), EC4_GLYPHS);
   assert.strictEqual(FN_INIW.glyphs, INIW_GLYPHS);
   assert.strictEqual(FN_INIW.spoken, INIW_SPOKEN);
+  assert.strictEqual(EC5_HEAD.map((w) => w.glyphs).join(''), EC5_HEAD_GLYPHS);
+  assert.deepStrictEqual(EC5_HEAD.map((w) => w.spoken), [...EC5_HEAD_SPOKEN]);
+  for (const [id, word] of Object.entries(DIRECTION_WORDS)) {
+    assert.strictEqual(word.glyphs, DIRECTION_GLYPHS[id], `direction ${id} glyphs`);
+    assert.strictEqual(word.spoken, DIRECTION_SPOKEN[id], `direction ${id} spoken`);
+  }
   assert.deepStrictEqual(spoken('ELDRITCH_OPEN'), [...ELDRITCH_OPEN_SPOKEN]);
   assert.deepStrictEqual(spoken('EC1'), [...EC1_SPOKEN]);
   assert.strictEqual(glyphs('EC1'), EC1_GLYPHS);

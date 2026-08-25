@@ -4,6 +4,8 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
+  ChronomancyBind,
+  ChronomancyCross,
   GlossRef,
   GlossTable,
   NamedPowerTable,
@@ -160,6 +162,17 @@ const roots: RootGlossTable = {
   khqq: { gloss: 'graven mark', forms: { noun: 'graven mark', plural: 'graven marks' } },
   ghwp: { gloss: 'bird in flight', forms: { noun: 'bird in flight', plural: 'birds in flight' } },
   smn: { gloss: 'set mark', forms: { noun: 'set mark', plural: 'set marks' } },
+  // course
+  khlp: { gloss: 'pass over', forms: { verb: 'pass over' } },
+  shwb: { gloss: 'turn back', forms: { verb: 'turn back' } },
+  mhr: { gloss: 'hasten', forms: { verb: 'hasten' } },
+  mshk: { gloss: 'draw out', forms: { verb: 'draw out' } },
+  ghmd: { gloss: 'halt', forms: { verb: 'halt' } },
+  nsgh: { gloss: 'lift out', forms: { verb: 'lift out' } },
+  tsghd: { gloss: 'step', forms: { noun: 'step' } },
+  hlk: { gloss: 'course', forms: { noun: 'course' } },
+  khpz: { gloss: 'swift', forms: { adj: 'swift' } },
+  shny: { gloss: 'repeat', forms: { verb: 'repeat' } },
 };
 
 // A gender rides every name because a Divination question that does not write
@@ -198,6 +211,21 @@ const idioms: GlossTable = {
   ELDRITCH_CLOSE: 'The gate stands open forever.',
 };
 
+// The same counts read as how far a crossing went (spec 1.6).
+const depths: GlossTable = {
+  3: 'Three hours deep.',
+  7: 'Seven hours deep.',
+  9: 'Nine hours deep.',
+  12: 'Twelve hours deep.',
+};
+
+const directions: GlossTable = {
+  back: 'backward',
+  forth: 'forward',
+  again: 'again',
+  still: 'still',
+};
+
 const seals: GlossTable = {
   3: 'Three times over.',
   7: 'Seven times over.',
@@ -232,9 +260,13 @@ export const phoenicianGlosses: PhoenicianGlosses = {
   epithets,
   idioms,
   seals,
+  depths,
+  directions,
 
   idiom: (id) => lookup(idioms, id, 'idiom'),
   seal: (count) => lookup(seals, String(count), 'seal'),
+  sealDepth: (count) => lookup(depths, String(count), 'depth'),
+  direction: (id) => lookup(directions, id, 'direction'),
   sentences: (parts) => parts.join(' ').replace(/\s+/gu, ' ').trim(),
 
   jussiveClause: (p: PhoenicianJussive) => {
@@ -275,6 +307,20 @@ export const phoenicianGlosses: PhoenicianGlosses = {
     `And I ${form(roots, p.intentRoot, 'verb')} the ` +
     `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}.${adverbial(p.adverbRoot)}`,
 
+  chronomancyCross: (p: ChronomancyCross) =>
+    `${capitalize(form(roots, p.intentRoot, 'verb'))} ${directions[p.direction] ?? ''} the ` +
+    `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}!${adverbial(p.adverbRoot)}`,
+
+  // The clause opens on And because w- is on its verb, as the seeing clause
+  // does, and English marks the performative with an adverb.
+  chronomancyBind: (p: ChronomancyBind) =>
+    `And I hereby ${form(roots, p.intentRoot, 'verb')} the ` +
+    `${adjectival(p.adjectiveRoot)}${noun(p.targetRoot)}.${adverbial(p.adverbRoot)}`,
+
+  returnAnchor: (anchorRoot, genitiveRoot) =>
+    `I have come to the ${noun(anchorRoot)}` +
+    `${genitiveRoot === null ? '' : ` of the ${noun(genitiveRoot)}`}.`,
+
   selfPresentationByName: (spokenName) => `I am ${capitalize(spokenName)}.`,
   selfPresentationByEpithet: (id) => `I belong to ${lookup(epithets, id, 'epithet')}.`,
 
@@ -283,6 +329,7 @@ export const phoenicianGlosses: PhoenicianGlosses = {
   openerAgainst: (targetRoot, adjectiveRoot) =>
     `Incantation against the ${adjectival(adjectiveRoot)}${form(roots, targetRoot, 'plural')}.`,
   openerQuestion: (id) => `A question to ${power(powers, id).name}.`,
+  openerYear: (timeRoot) => `In the year of the ${noun(timeRoot)}.`,
 
   litanyTriple: (subject) =>
     subject.kind === 'epithet'

@@ -19,10 +19,12 @@ import {
   BRIGHT_POWER,
   CLAUSE_SEP,
   CROSS_SEP,
+  DIRECTION_WORDS,
   DREAD_POWER,
   FIELDS,
   IDIOM_WORDS,
   INVOCATION_COME,
+  RC5_TAIL,
   RUNE_MAP,
   SEAL_GLYPHS,
   SEAL_WORDS,
@@ -268,6 +270,68 @@ function realizeDivinationClause(
   return { words, gloss: glosses.divinationAsk(parts) };
 }
 
+// Spec 2.12. The crossing clause opens on the bare imperative and its
+// direction, the binding clause is the verb-final main clause with ek written
+// out: the explicit pronoun is what marks the deed done in the saying.
+function realizeChronomancyClause(
+  clause: ClausePlan,
+  rng: Rng,
+  glosses: RunicGlosses,
+): ClauseRealization {
+  const keep = (root: string): string => root;
+  const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
+  const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
+  const intent = pick(rng, transitiveVerbsOf(intentField));
+  const target = pick(rng, nounsOf(targetField));
+  const mod = realizeModifier(clause, rng, keep);
+
+  const parts = {
+    intentRoot: intent.root,
+    targetRoot: target.root,
+    adjectiveRoot: mod.adj?.root ?? null,
+    adverbRoot: mod.adv?.root ?? null,
+  };
+
+  const words: string[] = [];
+  if (clause.kind === 'binding') {
+    words.push('ek');
+    if (mod.adj !== null) words.push(adjectiveForm(mod.adjWord, 'an'));
+    words.push(nounForm(target.root, 'an'));
+    if (mod.adv !== null) words.push(mod.advWord);
+    words.push(verbForm(intent.root, 'o'));
+    return { words, gloss: glosses.chronomancyBind(parts) };
+  }
+
+  const direction = clause.direction;
+  if (direction === null) throw new Error('a crossing clause carries no direction');
+  // The direction sits immediately after the verb, so an adverb drawn for this
+  // clause falls in behind it (spec 2.12).
+  words.push(verbForm(intent.root, 'bare'), DIRECTION_WORDS[direction]);
+  if (mod.adv !== null) words.push(mod.advWord);
+  if (mod.adj !== null) words.push(adjectiveForm(mod.adjWord, 'an'));
+  words.push(nounForm(target.root, 'an'));
+  return { words, gloss: glosses.chronomancyCross({ ...parts, direction }) };
+}
+
+// RC5, the return anchor: a time-field noun in the accusative, the goal of a
+// verb of motion, with a -as genitive behind it at tier 9 (spec 2.6).
+function returnAnchor(
+  plan: FormulaPlan,
+  rng: Rng,
+  glosses: RunicGlosses,
+): ClauseRealization {
+  const anchor = pick(rng, nounsOf('time'));
+  const words = [nounForm(anchor.root, 'an')];
+  let genitive: string | null = null;
+  if (plan.difficulty >= 9) {
+    const held = pick(rng, nounsOf('time').filter((r) => r.root !== anchor.root));
+    genitive = held.root;
+    words.push(nounForm(held.root, 'as'));
+  }
+  words.push(...RC5_TAIL);
+  return { words, gloss: glosses.returnAnchor(anchor.root, genitive) };
+}
+
 function realizeCurseClause(
   clause: ClausePlan,
   rng: Rng,
@@ -463,6 +527,8 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
       realized = realizeCurseClause(clause, rng, distort, glosses);
     } else if (divination) {
       realized = realizeDivinationClause(clause, rng, glosses);
+    } else if (plan.school === 'chronomancy') {
+      realized = realizeChronomancyClause(clause, rng, glosses);
     } else {
       realized = realizeInvocationClause(
         clause,
@@ -488,9 +554,21 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
   }
 
   if (plan.closing) {
-    for (const id of pickClosings(plan, rng)) {
-      segments.push({ words: [...IDIOM_WORDS[id]] });
-      glossParts.push(glosses.idiom(id));
+    // The return anchor is the one Runic closing built rather than listed, so
+    // Chronomancy assembles its own closing clauses (spec 2.12).
+    if (plan.school === 'chronomancy') {
+      const anchor = returnAnchor(plan, rng, glosses);
+      segments.push({ words: anchor.words });
+      glossParts.push(anchor.gloss);
+      if (plan.difficulty >= 8) {
+        segments.push({ words: [...IDIOM_WORDS.RC3] });
+        glossParts.push(glosses.idiom('RC3'));
+      }
+    } else {
+      for (const id of pickClosings(plan, rng)) {
+        segments.push({ words: [...IDIOM_WORDS[id]] });
+        glossParts.push(glosses.idiom(id));
+      }
     }
   }
 
@@ -498,12 +576,20 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
   if (plan.seal) {
     if (plan.eldritch) sealCount = 9;
     // The tier 7 divination seal is three and never another count: the rite
-    // lifts three lots (spec 2.11).
+    // lifts three lots (spec 2.11). The chronomantic one is twelve, for the
+    // hours of the night the crossing has to pass (spec 2.12).
     else if (plan.difficulty === 7 && divination) sealCount = 3;
+    else if (plan.difficulty === 7 && plan.school === 'chronomancy') sealCount = 12;
     else if (plan.difficulty === 7) sealCount = pick(rng, [3, 7] as const);
     else if (plan.difficulty === 8) sealCount = pick(rng, [7, 9] as const);
     else sealCount = pick(rng, [9, 12] as const);
-    glossParts.push(glosses.seal(sealCount));
+    // Chronomancy reads the count as how far the crossing went, so the same
+    // seal is worded as a depth in time (spec 1.6).
+    glossParts.push(
+      plan.school === 'chronomancy'
+        ? glosses.sealDepth(sealCount)
+        : glosses.seal(sealCount),
+    );
   }
 
   let glyphs = segments

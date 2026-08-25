@@ -6,6 +6,7 @@ import {
   ALL_NAME_SPOKEN,
   ARTICLE,
   BRIGHT_SPOKEN,
+  DIRECTION_SPOKEN,
   DARK_SPOKEN,
   DIVINATION_SPOKEN,
   INTERROGATIVE,
@@ -15,10 +16,12 @@ import {
   PC2_SPOKEN,
   PC3_SPOKEN,
   PC4_SPOKEN,
+  PC5_HEAD_SPOKEN,
   PO1_HEAD_SPOKEN,
   PO2_HEAD_SPOKEN,
   PO3_HEAD_SPOKEN,
   PO4_HEAD_SPOKEN,
+  PO5_HEAD_SPOKEN,
   PROCLITIC_L,
   PROCLITIC_W,
   SEAL_HEAD_SPOKEN,
@@ -109,7 +112,9 @@ test('school openers follow the tier table', () => {
             ? PO3_HEAD_SPOKEN
             : school === 'divination'
               ? PO4_HEAD_SPOKEN
-              : PO1_HEAD_SPOKEN;
+              : school === 'chronomancy'
+                ? PO5_HEAD_SPOKEN
+                : PO1_HEAD_SPOKEN;
         assert.strictEqual(words[2], head, `school opener in ${label(school, difficulty, seed)}`);
       }
     }
@@ -288,8 +293,16 @@ test('the agent construct chain grows with the tier in every school', () => {
         // Divination writes its power out in the asking clause alone, and
         // only from tier 8, where the construct chain has to hang on it
         // (spec 4.11). Below that the verb prefix carries the subject.
+        // Chronomancy builds no chain at all, having no AGENT and naming no
+        // god (spec 4.9): what grows at its top tiers is the anchor.
         const expected =
-          school === 'divination' ? (difficulty >= 8 ? chain : 0) : chain * clauses;
+          school === 'chronomancy'
+            ? 0
+            : school === 'divination'
+              ? difficulty >= 8
+                ? chain
+                : 0
+              : chain * clauses;
         assert.strictEqual(
           words.filter((w) => w.role === 'agent').length,
           expected,
@@ -576,6 +589,133 @@ test('the caster of a divination presents himself as a seer', () => {
       assert.ok(
         seerNames.has(words[1] ?? ''),
         `the caster name is not built on a sight root in ${label('divination', difficulty, seed)}`,
+      );
+    }
+  }
+});
+
+// --- Chronomancy (spec 4.12) ------------------------------------------------
+
+const CHRONOMANCY_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
+
+const chronomancyClauses = (difficulty: number): number =>
+  difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+
+test('the crossing clause opens on the imperative and its direction word', () => {
+  const directions = new Set(Object.values(DIRECTION_SPOKEN));
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const words = phoenicianWords('chronomancy', difficulty, seed);
+      const at = words.findIndex((w) => w.role === 'direction');
+      assert.ok(at > 0, `no direction word in ${where}`);
+      assert.strictEqual(
+        words.filter((w) => w.role === 'direction').length,
+        1,
+        `one direction per formula in ${where}`,
+      );
+      assert.ok(directions.has(words[at]?.spoken ?? ''), `direction off the closed set in ${where}`);
+      const verb = words[at - 1];
+      assert.strictEqual(verb?.role, 'intent', `no verb before the direction in ${where}`);
+      // The imperative is C1eC2oC3, so it neither prefixes nor takes the tau.
+      assert.doesNotMatch(verb?.vocalized ?? '', /^(?:we)?['yt]a/u, `not an imperative in ${where}`);
+      assert.doesNotMatch(verb?.vocalized ?? '', /ti$/u, `a perfect 1sg in ${where}`);
+    }
+  }
+});
+
+test('every binding clause writes the perfect 1sg, which no other school draws', () => {
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const words = phoenicianWords('chronomancy', difficulty, seed);
+      const intents = words.filter((w) => w.role === 'intent');
+      assert.strictEqual(intents.length, chronomancyClauses(difficulty), `clause count in ${where}`);
+      for (const verb of intents.slice(1)) {
+        // One letter more on the written root, the tau of the suffix, which
+        // keeps this form apart from the perfect 3ms on the page as well as
+        // in the transliteration (spec 4.4).
+        assert.match(verb.vocalized ?? '', /ti$/u, `binding verb without the tau in ${where}`);
+        assert.match(verb.spoken, /ti$/u, `binding verb spoken without the tau in ${where}`);
+        assert.ok(
+          Array.from(verb.glyphs).at(-1) === '\u{10915}',
+          `the written root does not end in tau in ${where}`,
+        );
+        // The clause joiner rides in front of it from tier 6 up.
+        assert.match(verb.vocalized ?? '', /^(?:we)?[a-z']/u, `binding prefix in ${where}`);
+      }
+    }
+  }
+  for (const school of ALL_SCHOOLS) {
+    if (school === 'chronomancy') continue;
+    for (const difficulty of DIFFICULTIES) {
+      for (const seed of SEEDS) {
+        for (const word of phoenicianWords(school, difficulty, seed)) {
+          if (word.role !== 'intent') continue;
+          assert.doesNotMatch(
+            word.vocalized ?? '',
+            /ti$/u,
+            `perfect 1sg in ${label(school, difficulty, seed)}`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test('chronomantic openers and closers follow its own tier table', () => {
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const words = line('chronomancy', difficulty, seed);
+      const list = phoenicianWords('chronomancy', difficulty, seed);
+      const opener = difficulty >= 6 ? 2 : 0;
+      assert.strictEqual(words[opener], PO5_HEAD_SPOKEN, `opener in ${where}`);
+      // The year the formula stamps itself with is a time noun.
+      const year = list[opener + 1]?.root ?? '';
+      assert.ok(
+        FIELDS.time.some((r) => r.root === year),
+        `the year is not a time noun in ${where}`,
+      );
+      if (difficulty <= 4) {
+        assert.ok(!words.includes(PC5_HEAD_SPOKEN), `anchor at d${difficulty}`);
+        continue;
+      }
+      assert.ok(words.includes(PC5_HEAD_SPOKEN), `no anchor in ${where}`);
+      // The votive blessing belongs to the schools that ask for one.
+      for (const part of [...PC1_SPOKEN, ...PC2_SPOKEN, ...PC4_SPOKEN]) {
+        if (part === 'ki') continue;
+        assert.ok(!words.includes(part), `another closer in ${where}`);
+      }
+      const seal = words.lastIndexOf(SEAL_HEAD_SPOKEN);
+      const end = seal > 0 ? seal : words.length;
+      if (difficulty >= 9) {
+        assert.deepStrictEqual(
+          words.slice(end - PC3_SPOKEN.length, end),
+          [...PC3_SPOKEN],
+          `forever in ${where}`,
+        );
+      }
+      if (difficulty >= 7 && difficulty <= 8) {
+        assert.deepStrictEqual(words.slice(seal + 1), ['shenem', 'asar'], `seal in ${where}`);
+      }
+    }
+  }
+});
+
+test('the caster of a chronomancy presents himself as one who crosses', () => {
+  const crosserNames = new Set(
+    FIELDS.course
+      .filter((r) => r.forms.includes('noun'))
+      .map((r) => `${speak(citation(r.root)).replace(/^gh/u, '')}baal`),
+  );
+  for (const difficulty of [6, 7, 8, 9]) {
+    for (const seed of SEEDS) {
+      const words = line('chronomancy', difficulty, seed);
+      assert.strictEqual(words[0], PO2_HEAD_SPOKEN, label('chronomancy', difficulty, seed));
+      assert.ok(
+        crosserNames.has(words[1] ?? ''),
+        `the caster name is not built on a course root in ${label('chronomancy', difficulty, seed)}`,
       );
     }
   }

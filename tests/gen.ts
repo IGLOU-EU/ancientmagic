@@ -23,6 +23,7 @@ export const ALL_SCHOOLS: ReadonlyArray<School> = [
   'invocation',
   'eldritch',
   'divination',
+  'chronomancy',
 ];
 
 // The schools built on the base tier table of each genome: clear register,

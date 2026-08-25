@@ -7,7 +7,9 @@ import {
   BRIGHT_POWER_WORDS,
   CLAUSE_SEP,
   CROSS_SEP,
+  DIRECTION_WORDS_SPEC,
   NUMERAL_WORDS,
+  RC5_TAIL_SPEC,
   WORD_SEP,
   codePoints,
   parseGlyphs,
@@ -446,5 +448,106 @@ test('the tier 7 divination seal is three lots and never another count', () => {
     const out = runic('divination', 7, seed);
     const { sealWord } = alignSegments(out);
     assert.strictEqual(sealWord, NUMERAL_WORDS[3], label('divination', 7, seed));
+  }
+});
+
+// --- Chronomancy (spec 2.12) ------------------------------------------------
+
+const CHRONOMANCY_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
+
+test('the command opens the crossing clause and its direction follows it', () => {
+  const directions = new Set(Object.values(DIRECTION_WORDS_SPEC));
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const { segments } = alignSegments(runic('chronomancy', difficulty, seed));
+      // The openers of this school are cries, not clauses, so they keep their
+      // word separator and the crossing clause opens the first segment.
+      const opening = segments[0] ?? [];
+      // The opener is a cry of one or two words, so the clause is found by its
+      // direction rather than by an index: the verb is the word in front of
+      // it, and the two open the clause together.
+      const at = opening.findIndex((word) => directions.has(word));
+      assert.ok(at > 0, `no direction in the crossing clause of ${where}`);
+      const verb = opening[at - 1] ?? '';
+      // The bare imperative is the root itself: no ending at all.
+      assert.doesNotMatch(verb, /(?:az|an|oz|as|ith|ai|o)$/u, `crossing verb inflected in ${where}`);
+      assert.match(opening[opening.length - 1] ?? '', /an$/u, `crossing object in ${where}`);
+      // Nothing of the clause stands before its verb: whatever precedes it
+      // belongs to an opening cry, which is fixed material.
+      const openerWords = new Set([...BRIGHT_POWER_WORDS, 'ek', 'erilaz']);
+      for (const word of opening.slice(0, at - 1)) {
+        assert.ok(openerWords.has(word), `${word} stands before the command in ${where}`);
+      }
+    }
+  }
+});
+
+test('a binding clause opens on ek and closes on the verb, with nothing between them', () => {
+  for (const difficulty of [6, 7, 8, 9]) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const { segments } = alignSegments(runic('chronomancy', difficulty, seed));
+      for (let c = 1; c < clauseCount(difficulty); c += 1) {
+        const clause = segments[c] ?? [];
+        assert.strictEqual(clause[0], 'ek', `binding clause without ek in ${where}`);
+        assert.match(clause[clause.length - 1] ?? '', /o$/u, `verb not clause-final in ${where}`);
+        // The pronoun carries the subject, so no -az epithet stands anywhere.
+        for (const word of clause) {
+          assert.doesNotMatch(word, /az$/u, `an epithet in a binding clause in ${where}`);
+        }
+      }
+    }
+  }
+});
+
+test('the return anchor is the first closing clause and inflects for its tier', () => {
+  for (const difficulty of [5, 6, 7, 8, 9]) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const { segments } = alignSegments(runic('chronomancy', difficulty, seed));
+      const closing = segments[difficulty >= 8 ? segments.length - 2 : segments.length - 1] ?? [];
+      assert.deepStrictEqual(
+        closing.slice(-RC5_TAIL_SPEC.length),
+        [...RC5_TAIL_SPEC],
+        `RC5 tail in ${where}`,
+      );
+      assert.strictEqual(
+        closing.length,
+        RC5_TAIL_SPEC.length + (difficulty >= 9 ? 2 : 1),
+        `anchor length in ${where}`,
+      );
+      assert.match(closing[0] ?? '', /an$/u, `anchor not accusative in ${where}`);
+      if (difficulty >= 9) assert.match(closing[1] ?? '', /as$/u, `genitive in ${where}`);
+      if (difficulty >= 8) {
+        assert.deepStrictEqual(segments[segments.length - 1], ['alu'], `RC3 in ${where}`);
+      }
+    }
+  }
+});
+
+test('chronomancy clause and closing segments follow its own tier table', () => {
+  const expected = (d: number): number => {
+    if (d <= 4) return 1;
+    if (d === 5) return 2;
+    if (d <= 7) return 3;
+    return 6; // three clauses, the repetition clause, then RC5 and RC3
+  };
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const { segments } = alignSegments(runic('chronomancy', difficulty, seed));
+      assert.strictEqual(
+        segments.length,
+        expected(difficulty),
+        label('chronomancy', difficulty, seed),
+      );
+    }
+  }
+});
+
+test('the tier 7 chronomantic seal is twelve and never another count', () => {
+  for (const seed of SEEDS) {
+    const { sealWord } = alignSegments(runic('chronomancy', 7, seed));
+    assert.strictEqual(sealWord, NUMERAL_WORDS[12], label('chronomancy', 7, seed));
   }
 });

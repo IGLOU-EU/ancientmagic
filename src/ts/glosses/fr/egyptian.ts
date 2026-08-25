@@ -8,6 +8,8 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
+  ChronomancyBind,
+  ChronomancyCross,
   EgyptianAddress,
   EgyptianCurse,
   EgyptianDivinationAsk,
@@ -518,6 +520,22 @@ const roots: RootGlossTable = {
   psS: { gloss: 'lot partagé', forms: { noun: 'lot partagé' }, gender: 'm' },
   xAy: { gloss: 'mesure prise', forms: { noun: 'mesure prise' }, gender: 'f' },
   hn: { gloss: 'assentiment', forms: { noun: 'assentiment' }, gender: 'm' },
+  // course. First-group verbs, so one stored form serves the command and the
+  // first person alike.
+  DA: { gloss: 'traverser', forms: { verb: 'traverse' } },
+  an: { gloss: 'faire demi-tour', forms: { verb: 'ramène' } },
+  As: { gloss: 'hâter', forms: { verb: 'presse' } },
+  wsf: { gloss: 'ralentir', forms: { verb: 'retarde' } },
+  aHa: { gloss: 'arrêter', forms: { verb: 'arrête' } },
+  Ts: { gloss: 'soulever hors', forms: { verb: 'soulève' } },
+  nmt: { gloss: 'pas', forms: { noun: 'pas' }, gender: 'm' },
+  Smt: { gloss: 'cours', forms: { noun: 'cours' }, gender: 'm' },
+  xAx: { gloss: 'rapide', forms: { adj: 'prompt' }, feminine: { adj: 'prompte' } },
+  mAwy: {
+    gloss: 'renouveler',
+    forms: { verb: 'renouvelle', adj: 'neuf' },
+    feminine: { adj: 'neuve' },
+  },
 };
 
 // A gender rides every name because the interrogative inversion of a
@@ -556,6 +574,23 @@ const idioms: GlossTable = {
   EC2: 'Juste de voix.',
   EC4: 'Ainsi en est-il.',
   ELDRITCH_CLOSE: 'Dissolution à jamais.',
+};
+
+// The same counts read as how far a crossing went (spec 1.6).
+const depths: GlossTable = {
+  2: 'Deux heures de profondeur.',
+  3: 'Trois heures de profondeur.',
+  4: 'Quatre heures de profondeur.',
+  7: 'Sept heures de profondeur.',
+  9: 'Neuf heures de profondeur.',
+  12: 'Douze heures de profondeur.',
+};
+
+const directions: GlossTable = {
+  back: 'en arrière',
+  forth: 'en avant',
+  again: 'de nouveau',
+  still: 'en suspens',
 };
 
 const seals: GlossTable = {
@@ -606,9 +641,13 @@ export const egyptianGlosses: EgyptianGlosses = {
   epithets,
   idioms,
   seals,
+  depths,
+  directions,
 
   idiom: (id) => lookup(idioms, id, 'idiom'),
   seal: (count) => lookup(seals, String(count), 'seal'),
+  sealDepth: (count) => lookup(depths, String(count), 'depth'),
+  direction: (id) => lookup(directions, id, 'direction'),
   sentences: (parts) => parts.join(' '),
 
   protectionClause: (p: EgyptianProtection) =>
@@ -653,6 +692,25 @@ export const egyptianGlosses: EgyptianGlosses = {
     `${capitalize(speaker(form(roots, p.intentRoot, 'verb')))} ` +
     `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}` +
     `${adverbial(p.adverbRoot)}.`,
+
+  // French fronts the direction, where it wants an adverbial heard first.
+  chronomancyCross: (p: ChronomancyCross) =>
+    exclaim(
+      `${capitalize(lookup(directions, p.direction, 'direction'))}, ` +
+        `${form(roots, p.intentRoot, 'verb')} ${theNoun(p.targetRoot)}` +
+        `${adjectival(p.adjectiveRoot, p.targetRoot)}${adverbial(p.adverbRoot)}`,
+    ),
+
+  // The performative present already performs in French, but every school of
+  // this pack speaks in it, so the deed is named as done by the saying.
+  chronomancyBind: (p: ChronomancyBind) =>
+    `Par ces mots, ${speaker(form(roots, p.intentRoot, 'verb'))} ` +
+    `${theNoun(p.targetRoot)}${adjectival(p.adjectiveRoot, p.targetRoot)}` +
+    `${adverbial(p.adverbRoot)}.`,
+
+  returnAnchor: (anchorRoot, genitiveRoot) =>
+    `Sortie dans ${theNoun(anchorRoot)}` +
+    `${genitiveRoot === null ? '' : ` ${ofDefinite(noun(genitiveRoot), genderOf(roots, genitiveRoot))}`}.`,
 
   // The title keeps the epithet's own article, unlike a vocative.
   spellTitle: (subject) =>

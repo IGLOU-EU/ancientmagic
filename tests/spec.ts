@@ -79,6 +79,16 @@ export const DREAD_EPITHETS: ReadonlyArray<string> = [
 export const ELDRITCH_OPENING_SHORT = 'wgkrathuf';
 export const ELDRITCH_OPENING_FULL = 'odnglmebtszpeijinhwgkrathuf';
 
+// The four direction words of spec 2.4 and the fixed tail of RC5 (2.6).
+export const DIRECTION_WORDS_SPEC: Readonly<Record<string, string>> = {
+  back: 'aftar',
+  forth: 'fram',
+  again: 'eft',
+  still: 'stil',
+};
+
+export const RC5_TAIL_SPEC: ReadonlyArray<string> = ['aftar', 'wendo'];
+
 export const NUMERAL_WORDS: Readonly<Record<number, string>> = {
   3: 'thri',
   7: 'sebun',

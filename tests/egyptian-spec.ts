@@ -84,6 +84,7 @@ export const FIELD_DET: Readonly<Record<string, string>> = {
   sight: '\u{13079}',
   fate: '\u{1335D}',
   signs: '\u{133DE}',
+  course: '\u{130BB}',
 };
 
 // The coined roots of spec 3.3: skeleton, spoken form, gloss, in table order.
@@ -234,6 +235,18 @@ export const LEXICON: Readonly<
     ['mty', 'mety', 'unerring'],
     ['wpwt', 'weput', 'verdict sent'],
   ],
+  course: [
+    ['DA', 'dja', 'cross'],
+    ['an', 'an', 'turn back'],
+    ['As', 'as', 'hasten'],
+    ['wsf', 'wesef', 'slow'],
+    ['aHa', 'aha', 'halt'],
+    ['Ts', 'tjes', 'lift out'],
+    ['nmt', 'nemet', 'step'],
+    ['Smt', 'shemet', 'course'],
+    ['xAx', 'khakh', 'swift'],
+    ['mAwy', 'mauy', 'renew'],
+  ],
   signs: [
     ['sS', 'sesh', 'written sign'],
     ['mtr', 'meter', 'witness'],
@@ -314,6 +327,14 @@ export const EO1_SPOKEN: ReadonlyArray<string> = ['djed', 'medu'];
 export const EO4_SPOKEN: ReadonlyArray<string> = ['ir', 'maa', 'em', 'resut'];
 export const EC4_SPOKEN: ReadonlyArray<string> = ['iuef', 'pu'];
 export const INIW_SPOKEN = 'iniu';
+// The return anchor and the four direction words of spec 3.6 and 3.4.
+export const EC5_HEAD_SPOKEN: ReadonlyArray<string> = ['peret', 'em'];
+export const DIRECTION_SPOKEN: Readonly<Record<string, string>> = {
+  back: 'khenet',
+  forth: 'emkhet',
+  again: 'wehem',
+  still: 'ger',
+};
 export const ELDRITCH_OPEN_SPOKEN: ReadonlyArray<string> = ['medu', 'djed'];
 export const EO2_HEAD_SPOKEN: ReadonlyArray<string> = ['ra', 'en'];
 export const EC1_SPOKEN: ReadonlyArray<string> = ['ankh', 'wedja', 'seneb'];
@@ -325,6 +346,16 @@ export const EO4_GLYPHS =
   '\u{131CB}\u{1308B}\u{13079}\u{133E4}\u{13153}\u{1308B}\u{132F4}\u{13171}\u{133CF}\u{13079}';
 export const EC4_GLYPHS = '\u{131CB}\u{13171}\u{13191}\u{132AA}\u{13171}';
 export const INIW_GLYPHS = '\u{131CB}\u{13216}\u{131CB}\u{13171}';
+export const EC5_HEAD_GLYPHS = '\u{132AA}\u{1308B}\u{133CF}\u{130BB}\u{13153}';
+export const DIRECTION_GLYPHS: Readonly<Record<string, string>> = {
+  back: '\u{1340D}\u{13216}\u{133CF}',
+  forth: '\u{13153}\u{1340D}\u{133CF}',
+  again: '\u{13171}\u{1339B}\u{13153}',
+  still: '\u{133BC}\u{1308B}',
+};
+// The sedjem-en-ef writes the water ripple between the determinative and the
+// suffix (spec 3.4).
+export const SEDJEM_EN_EF_SUFFIX = '\u{13216}\u{13000}';
 export const EC1_GLYPHS = '\u{132F9}\u{13351}\u{132F4}';
 export const EC2_GLYPHS = '\u{13419}\u{132A4}';
 export const ELDRITCH_CLOSE_GLYPHS =

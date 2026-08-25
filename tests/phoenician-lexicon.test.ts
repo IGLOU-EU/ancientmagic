@@ -2,6 +2,7 @@ import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import {
   ALL_NAMES,
+  DIRECTION_WORDS,
   DIVINATION_NAMES,
   DREAD_POWER,
   FEMININE_SPOKEN,
@@ -14,18 +15,29 @@ import {
   PLURAL_SPOKEN,
   PO1_HEAD,
   PO2_HEAD,
+  PC5_HEAD,
   PO3_HEAD,
   PO4_HEAD,
+  PO5_HEAD,
   PROCLITIC_SPOKEN,
   SEAL_HEAD,
   YT,
 } from '../src/ts/languages/phoenician-data.js';
-import { citation, degrade, speak, tokenize } from '../src/ts/languages/phoenician.js';
+import {
+  citation,
+  conjugate,
+  degrade,
+  glyphsFor,
+  speak,
+  tokenize,
+} from '../src/ts/languages/phoenician.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
 import { phoenicianGlosses } from '../src/ts/glosses/en/phoenician.js';
 import {
   ARTICLE,
   BICONSONANTAL,
+  DIRECTION_GLYPHS,
+  DIRECTION_SPOKEN,
   DIVINATION_SPOKEN,
   INTERROGATIVE,
   DREAD_TABLE,
@@ -52,8 +64,12 @@ import {
   PLURAL_SPOKEN as PLURAL,
   PO3_HEAD_GLYPHS,
   PO3_HEAD_SPOKEN,
+  PC5_HEAD_GLYPHS,
+  PC5_HEAD_SPOKEN,
   PO4_HEAD_GLYPHS,
   PO4_HEAD_SPOKEN,
+  PO5_HEAD_GLYPHS,
+  PO5_HEAD_SPOKEN,
   PROCLITIC_B,
   PROCLITIC_L,
   PROCLITIC_W,
@@ -89,7 +105,7 @@ test('the coined lexicon matches the spec table, skeleton and gloss', () => {
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 130, 'thirteen fields of ten roots');
+  assert.strictEqual(total, 140, 'fourteen fields of ten roots');
 });
 
 test('root shape follows the phonotactics of the spec', () => {
@@ -143,10 +159,10 @@ test('the intransitive flag sits on exactly the five roots of the spec', () => {
   }
 });
 
-// The Divination fields declare no past participle, because no divination
-// clause renders one, and a plural only where a construct chain draws from,
-// which is the signs field alone (spec 4.11).
-const DIVINATION_FIELDS: ReadonlySet<string> = new Set(['sight', 'fate', 'signs']);
+// The Divination and Chronomancy fields declare no past participle, because
+// neither school renders one, and a plural only where a construct chain draws
+// from, which is the signs field alone (spec 4.11, 4.12).
+const DIVINATION_FIELDS: ReadonlySet<string> = new Set(['sight', 'fate', 'signs', 'course']);
 
 test('every root carries the gloss forms of the roles it can fill', () => {
   for (const [field, roots] of Object.entries(FIELDS)) {
@@ -167,20 +183,20 @@ test('every root carries the gloss forms of the roles it can fill', () => {
       if (divination) {
         assert.ok(!root.forms.includes('pp'), `${root.root} declares an unused participle`);
       }
-      if (field === 'sight' || field === 'fate') {
+      if (field === 'sight' || field === 'fate' || field === 'course') {
         assert.ok(!root.forms.includes('plural'), `${root.root} declares an unused plural`);
       }
     }
   }
   // Divination draws its own genes from its own fields, so each must hold
   // what the school asks of it.
-  for (const field of ['sight', 'summoning'] as const) {
+  for (const field of ['sight', 'summoning', 'course', 'binding'] as const) {
     const transitive = FIELDS[field].filter(
       (r) => r.forms.includes('verb') && r.intransitive !== true,
     );
     assert.ok(transitive.length >= 3, `thin transitive verbs in ${field}`);
   }
-  for (const field of ['sight', 'fate'] as const) {
+  for (const field of ['sight', 'fate', 'course'] as const) {
     assert.ok(FIELDS[field].some((r) => r.forms.includes('adj')), `no adjective in ${field}`);
   }
   // The construct chain of an asking clause draws plural signs nouns, and the
@@ -204,6 +220,12 @@ test('every root carries the gloss forms of the roles it can fill', () => {
   for (const field of ['night', 'harm', 'death'] as const) {
     assert.ok(FIELDS[field].some((r) => r.forms.includes('adj')), `no adjective in ${field}`);
   }
+  // Course is a field of verbs before it is a field of nouns (spec 1.6). Its
+  // two nouns are what the adverbial b-phrase draws, and two is enough.
+  assert.ok(
+    FIELDS.course.filter((r) => r.forms.includes('noun')).length >= 2,
+    'thin nouns in course',
+  );
   // Adverbial b-phrases and eldritch draws need triconsonantal nouns.
   for (const field of ['hidden', 'night', 'harm', 'death', 'fire', 'gates', 'time'] as const) {
     const nouns = FIELDS[field].filter(
@@ -280,6 +302,23 @@ test('idioms carry the attested spellings of the spec', () => {
   assert.deepStrictEqual(glyphs('PC4'), [...PC4_GLYPHS]);
   assert.strictEqual(PO4_HEAD.glyphs, PO4_HEAD_GLYPHS);
   assert.strictEqual(PO4_HEAD.spoken, PO4_HEAD_SPOKEN);
+  assert.strictEqual(PO5_HEAD.glyphs, PO5_HEAD_GLYPHS);
+  assert.strictEqual(PO5_HEAD.spoken, PO5_HEAD_SPOKEN);
+  assert.strictEqual(PC5_HEAD.glyphs, PC5_HEAD_GLYPHS);
+  assert.strictEqual(PC5_HEAD.spoken, PC5_HEAD_SPOKEN);
+  // PC5 is the summoning root bw' in the perfect 1sg, so the idiom and the
+  // pattern engine have to agree letter for letter (spec 4.6).
+  assert.strictEqual(PC5_HEAD.spoken, speak(conjugate("bw'", 'perfect-1sg')));
+  assert.strictEqual(PC5_HEAD.glyphs, glyphsFor(conjugate("bw'", 'perfect-1sg')));
+  // The direction words are a proclitic on a noun the lexicon already holds,
+  // except the ordinary word for again (spec 4.4).
+  for (const [id, word] of Object.entries(DIRECTION_WORDS)) {
+    assert.strictEqual(word.glyphs, DIRECTION_GLYPHS[id], `direction ${id} glyphs`);
+    assert.strictEqual(word.spoken, DIRECTION_SPOKEN[id], `direction ${id} spoken`);
+  }
+  assert.strictEqual(DIRECTION_WORDS.back.spoken, `le${speak(citation('qdm'))}`);
+  assert.strictEqual(DIRECTION_WORDS.forth.spoken, `le${speak(citation("'khr"))}`);
+  assert.strictEqual(DIRECTION_WORDS.still.spoken, `be${speak(citation('dmm'))}`);
   // PC4 is the first half of PC1 and nothing else (spec 4.6).
   assert.deepStrictEqual(PC4_SPOKEN, PC1_SPOKEN.slice(0, 3));
   assert.deepStrictEqual(spoken('ELDRITCH_CLOSE'), [...ELDRITCH_CLOSE_SPOKEN]);

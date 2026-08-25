@@ -3,6 +3,7 @@ import * as assert from 'node:assert/strict';
 import {
   A1_MAN,
   BRIGHT_SPOKEN,
+  DIRECTION_SPOKEN,
   DIVINATION_SPOKEN,
   EC1_SPOKEN,
   EC2_SPOKEN,
@@ -11,8 +12,11 @@ import {
   EO2_HEAD_SPOKEN,
   EO4_SPOKEN,
   INIW_SPOKEN,
+  IMEN_ROW,
   NUMERALS,
+  POWER_TABLE,
   SEAL_SIGN,
+  SEDJEM_EN_EF_SUFFIX,
   codePoints,
 } from './egyptian-spec.js';
 import { ALL_SCHOOLS, BRIGHT_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, egyptianWords } from './gen.js';
@@ -499,6 +503,151 @@ test('the oracle litany reads three different heads, each over a fate or a time 
       });
       assert.strictEqual(heads.length, 3, `litany size in ${where}`);
       assert.strictEqual(new Set(heads).size, 3, `repeated oracle head in ${where}`);
+    }
+  }
+});
+
+// --- Chronomancy (spec 3.12) ------------------------------------------------
+
+const CHRONOMANCY_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
+
+test('the crossing clause is verb initial with its direction straight behind', () => {
+  const directions = new Set(Object.values(DIRECTION_SPOKEN));
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const list = egyptianWords('chronomancy', difficulty, seed);
+      const line = list.map((w) => w.spoken);
+      const at = line.findIndex((word) => directions.has(word));
+      assert.ok(at > 0, `no direction word in ${where}`);
+      assert.strictEqual(
+        line.filter((word) => directions.has(word)).length,
+        1,
+        `one direction per formula in ${where}`,
+      );
+      // The verb stands in front of it, bare: no suffix rides a command.
+      const verb = list[at - 1];
+      assert.strictEqual(verb?.role, 'content', `no verb before the direction in ${where}`);
+      assert.strictEqual(verb?.suffix, '', `crossing verb takes a suffix in ${where}`);
+      // A direction word is a function word and carries no determinative.
+      assert.strictEqual(list[at]?.determinatives, '', `direction with a determinative`);
+      // The school names no god, so no agent marker and no power word. Read
+      // on the sign groups, never on the spoken line: rA the opener and ra
+      // the god are spoken alike, and only the god carries the flag.
+      assert.ok(!line.includes('in'), `in-agent phrase in ${where}`);
+      const names = new Set([...POWER_TABLE.map(([, glyphs]) => glyphs), IMEN_ROW[1]]);
+      for (const word of list) {
+        assert.ok(!names.has(word.glyphs), `a divine name in ${where}`);
+      }
+    }
+  }
+});
+
+test('every binding clause writes the sedjem-en-ef and no other clause does', () => {
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const list = egyptianWords('chronomancy', difficulty, seed);
+      const performative = list.filter((w) => w.suffix === SEDJEM_EN_EF_SUFFIX);
+      const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+      assert.strictEqual(performative.length, clauses - 1, `binding clause count in ${where}`);
+      for (const verb of performative) {
+        // The water ripple stands between the determinative and the suffix,
+        // which is the one sign that keeps this form apart from a seeing
+        // clause on the page.
+        assert.ok(
+          verb.glyphs.endsWith(verb.determinatives + SEDJEM_EN_EF_SUFFIX),
+          `the ripple is misplaced in ${where}`,
+        );
+        assert.match(verb.spoken, /eni$|ni$/u, `spoken sedjem-en-ef in ${where}`);
+      }
+      // Every suffix of this school is that one: no =i, no =f, no =sn.
+      for (const word of list) {
+        if (word.suffix === '') continue;
+        assert.strictEqual(word.suffix, SEDJEM_EN_EF_SUFFIX, `another suffix in ${where}`);
+      }
+    }
+  }
+  for (const school of ALL_SCHOOLS) {
+    if (school === 'chronomancy') continue;
+    for (const difficulty of DIFFICULTIES) {
+      for (const seed of SEEDS) {
+        for (const word of egyptianWords(school, difficulty, seed)) {
+          assert.notStrictEqual(
+            word.suffix,
+            SEDJEM_EN_EF_SUFFIX,
+            `sedjem-en-ef in ${label(school, difficulty, seed)}`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test('an address in a chronomantic formula names an hour-gate, never a god', () => {
+  for (const difficulty of [6, 7, 8, 9]) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const list = egyptianWords('chronomancy', difficulty, seed);
+      const line = list.map((w) => w.spoken);
+      const gates = difficulty >= 9 ? 4 : difficulty >= 8 ? 3 : 1;
+      assert.strictEqual(line.filter((w) => w === 'rekhi').length, gates, `litany size in ${where}`);
+      const heads: string[] = [];
+      line.forEach((word, index) => {
+        if (word !== 'i') return;
+        const head = list[index + 1];
+        if (head?.field !== 'gates') return;
+        heads.push(head.spoken);
+        assert.strictEqual(list[index + 2]?.spoken, 'en', `genitive in ${where}`);
+        // The tail is drawn from time, which is the Book of Gates rather than
+        // the Book of the Dead (spec 3.12).
+        assert.strictEqual(list[index + 3]?.field, 'time', `hour-gate tail in ${where}`);
+      });
+      assert.strictEqual(heads.length, gates, `hour-gate count in ${where}`);
+      assert.strictEqual(new Set(heads).size, gates, `repeated hour-gate head in ${where}`);
+    }
+  }
+});
+
+test('chronomantic openers, closers and seals follow its own tier table', () => {
+  for (const difficulty of CHRONOMANCY_TIERS) {
+    for (const seed of SEEDS) {
+      const where = label('chronomancy', difficulty, seed);
+      const line = words('chronomancy', difficulty, seed);
+      const list = egyptianWords('chronomancy', difficulty, seed);
+      if (difficulty <= 4) {
+        // The title line names the stretch of time the spell works on.
+        assert.deepStrictEqual(line.slice(0, 2), [...EO2_HEAD_SPOKEN], `opener in ${where}`);
+        assert.strictEqual(list[2]?.field, 'time', `title noun in ${where}`);
+      } else if (difficulty <= 7) {
+        assert.deepStrictEqual(line.slice(0, 2), [...EO1_SPOKEN], `opener in ${where}`);
+      } else {
+        assert.deepStrictEqual(
+          line.slice(0, 4),
+          [...EO1_SPOKEN, ...EO2_HEAD_SPOKEN],
+          `opener in ${where}`,
+        );
+        assert.strictEqual(list[4]?.field, 'time', `title noun in ${where}`);
+      }
+      if (difficulty <= 4) {
+        assert.ok(!line.includes('peret'), `anchor at d${difficulty}`);
+        continue;
+      }
+      const seal = difficulty >= 7 ? line.lastIndexOf('sep') : -1;
+      const end = seal > 0 ? seal : line.length;
+      // The anchor closes the formula, with the health formula behind it at
+      // tier 9 and nothing else ever.
+      const stacked = difficulty >= 9 ? EC1_SPOKEN.length : 0;
+      assert.deepStrictEqual(
+        line.slice(end - stacked, end),
+        difficulty >= 9 ? [...EC1_SPOKEN] : [],
+        `closer in ${where}`,
+      );
+      assert.ok(line.includes('peret'), `no anchor in ${where}`);
+      assert.ok(!line.includes('kheru'), `justification in ${where}`);
+      if (difficulty >= 7 && difficulty <= 8) {
+        assert.deepStrictEqual(line.slice(seal + 1), ['medj', 'senu'], `seal in ${where}`);
+      }
     }
   }
 });
