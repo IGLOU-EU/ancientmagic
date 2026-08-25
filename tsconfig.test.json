@@ -3,13 +3,14 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": ".test-build",
-    "lib": ["ES2022"]
+    "lib": ["ES2022", "DOM"]
   },
   "include": [
     "src/ts/generator/**/*",
     "src/ts/languages/**/*",
     "src/ts/glosses/**/*",
     "src/ts/strings/**/*",
+    "src/ts/ui/**/*",
     "tools/**/*",
     "tests/**/*",
     "types/**/*"

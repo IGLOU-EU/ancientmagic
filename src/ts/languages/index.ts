@@ -1,5 +1,5 @@
-// Genome registry. The three MVP genomes plug in here without touching the
-// pipeline, which only realizes the genome it is handed.
+// Genome registry. A genome plugs in here without touching the pipeline,
+// which only realizes the genome it is handed.
 //
 // One line per genome, and that line loads two things at once: the rules of
 // the script, and the wordings that script needs in the page's language. The
@@ -37,6 +37,7 @@ export const GENOME_LOADERS: Readonly<Partial<Record<LanguageId, GenomeLoader>>>
     fetchBound(import('./egyptian.js').then((m) => m.egyptianGenome), pack.egyptian),
   phoenician: (pack) =>
     fetchBound(import('./phoenician.js').then((m) => m.phoenicianGenome), pack.phoenician),
+  greek: (pack) => fetchBound(import('./greek.js').then((m) => m.greekGenome), pack.greek),
 };
 
 export async function loadGenome(id: LanguageId, glosses: GlossPack): Promise<BoundGenome> {

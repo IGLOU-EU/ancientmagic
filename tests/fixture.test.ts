@@ -1,6 +1,6 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { egyptian, phoenician, runic } from './gen.js';
+import { egyptian, greek, phoenician, runic } from './gen.js';
 
 // A seed whose difficulty 5 Protection draws reproduce the shared plan of
 // genomes.md section 5 exactly: opener RO1, agent ward, intent bind, target
@@ -247,5 +247,118 @@ test('chronomancy fixture: the phoenician crossing and its bindings', () => {
       'lift out the share that falls to one. In the deep shadow. Baal, shrinking ' +
       'to a single letter. I have come to the day of the perpetuity. Forever. ' +
       'Twelve hours deep.',
+  );
+});
+
+// --- Greek ------------------------------------------------------------------
+// Section 8.13 asks for one Greek fixture per school, six in all, by the rule
+// section 7 states for the other genomes: reproduce a worked example when a
+// seed yields one, record the draw when none does. Five of the six do, which is
+// the strongest statement this suite makes about the genome: the author wrote
+// those lines by hand before any seed existed, and the generator finds them.
+//
+// Greek glyphs are written as literals rather than as codepoint escapes: the
+// reason the other three genomes escape theirs is that their blocks render as
+// tofu in a terminal, and this one does not.
+
+// Difficulty 5: the section 5 plan rendered a fourth time (spec 8.13). Opener
+// GO1, the agent in -ΟΣ, the threat behind ΚΑΤΑ in the genitive, the verb last,
+// the free vox, closer GC1.
+const GREEK_PROTECTION_SEED = 78253;
+
+test('greek fixture: the amulet of section 8.13, letter for letter', () => {
+  const out = greek('protection', 5, GREEK_PROTECTION_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    'ΦΥΛΑΚΤΗΡΙΟΝ·ΦΥΛΑΚΟΣ·ΚΑΤΑ·ΝΕΚΡΟΥ·ΔΕΣΜΩ·ΙΑΩ·ΗΔΗ·ΗΔΗ·ΤΑΧΥ·ΤΑΧΥ',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'phulakteerion phulakos kata nekrou desmoo iaoo eedee eedee takhu takhu',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'Amulet. I, the guard, bind against the corpse. Iao! Now, now, quickly, quickly.',
+  );
+});
+
+// Difficulty 6: the tablet opens on its verb and lets the victim fall straight
+// after it, twice, each clause carrying an adverb, joined by ΚΑΙ. The spec's
+// own Curse example is out of reach of a seed, so this fixture records its own
+// draw in the same shape.
+const GREEK_CURSE_SEED = 12;
+
+test('greek fixture: the binding tablet and its two commands', () => {
+  const out = greek('curse', 6, GREEK_CURSE_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    'ΟΡΚΙΖΩ·ΣΕ·ΛΥΠΕΤΩ·ΟΝΕΙΡΟΝ·ΠΙΚΡΩΣ·ΚΑΙ·ΠΛΗΓΕΤΩ·ΛΕΙΨΑΝΟΝ·ΣΚΟΤΩΣ·ΗΔΗ·ΗΔΗ·ΤΑΧΥ·ΤΑΧΥ',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'orkizoo se lupetoo oneiron pikroos kai pleegetoo leipsanon skotoos eedee eedee takhu takhu',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'I adjure you. May the dream be grieved bitterly. And may the remains be struck ' +
+      'darkly. Now, now, quickly, quickly.',
+  );
+});
+
+// Difficulty 5: the hymn of spec 8.13. The vocative heads the clause, the
+// intransitive come is legal here and nowhere else, and the vox closes it.
+const GREEK_INVOCATION_SEED = 3790;
+
+test('greek fixture: the hymn of section 8.13', () => {
+  const out = greek('invocation', 5, GREEK_INVOCATION_SEED);
+  assert.strictEqual(out.glyphs, 'ΕΠΙΚΑΛΟΥΜΑΙ·ΣΕ·ΑΙΩΝΕ·ΕΛΘΕ·ΑΒΡΑΣΑΞ·ΗΔΗ·ΗΔΗ·ΤΑΧΥ·ΤΑΧΥ');
+  assert.strictEqual(
+    out.transliteration,
+    'epikaloumai se aioone elthe abrasaks eedee eedee takhu takhu',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'I call upon you. O age, come! Abrasax! Now, now, quickly, quickly.',
+  );
+});
+
+// Difficulty 3: the question ticket of spec 8.11. ΑΡΑ turns the statement into
+// a yes-or-no question and leaves the rest of the clause where it stood.
+const GREEK_DIVINATION_SEED = 795;
+
+test('greek fixture: the question ticket of section 8.11', () => {
+  const out = greek('divination', 3, GREEK_DIVINATION_SEED);
+  assert.strictEqual(out.glyphs, 'ΧΡΗΣΟΝ·ΜΟΙ·ΑΡΑ·ΔΕΙΚΕΙ·ΣΗΜΟΣ·ΜΟΙΡΟΝ');
+  assert.strictEqual(out.transliteration, 'khreeson moi ara deikei seemos moiron');
+  assert.strictEqual(out.gloss, 'Give me an oracle. Does the sign show the allotted fate?');
+});
+
+// Difficulty 3: the crossing of spec 8.12, opened by the Aion pair the frame
+// reserved for this genome.
+const GREEK_CHRONOMANCY_SEED = 1152;
+
+test('greek fixture: the crossing of section 8.12', () => {
+  const out = greek('chronomancy', 3, GREEK_CHRONOMANCY_SEED);
+  assert.strictEqual(out.glyphs, 'ΑΙΩΝ·ΑΙΩΝΟΣ·ΔΙΑΒΑΙΝΕ·ΟΠΙΣΩ·ΩΡΟΝ');
+  assert.strictEqual(out.transliteration, 'aioon aioonos diabaine opisoo ooron');
+  assert.strictEqual(out.gloss, 'Aion of Aion! Cross backward the hour!');
+});
+
+// Difficulty 5: the register of spec 8.10. The Ephesian row read against its
+// order, a dread epithet in the vocative, another as the vox, the fixed dread
+// closer, and the verb showing the lengthening at work: ΕΛΘΕ becomes ΗΛΘΕ.
+const GREEK_ELDRITCH_SEED = 1161;
+
+test('greek fixture: the register of section 8.10', () => {
+  const out = greek('eldritch', 5, GREEK_ELDRITCH_SEED);
+  assert.strictEqual(out.glyphs, 'ΚΑΤΑΣΚΙ·ΑΣΚΙ·ΞΑΡΓΩΘ·ΗΛΘΕ·ΘΡΥΓΞΩΘ·ΦΘΟΡΩΘ·ΑΙΩΝΩΘ');
+  assert.strictEqual(
+    out.transliteration,
+    'kataski aski ksargooth eelthe thrugksooth phthorooth aioonooth',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'The Ephesian words, spoken against their order! O shape at the door, come! ' +
+      'Thrugksooth! Ruin forever.',
   );
 });

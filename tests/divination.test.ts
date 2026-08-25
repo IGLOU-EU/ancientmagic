@@ -16,10 +16,12 @@ import type {
 import { resolveGlosses } from '../src/ts/glosses/index.js';
 import { bindGenome } from '../src/ts/languages/index.js';
 import { egyptianGenome } from '../src/ts/languages/egyptian.js';
+import { greekGenome } from '../src/ts/languages/greek.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import { DREAD_SPOKEN as EGYPTIAN_DREAD } from './egyptian-spec.js';
 import { DREAD_SPOKEN as PHOENICIAN_DREAD } from './phoenician-spec.js';
+import { DREAD_WORDS as GREEK_DREAD } from './greek-spec.js';
 import { DREAD_EPITHETS as RUNIC_DREAD } from './spec.js';
 import { FIELDS as PHOENICIAN_FIELDS } from '../src/ts/languages/phoenician-data.js';
 import {
@@ -28,6 +30,7 @@ import {
   SEEDS,
   egyptian,
   egyptianWords,
+  greek,
   phoenician,
   phoenicianWords,
   runic,
@@ -45,6 +48,7 @@ const GENOMES = [
   { id: 'runic', write: runic, dread: RUNIC_DREAD },
   { id: 'egyptian', write: egyptian, dread: EGYPTIAN_DREAD },
   { id: 'phoenician', write: phoenician, dread: PHOENICIAN_DREAD },
+  { id: 'greek', write: greek, dread: GREEK_DREAD },
 ] as const;
 
 function plan(school: School, difficulty: number, seed: number): ReturnType<typeof buildPlan> {
@@ -206,6 +210,7 @@ test('a french question mark carries the narrow no-break space before it', async
     ['runic', bindGenome(runicGenome, await pack.runic())],
     ['egyptian', bindGenome(egyptianGenome, await pack.egyptian())],
     ['phoenician', bindGenome(phoenicianGenome, await pack.phoenician())],
+    ['greek', bindGenome(greekGenome, await pack.greek())],
   ];
   for (const [id, genome] of bound) {
     for (const difficulty of DIFFICULTIES) {

@@ -15,9 +15,11 @@ import type { GlossPack, GlossTable, NamedPowerTable, RootGlossTable } from '../
 import * as runicData from '../src/ts/languages/runic-data.js';
 import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
+import * as greekData from '../src/ts/languages/greek-data.js';
 import { bindGenome } from '../src/ts/languages/index.js';
 import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
+import { greekGenome } from '../src/ts/languages/greek.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 
 const SCHOOLS: ReadonlyArray<School> = [
@@ -99,6 +101,17 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     idioms: Object.keys(phoenicianData.IDIOM_WORDS),
     seals: [...phoenicianData.SEAL_COUNTS],
     directions: Object.keys(phoenicianData.DIRECTION_WORDS),
+  },
+  {
+    genome: 'greek',
+    slice: (pack) => pack.greek(),
+    bind: async (pack) => bindGenome(greekGenome, await pack.greek()),
+    roots: rootsOf(greekData.FIELDS, (r: { root: string }) => r.root),
+    powers: [...greekData.BRIGHT_POWER, ...greekData.DARK_POWER],
+    epithets: [...greekData.DREAD_POWER],
+    idioms: Object.keys(greekData.IDIOM_WORDS),
+    seals: [...greekData.SEAL_COUNTS],
+    directions: Object.keys(greekData.DIRECTION_WORDS),
   },
 ];
 

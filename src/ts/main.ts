@@ -12,7 +12,12 @@ const strings = await resolveStrings(language);
 
 // Only the genomes that ship are selectable, the other options of the selects
 // stay disabled in the markup.
-const SHIPPED_LANGUAGES: ReadonlyArray<LanguageId> = ['runic', 'egyptian', 'phoenician'];
+const SHIPPED_LANGUAGES: ReadonlyArray<LanguageId> = [
+  'runic',
+  'egyptian',
+  'phoenician',
+  'greek',
+];
 const SHIPPED_SCHOOLS: ReadonlyArray<School> = [
   'protection',
   'curse',

@@ -3,7 +3,7 @@
 
 import type { Rng } from './rng.js';
 
-export type LanguageId = 'runic' | 'egyptian' | 'phoenician';
+export type LanguageId = 'runic' | 'egyptian' | 'phoenician' | 'greek';
 
 export type School =
   | 'protection'

@@ -13,6 +13,8 @@ import {
   type PhoenicianWord,
 } from '../src/ts/languages/phoenician.js';
 import { bindGenome } from '../src/ts/languages/index.js';
+import { greekGenome } from '../src/ts/languages/greek.js';
+import { greekGlosses } from '../src/ts/glosses/en/greek.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import type { FormulaOutput, School } from '../src/ts/generator/types.js';
 import { parseGlyphs } from './spec.js';
@@ -46,6 +48,7 @@ export const SEEDS: ReadonlyArray<number> = [7, 1234, 987654321];
 const RUNIC = bindGenome(runicGenome, runicGlosses);
 const EGYPTIAN = bindGenome(egyptianGenome, egyptianGlosses);
 const PHOENICIAN = bindGenome(phoenicianGenome, phoenicianGlosses);
+const GREEK = bindGenome(greekGenome, greekGlosses);
 
 export function runic(school: School, difficulty: number, seed: number): FormulaOutput {
   return generate(RUNIC, { language: 'runic', school, difficulty }, seed);
@@ -57,6 +60,29 @@ export function egyptian(school: School, difficulty: number, seed: number): Form
 
 export function phoenician(school: School, difficulty: number, seed: number): FormulaOutput {
   return generate(PHOENICIAN, { language: 'phoenician', school, difficulty }, seed);
+}
+
+export function greek(school: School, difficulty: number, seed: number): FormulaOutput {
+  return generate(GREEK, { language: 'greek', school, difficulty }, seed);
+}
+
+// Greek writes one flat word list, joined by the ano teleia from tier 3 up, so
+// its words are read off the transliteration like the Runic ones.
+export function greekWords(school: School, difficulty: number, seed: number): string[] {
+  return greek(school, difficulty, seed).transliteration.split(' ');
+}
+
+export function sweepGreek(
+  schools: ReadonlyArray<School>,
+  cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
+): void {
+  for (const school of schools) {
+    for (const difficulty of DIFFICULTIES) {
+      for (const seed of SEEDS) {
+        cb(greek(school, difficulty, seed), school, difficulty, seed);
+      }
+    }
+  }
 }
 
 export function sweep(

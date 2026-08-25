@@ -10,6 +10,55 @@ export interface FormulaMeta {
   printCaption: string;
 }
 
+// The word separators the shipped genomes write. Measured in the browser
+// rather than assumed: the Runic three (᛫ ᛬ ᛭) and the Phoenician 𐤟 already
+// offer the line breaker an opportunity of their own, and the Greek ano teleia
+// offers none, so a Greek run is one unbreakable word and wraps in the middle
+// of it. Egyptian writes continuously and has no separator at all, which is
+// the script's own doing and not something to hint around.
+//
+// The mechanism reads separators, never languages: a hint after one that
+// already breaks changes nothing, and a genome added later inherits the
+// behaviour by declaring its separator here.
+const WORD_SEPARATORS: ReadonlySet<string> = new Set([
+  '\u{16EB}',
+  '\u{16EC}',
+  '\u{16ED}',
+  '\u{1091F}',
+  '\u{0387}',
+]);
+
+// The glyph run cut after every separator. Joining the pieces gives the input
+// back character for character, which is what keeps the copied text, the
+// accessible name and the announcement equal to the pipeline's own output.
+export function breakSegments(glyphs: string): string[] {
+  const segments: string[] = [];
+  let current = '';
+  for (const character of glyphs) {
+    current += character;
+    if (WORD_SEPARATORS.has(character)) {
+      segments.push(current);
+      current = '';
+    }
+  }
+  if (current !== '') segments.push(current);
+  return segments;
+}
+
+// Writes the run with an invisible break opportunity after each separator.
+// The hint is a wbr element, which is markup rather than text: it never enters
+// textContent, so the copy path hands over the pipeline's exact glyphs and no
+// screen reader has anything extra to say. It is the same device the served
+// page already uses on its pre-rendered sample.
+function writeGlyphs(target: HTMLElement, glyphs: string): void {
+  const segments = breakSegments(glyphs);
+  target.replaceChildren();
+  segments.forEach((segment, index) => {
+    target.append(segment);
+    if (index < segments.length - 1) target.append(document.createElement('wbr'));
+  });
+}
+
 // Size tiers by glyph count (design 4.2). Counted in codepoints because
 // the seal numerals live outside the basic plane.
 function sizeTier(glyphs: string): 'large' | 'medium' | 'small' {
@@ -49,13 +98,14 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   const gloss = well.querySelector<HTMLElement>('.gloss');
   const caption = document.querySelector<HTMLElement>('.print-caption');
 
-  glyphLine.textContent = output.glyphs;
+  writeGlyphs(glyphLine, output.glyphs);
   // The glyph block is named for what it is, not for what it says: the well is
   // one atomic live region, and naming it with the transliteration made the
   // region announce that same line twice, once here and once below.
   glyphLine.setAttribute('aria-label', meta.glyphLabel);
-  // The vapor twin must stay in text sync with the visible line (design 13.2).
-  if (vapor !== null) vapor.textContent = output.glyphs;
+  // The vapor twin must stay in text sync with the visible line (design 13.2),
+  // and that includes where the line may break, or the two wrap apart.
+  if (vapor !== null) writeGlyphs(vapor, output.glyphs);
   if (translit !== null) translit.textContent = output.transliteration;
   if (gloss !== null) gloss.textContent = output.gloss;
 

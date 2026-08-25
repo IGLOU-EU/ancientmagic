@@ -1,1 +1,1 @@
-export const enGlosses={language:"en",runic:()=>import("./runic.js").then(n=>n.runicGlosses),egyptian:()=>import("./egyptian.js").then(n=>n.egyptianGlosses),phoenician:()=>import("./phoenician.js").then(n=>n.phoenicianGlosses)};
+export const enGlosses={language:"en",runic:()=>import("./runic.js").then(e=>e.runicGlosses),egyptian:()=>import("./egyptian.js").then(e=>e.egyptianGlosses),phoenician:()=>import("./phoenician.js").then(e=>e.phoenicianGlosses),greek:()=>import("./greek.js").then(e=>e.greekGlosses)};

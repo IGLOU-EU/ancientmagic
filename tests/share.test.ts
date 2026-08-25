@@ -47,6 +47,12 @@ test('share: a link written before the newest school still decodes', () => {
   });
 });
 
+test('share: a greek link round-trips', () => {
+  const settings = { language: 'greek', school: 'invocation', difficulty: 5 } as const;
+  assert.strictEqual(encode(settings, 42), 'greek.invocation.5.42');
+  assert.deepStrictEqual(decode('greek.invocation.5.42'), { settings, seed: 42 });
+});
+
 test('share: a chronomancy link round-trips', () => {
   const settings = { language: 'egyptian', school: 'chronomancy', difficulty: 7 } as const;
   assert.strictEqual(encode(settings, 3), 'egyptian.chronomancy.7.3');
@@ -126,7 +132,7 @@ test('share: a text of the wrong shape is not a formula', () => {
 
 test('share: a genome the site does not carry is not a formula', () => {
   for (const text of [
-    'greek.protection.5.1',
+    'coptic.protection.5.1',
     'RUNIC.protection.5.1',
     'Runic.protection.5.1',
     'runics.protection.5.1',

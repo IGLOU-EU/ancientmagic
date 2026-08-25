@@ -12,4 +12,5 @@ export const enGlosses: GlossPack = {
   runic: () => import('./runic.js').then((m) => m.runicGlosses),
   egyptian: () => import('./egyptian.js').then((m) => m.egyptianGlosses),
   phoenician: () => import('./phoenician.js').then((m) => m.phoenicianGlosses),
+  greek: () => import('./greek.js').then((m) => m.greekGlosses),
 };

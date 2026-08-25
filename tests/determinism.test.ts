@@ -6,9 +6,9 @@ import { runicGlosses } from '../src/ts/glosses/en/runic.js';
 import { bindGenome, GENOME_LOADERS, loadGenome } from '../src/ts/languages/index.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import type { LanguageId } from '../src/ts/generator/types.js';
-import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, phoenician, runic } from './gen.js';
+import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, greek, phoenician, runic } from './gen.js';
 
-const GENOMES = [runic, egyptian, phoenician];
+const GENOMES = [runic, egyptian, phoenician, greek];
 
 test('same seed and settings produce byte-identical output', () => {
   for (const genome of GENOMES) {
@@ -36,15 +36,20 @@ test('different seeds change the output somewhere in the sweep', () => {
   }
 });
 
-test('the three shipped genomes render one plan differently', () => {
+test('every shipped genome renders one plan differently', () => {
   for (const school of ALL_SCHOOLS) {
     const lines = GENOMES.map((genome) => genome(school, 5, 42).glyphs);
     assert.strictEqual(new Set(lines).size, GENOMES.length, `${school} rendered alike`);
   }
 });
 
-test('the registry carries the three mvp genomes and nothing else', async () => {
-  assert.deepStrictEqual(Object.keys(GENOME_LOADERS).sort(), ['egyptian', 'phoenician', 'runic']);
+test('the registry carries the shipped genomes and nothing else', async () => {
+  assert.deepStrictEqual(Object.keys(GENOME_LOADERS).sort(), [
+    'egyptian',
+    'greek',
+    'phoenician',
+    'runic',
+  ]);
   for (const [id, load] of Object.entries(GENOME_LOADERS)) {
     assert.ok(load !== undefined, `registry key ${id} carries no loader`);
     const genome = await load(enGlosses);
@@ -73,6 +78,6 @@ test('a loaded genome writes what its genome bound to its own slice writes', asy
 });
 
 test('a language the registry does not carry is rejected', async () => {
-  const unshipped = 'greek' as unknown as LanguageId;
-  await assert.rejects(loadGenome(unshipped, enGlosses), /genome not available yet: greek/u);
+  const unshipped = 'coptic' as unknown as LanguageId;
+  await assert.rejects(loadGenome(unshipped, enGlosses), /genome not available yet: coptic/u);
 });

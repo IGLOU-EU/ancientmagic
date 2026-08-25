@@ -14,7 +14,12 @@ import type { LanguageId, School, Settings } from './generator/types.js';
 
 // What a link may name. Held to the genome registry and to the schools the
 // plan builds by test, so the format cannot outlive or outrun the site.
-export const LANGUAGES: ReadonlyArray<LanguageId> = ['runic', 'egyptian', 'phoenician'];
+export const LANGUAGES: ReadonlyArray<LanguageId> = [
+  'runic',
+  'egyptian',
+  'phoenician',
+  'greek',
+];
 export const SCHOOLS: ReadonlyArray<School> = [
   'protection',
   'curse',
