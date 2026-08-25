@@ -2,6 +2,7 @@ Copyright 2022 The Noto Project Authors (https://github.com/notofonts/runic)
 Copyright 2022 The Noto Project Authors (https://github.com/notofonts/egyptian-hieroglyphs)
 Copyright 2022 The Noto Project Authors (https://github.com/notofonts/phoenician)
 Copyright 2022 The Noto Project Authors (https://github.com/notofonts/linear-b)
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)
 
 The woff2 files beside this notice are subsets of those fonts, produced
 by tools/subset-fonts.sh. They are Modified Versions in the sense of the

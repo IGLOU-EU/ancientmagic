@@ -6,21 +6,27 @@
 #   tools/subset-fonts.sh
 #
 # The site writes its incantations as real Unicode text in Runic, Egyptian
-# Hieroglyphs and Phoenician. The last two live in the SMP and render as tofu
-# on most systems, so the three scripts ship with the site instead of being
+# Hieroglyphs, Phoenician and Greek. The middle two live in the SMP and render
+# as tofu on most systems, so the scripts ship with the site instead of being
 # borrowed from the reader's machine. Runic numeric seals additionally use
 # Aegean Numbers, which Noto covers in Noto Sans Linear B.
 #
-# Sources are the notofonts.github.io per-script releases, all SIL Open Font
-# License 1.1 with no Reserved Font Name. Archives are pinned by SHA-256, so a
-# rerun either reproduces the exact same bytes or fails loudly.
+# Sources are the notofonts.github.io releases, all SIL Open Font License 1.1
+# with no Reserved Font Name. Archives are pinned by SHA-256, so a rerun either
+# reproduces the exact same bytes or fails loudly.
 #
 #   Noto Sans Runic               v2.002  https://github.com/notofonts/runic
 #   Noto Sans Egyptian Hieroglyphs v2.002 https://github.com/notofonts/egyptian-hieroglyphs
 #   Noto Sans Phoenician          v2.001  https://github.com/notofonts/phoenician
 #   Noto Sans Linear B            v2.002  https://github.com/notofonts/linear-b
+#   Noto Sans                     v2.015  https://github.com/notofonts/latin-greek-cyrillic
 #
-# The stylesheet registers all four under a single CSS family and routes each
+# Greek has no per-script Noto of its own: the block lives in plain Noto Sans,
+# whose release covers Latin, Greek and Cyrillic in every weight and format and
+# weighs 112 MB. That download is the price of one 2.4 KB subset, paid only when
+# the pipeline is rerun.
+#
+# The stylesheet registers all five under a single CSS family and routes each
 # codepoint to the right file by unicode-range, then calibrates every face onto
 # the height of the runic stave with size-adjust. Those calibration numbers were
 # measured on these exact releases, so the file names below are a contract with
@@ -51,6 +57,9 @@ phoenician_sha=9840df4f89a074f9ae97f1d2946f42dbc9f29d1b41318f1f91d6f122d5403fe0
 linearb_url=$base/linear-b/releases/download/NotoSansLinearB-v2.002/NotoSansLinearB-v2.002.zip
 linearb_sha=16fe739f22242372a0a79189ac9692d59720db21f830523e6bc31b0e51709d24
 
+greek_url=$base/latin-greek-cyrillic/releases/download/NotoSans-v2.015/NotoSans-v2.015.zip
+greek_sha=0c34df072a3fa7efbb7cbf34950e1f971a4447cffe365d3a359e2d4089b958f5
+
 # Codepoint sets, kept in step with src/ts/languages/*-data.ts.
 #
 # Runic and Phoenician take their whole block. Both are under 100 codepoints
@@ -67,6 +76,14 @@ egyptian_unicodes='U+13000,U+13001,U+13010,U+13079,U+1308B,U+1309D,U+130A1,U+130
 # The four seal glyphs of SEAL_GLYPHS in runic-data.ts. The rest of Noto Sans
 # Linear B, syllabary and ideograms included, is never drawn.
 aegean_unicodes='U+10108,U+10109,U+1010D,U+1010F,U+10110'
+
+# The Greek genome writes majuscule only, so this one is cut to the font
+# contract of genomes.md 8.1 rather than to the block: the twenty-four capitals
+# with U+03A2 unassigned and skipped, the ano teleia that separates words, the
+# numeral sign that marks a seal, and koppa for the ninety inside the count 99.
+# Twenty-seven codepoints, and the lowercase bookhand no ancient magician wrote
+# stays out. A count reaching 6 or 900 would add digamma and sampi here.
+greek_unicodes='U+0374,U+0387,U+0391-03A1,U+03A3-03A9,U+03DE'
 
 fetch() {
   local name=$1 url=$2 want=$3
@@ -88,6 +105,7 @@ fetch runic "$runic_url" "$runic_sha"
 fetch egyptian "$egyptian_url" "$egyptian_sha"
 fetch phoenician "$phoenician_url" "$phoenician_sha"
 fetch linearb "$linearb_url" "$linearb_sha"
+fetch greek "$greek_url" "$greek_sha"
 
 if command -v pyftsubset >/dev/null 2>&1; then
   pyftsubset=pyftsubset
@@ -130,14 +148,19 @@ subset noto-sans-linear-b-subset \
   "$work/linearb/NotoSansLinearB/unhinted/ttf/NotoSansLinearB-Regular.ttf" \
   "$aegean_unicodes"
 
-# The OFL asks that the license travel with the fonts. The four releases carry
-# the same license body under four copyright lines, so they collapse into one
-# notice that names all four.
+subset noto-sans-greek-subset \
+  "$work/greek/NotoSans/unhinted/ttf/NotoSans-Regular.ttf" \
+  "$greek_unicodes"
+
+# The OFL asks that the license travel with the fonts. The five releases carry
+# the same license body under five copyright lines, so they collapse into one
+# notice that names all five.
 {
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/runic)'
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/egyptian-hieroglyphs)'
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/phoenician)'
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/linear-b)'
+  echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)'
   echo
   echo 'The woff2 files beside this notice are subsets of those fonts, produced'
   echo 'by tools/subset-fonts.sh. They are Modified Versions in the sense of the'

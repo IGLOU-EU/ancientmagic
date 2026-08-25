@@ -4,14 +4,14 @@
 //
 // Egyptian Hieroglyphs and Phoenician live in the Supplementary Multilingual
 // Plane and are absent from almost every system, so an incantation would read
-// as a row of tofu without these. Runic is better supported but travels with
-// the site too, so the three scripts render the same everywhere.
+// as a row of tofu without these. Runic and Greek are better supported but
+// travel with the site too, so every script renders the same everywhere.
 //
-// The four files register under one family name. Each face claims its own block
+// The five files register under one family name. Each face claims its own block
 // through unicode-range, so the browser routes every codepoint to the file that
 // covers it and the page never has to name a script to get its glyphs. A file
-// that fails to load takes down its own block alone: the other three keep
-// drawing, and the orphaned block falls through to the tail of the stack.
+// that fails to load takes down its own block alone: the others keep drawing,
+// and the orphaned block falls through to the tail of the stack.
 //
 // Paths are relative to pub/css/main.css, the only file that ships this.
 @use 'sass:math';
@@ -69,3 +69,9 @@ $glyph-descent: 0.29;
 // rather than in Noto Sans Runic. The file holds only the four seal glyphs, and
 // they are cut a little short of the runes they close, so this one grows.
 @include glyph-face('noto-sans-linear-b-subset', 'u+10100-1013f', 0.68);
+
+// Greek comes from plain Noto Sans, drawn to the same cap height as the runes
+// it stands beside, so this face is the only other one that scales by nothing.
+// The subset is majuscule and carries the separator, the numeral sign and
+// koppa, which is why the range names four islands and not the block.
+@include glyph-face('noto-sans-greek-subset', 'u+0374, u+0387, u+0391-03a9, u+03de', 0.72);
