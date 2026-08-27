@@ -325,7 +325,3 @@ export const AORIST_TABLE: ReadonlyArray<readonly [root: string, aorist: string]
   ['desm', 'desmeesa'],
   ['paus', 'pauseesa'],
 ];
-
-export function codePoints(text: string): string[] {
-  return Array.from(text);
-}

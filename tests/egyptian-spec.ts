@@ -360,7 +360,3 @@ export const EC1_GLYPHS = '\u{132F9}\u{13351}\u{132F4}';
 export const EC2_GLYPHS = '\u{13419}\u{132A4}';
 export const ELDRITCH_CLOSE_GLYPHS =
   '\u{131CB}\u{132F4}\u{13191}\u{133CF}\u{13010}\u{1316A}\u{13193}\u{133CF}\u{131F3}\u{1316A}';
-
-export function codePoints(text: string): string[] {
-  return Array.from(text);
-}

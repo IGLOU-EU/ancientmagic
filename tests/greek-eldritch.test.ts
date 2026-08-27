@@ -19,9 +19,7 @@ import {
   NUMERALS,
   POWER_TABLE,
 } from './greek-spec.js';
-import { DIFFICULTIES, SEEDS, greek, greekWords } from './gen.js';
-
-const label = (difficulty: number, seed: number): string => `eldritch d${difficulty} seed ${seed}`;
+import { DIFFICULTIES, SEEDS, greek, greekWords, label } from './gen.js';
 
 test('the register lengthens every short vowel and hardens every s and t', () => {
   // Rules 1 and 2 of spec 8.10, in order, on the roots the register reaches.
@@ -54,7 +52,7 @@ test('eldritch output speaks none of the ten attested words, compared on glyphs'
       for (const glyphs of banned) {
         assert.ok(
           !words.slice(opening).includes(glyphs),
-          `${glyphs} in ${label(difficulty, seed)}`,
+          `${glyphs} in ${label('eldritch', difficulty, seed)}`,
         );
       }
     }
@@ -65,18 +63,18 @@ test('the whole opening is the Ephesian row read against its order', () => {
   for (const seed of SEEDS) {
     for (const difficulty of [3, 4, 5]) {
       const words = greekWords('eldritch', difficulty, seed);
-      assert.deepStrictEqual(words.slice(0, 2), [...ELDRITCH_OPEN_SHORT], label(difficulty, seed));
+      assert.deepStrictEqual(words.slice(0, 2), [...ELDRITCH_OPEN_SHORT], label('eldritch', difficulty, seed));
     }
     for (const difficulty of [6, 7, 8, 9]) {
       const words = greekWords('eldritch', difficulty, seed);
-      assert.deepStrictEqual(words.slice(0, 6), [...ELDRITCH_OPEN_FULL], label(difficulty, seed));
+      assert.deepStrictEqual(words.slice(0, 6), [...ELDRITCH_OPEN_FULL], label('eldritch', difficulty, seed));
     }
     // The clear openers never appear under the register.
     for (const difficulty of DIFFICULTIES) {
       const words = greekWords('eldritch', difficulty, seed);
       for (const part of [...GO1, ...GO2, ...GO4, ...GO5, ...GO6]) {
         if (part === 'aioon' || part === 'se') continue;
-        assert.ok(!words.includes(part), `${part} in ${label(difficulty, seed)}`);
+        assert.ok(!words.includes(part), `${part} in ${label('eldritch', difficulty, seed)}`);
       }
     }
   }
@@ -85,7 +83,7 @@ test('the whole opening is the Ephesian row read against its order', () => {
 test('every closing is the fixed dread pair, and the seal is always nine', () => {
   for (const seed of SEEDS) {
     for (const difficulty of [5, 6, 7, 8, 9]) {
-      const where = label(difficulty, seed);
+      const where = label('eldritch', difficulty, seed);
       const words = greekWords('eldritch', difficulty, seed);
       const seal = difficulty >= 7 ? words.lastIndexOf('lege') : -1;
       const end = seal > 0 ? seal : words.length;
@@ -103,7 +101,7 @@ test('every closing is the fixed dread pair, and the seal is always nine', () =>
 test('dread epithets appear only in their listed forms', () => {
   for (const difficulty of DIFFICULTIES) {
     for (const seed of SEEDS) {
-      const where = label(difficulty, seed);
+      const where = label('eldritch', difficulty, seed);
       const words = greekWords('eldritch', difficulty, seed);
       const epithets = words.filter((word) => word.endsWith('ooth'));
       assert.ok(epithets.length > 0 || difficulty <= 2, `no epithet in ${where}`);

@@ -1,6 +1,12 @@
-// Shared sweep helpers for the contract tests.
+// Shared bench for the contract tests: what to sweep, what writes it, and the
+// few readings every suite takes on a sweep point.
 
-import { generate } from '../src/ts/generator/pipeline.js';
+import {
+  clampDifficulty,
+  generate,
+  MAX_DIFFICULTY,
+  MIN_DIFFICULTY,
+} from '../src/ts/generator/pipeline.js';
 import { buildPlan } from '../src/ts/generator/plan.js';
 import { mulberry32 } from '../src/ts/generator/rng.js';
 import { egyptianGlosses } from '../src/ts/glosses/en/egyptian.js';
@@ -20,11 +26,14 @@ import {
   SCHOOLS,
   type BoundGenome,
   type FormulaOutput,
+  type FormulaPlan,
   type LanguageId,
   type School,
 } from '../src/ts/generator/types.js';
-import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '../src/ts/generator/pipeline.js';
-import { parseGlyphs } from './spec.js';
+import { DREAD_SPOKEN as EGYPTIAN_DREAD } from './egyptian-spec.js';
+import { DREAD_WORDS as GREEK_DREAD } from './greek-spec.js';
+import { DREAD_SPOKEN as PHOENICIAN_DREAD } from './phoenician-spec.js';
+import { DREAD_EPITHETS as RUNIC_DREAD, parseGlyphs } from './runic-spec.js';
 
 // The sweeps run the schools the site teaches, so a school reaches the contract
 // tests the day it is declared, without a test edit that could forget it.
@@ -46,6 +55,22 @@ export const DIFFICULTIES: ReadonlyArray<number> = Array.from(
 );
 
 export const SEEDS: ReadonlyArray<number> = [7, 1234, 987654321];
+
+// Names the sweep point a failure was found at, so a message says which of the
+// hundreds of formulas behind an assertion is the one that broke.
+export const label = (school: string, difficulty: number, seed: number): string =>
+  `${school} d${difficulty} seed ${seed}`;
+
+// The dread words each script keeps out of the schools that never take one,
+// transcribed from the spec next to the writer that must never emit one. Keyed
+// by the shipped set, so a genome added to the site is swept here or fails to
+// compile.
+export const DREAD: Readonly<Record<LanguageId, ReadonlyArray<string>>> = {
+  runic: RUNIC_DREAD,
+  egyptian: EGYPTIAN_DREAD,
+  phoenician: PHOENICIAN_DREAD,
+  greek: GREEK_DREAD,
+};
 
 // The contract tests read the English gloss, so each genome is bound to the
 // English slice of its own script, once, here. Nothing falls back to a default
@@ -97,56 +122,37 @@ export function greekWords(school: School, difficulty: number, seed: number): st
   return greek(school, difficulty, seed).transliteration.split(' ');
 }
 
-export function sweepGreek(
+export type Sweep = (
   schools: ReadonlyArray<School>,
   cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
-): void {
-  for (const school of schools) {
-    for (const difficulty of DIFFICULTIES) {
-      for (const seed of SEEDS) {
-        cb(greek(school, difficulty, seed), school, difficulty, seed);
+) => void;
+
+// The sweep a genome's suite runs: the schools it is given, crossed with every
+// tier and every seed. One shape for the four, so widening the bench widens all
+// of them at once.
+function sweeper(write: Writer): Sweep {
+  return (schools, cb) => {
+    for (const school of schools) {
+      for (const difficulty of DIFFICULTIES) {
+        for (const seed of SEEDS) {
+          cb(write(school, difficulty, seed), school, difficulty, seed);
+        }
       }
     }
-  }
+  };
 }
 
-export function sweep(
-  schools: ReadonlyArray<School>,
-  cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
-): void {
-  for (const school of schools) {
-    for (const difficulty of DIFFICULTIES) {
-      for (const seed of SEEDS) {
-        cb(runic(school, difficulty, seed), school, difficulty, seed);
-      }
-    }
-  }
-}
+export const sweep: Sweep = sweeper(runic);
+export const sweepEgyptian: Sweep = sweeper(egyptian);
+export const sweepPhoenician: Sweep = sweeper(phoenician);
+export const sweepGreek: Sweep = sweeper(greek);
 
-export function sweepEgyptian(
-  schools: ReadonlyArray<School>,
-  cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
-): void {
-  for (const school of schools) {
-    for (const difficulty of DIFFICULTIES) {
-      for (const seed of SEEDS) {
-        cb(egyptian(school, difficulty, seed), school, difficulty, seed);
-      }
-    }
-  }
-}
-
-export function sweepPhoenician(
-  schools: ReadonlyArray<School>,
-  cb: (out: FormulaOutput, school: School, difficulty: number, seed: number) => void,
-): void {
-  for (const school of schools) {
-    for (const difficulty of DIFFICULTIES) {
-      for (const seed of SEEDS) {
-        cb(phoenician(school, difficulty, seed), school, difficulty, seed);
-      }
-    }
-  }
+// The clause plan a seed and a school produce, for the assertions that read a
+// formula's structure before any script has written it. The pipeline's own
+// clamp is used rather than a repeat of it, so the bench and the page enter the
+// planner on the same tier.
+export function plan(school: School, difficulty: number, seed: number): FormulaPlan {
+  return buildPlan(school, clampDifficulty(difficulty), mulberry32(seed >>> 0));
 }
 
 // Rebuilds the word list behind a Phoenician formula, so the contract tests
@@ -156,10 +162,9 @@ export function phoenicianWords(
   difficulty: number,
   seed: number,
 ): PhoenicianWord[] {
-  const level = Math.min(9, Math.max(1, Math.trunc(difficulty)));
   const rng = mulberry32(seed >>> 0);
-  const plan = buildPlan(school, level, rng);
-  return composePhoenician(plan, rng, phoenicianGlosses).words;
+  const built = buildPlan(school, clampDifficulty(difficulty), rng);
+  return composePhoenician(built, rng, phoenicianGlosses).words;
 }
 
 // Rebuilds the word list behind an Egyptian formula. The script carries no
@@ -169,12 +174,15 @@ export function egyptianWords(
   difficulty: number,
   seed: number,
 ): EgyptianWord[] {
-  const level = Math.min(9, Math.max(1, Math.trunc(difficulty)));
   const rng = mulberry32(seed >>> 0);
-  const plan = buildPlan(school, level, rng);
-  return composeEgyptian(plan, rng, egyptianGlosses).words;
+  const built = buildPlan(school, clampDifficulty(difficulty), rng);
+  return composeEgyptian(built, rng, egyptianGlosses).words;
 }
 
+// How many school clauses a tier carries, transcribed from the tier tables of
+// docs/genomes.md, which give every genome the same three steps. Held here
+// rather than read off generator/plan.ts: a contract test that asked the
+// planner how many clauses to expect would be checking it against itself.
 export function clauseCount(difficulty: number): number {
   if (difficulty <= 5) return 1;
   if (difficulty <= 7) return 2;

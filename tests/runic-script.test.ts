@@ -8,7 +8,7 @@ import {
   adjectiveForm,
   adverbForm,
 } from '../src/ts/languages/runic.js';
-import { RUNE_TABLE } from './spec.js';
+import { RUNE_TABLE } from './runic-spec.js';
 
 test('rune table: every token maps to the spec codepoint', () => {
   for (const [token, glyph] of RUNE_TABLE) {

@@ -15,8 +15,8 @@ import {
   POWER_TABLE,
   SEAL_SIGN,
   X_SIEVE,
-  codePoints,
 } from './egyptian-spec.js';
+import { codePoints } from './text.js';
 import { DIFFICULTIES, SEEDS, egyptian, egyptianWords } from './gen.js';
 
 const where = (difficulty: number, seed: number): string => `d${difficulty} seed ${seed}`;

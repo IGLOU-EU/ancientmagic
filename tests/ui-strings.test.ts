@@ -11,9 +11,6 @@
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { generate } from '../src/ts/generator/pipeline.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
 import { bindGenome } from '../src/ts/languages/index.js';
@@ -22,8 +19,7 @@ import { decode } from '../src/ts/share.js';
 import { en } from '../src/ts/strings/en.js';
 import { fr } from '../src/ts/strings/fr.js';
 import { difficultyTier, resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+import { readShared, readStrings } from '../tools/sources.js';
 
 // The seed behind the sample formula the page ships, pinned in tests/fixture.
 const SAMPLE_SEED = 66238;
@@ -31,12 +27,6 @@ const SAMPLE_SEED = 66238;
 // The link that names that same formula. A visitor arriving on it is served
 // the pre-rendered page and then replays it, so the two renderings meet.
 const SAMPLE_LINK = '#runic.protection.5.66238';
-
-function pageStrings(name: string): Record<string, string> {
-  return JSON.parse(
-    readFileSync(join(root, 'src', 'strings', `${name}.json`), 'utf8'),
-  ) as Record<string, string>;
-}
 
 test('strings: a language tag resolves to its strings', async () => {
   assert.strictEqual(await resolveStrings('en'), en);
@@ -68,7 +58,7 @@ test('strings: more than one language is registered', () => {
 // transliteration are the same in every language, so they stay shared; its
 // gloss is written by whichever pack the language resolves to, so it cannot be.
 test('strings: the sample glyph and translit lines stay shared, the gloss does not', () => {
-  const shared = pageStrings('common');
+  const shared = readShared();
   assert.ok('sample.glyphs' in shared, 'the sample glyphs left the shared file');
   assert.ok(
     'sample.transliteration' in shared,
@@ -81,7 +71,7 @@ test('strings: the sample glyph and translit lines stay shared, the gloss does n
 });
 
 for (const [language, loadStrings] of UI_STRINGS) {
-  const page = pageStrings(language);
+  const page = readStrings(language);
 
   test(`strings (${language}): the tiers cover the whole difficulty range`, async () => {
     const strings = await loadStrings();
@@ -133,7 +123,7 @@ for (const [language, loadStrings] of UI_STRINGS) {
 
     const glosses = await (await resolveGlosses(language)).runic();
     const out = generate(bindGenome(runicGenome, glosses), formula.settings, formula.seed);
-    const shared = pageStrings('common');
+    const shared = readShared();
 
     // The page marks the glyph run with soft break hints, which are markup
     // around the text rather than part of it.

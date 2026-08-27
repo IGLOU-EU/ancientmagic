@@ -14,17 +14,16 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { LANGUAGES, type LanguageId } from '../src/ts/generator/types.js';
 import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as greekData from '../src/ts/languages/greek-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
 import * as runicData from '../src/ts/languages/runic-data.js';
+import { REPO_ROOT } from '../tools/sources.js';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const script = readFileSync(join(root, 'tools', 'subset-fonts.sh'), 'utf8');
-const stylesheet = readFileSync(join(root, 'src', 'scss', '_fonts.scss'), 'utf8');
+const script = readFileSync(join(REPO_ROOT, 'tools', 'subset-fonts.sh'), 'utf8');
+const stylesheet = readFileSync(join(REPO_ROOT, 'src', 'scss', '_fonts.scss'), 'utf8');
 
 // The data module of every shipped genome, keyed by the shipped set itself, so
 // a genome that arrives without its signs reaching the font pipeline is a
@@ -131,7 +130,7 @@ test('font subsets: every file the pipeline cuts is registered and ships', () =>
   for (const file of SUBSETS.keys()) {
     assert.ok(FACES.has(file), `${file} is cut but src/scss/_fonts.scss registers no face for it`);
     assert.ok(
-      existsSync(join(root, 'pub', 'fonts', `${file}.woff2`)),
+      existsSync(join(REPO_ROOT, 'pub', 'fonts', `${file}.woff2`)),
       `${file} is cut but no such file ships in pub/fonts`,
     );
   }

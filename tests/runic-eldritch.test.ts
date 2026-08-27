@@ -7,7 +7,7 @@ import {
   ELDRITCH_OPENING_FULL,
   ELDRITCH_OPENING_SHORT,
   NUMERAL_WORDS,
-} from './spec.js';
+} from './runic-spec.js';
 import { DIFFICULTIES, SEEDS, alignSegments, clauseCount, runic } from './gen.js';
 
 test('eldritch distortion follows the three ordered rules', () => {

@@ -17,12 +17,18 @@ import {
   POWER_TABLE,
   SEAL_SIGN,
   SEDJEM_EN_EF_SUFFIX,
-  codePoints,
 } from './egyptian-spec.js';
-import { ALL_SCHOOLS, BRIGHT_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, egyptianWords } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
+import { codePoints } from './text.js';
+import {
+  ALL_SCHOOLS,
+  BRIGHT_SCHOOLS,
+  DIFFICULTIES,
+  SEEDS,
+  clauseCount,
+  egyptian,
+  egyptianWords,
+  label,
+} from './gen.js';
 
 const words = (school: string, difficulty: number, seed: number): string[] =>
   egyptian(school as never, difficulty, seed).transliteration.split(' ');
@@ -144,7 +150,7 @@ test('protection clauses are verb initial, with r before the target and in befor
       const list = egyptianWords('protection', difficulty, seed);
       const line = list.map((w) => w.spoken);
       // Every verb of a protection clause carries the first person suffix.
-      const expected = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+      const expected = clauseCount(difficulty);
       const suffixed = list.filter((w) => w.suffix !== '');
       assert.strictEqual(suffixed.length, expected, `suffixed verbs in ${where}`);
       list.forEach((word, index) => {
@@ -181,7 +187,7 @@ test('curse clauses topicalize with ir and let the verb take the third person su
       const list = egyptianWords('curse', difficulty, seed);
       const line = list.map((w) => w.spoken);
       const irCount = line.filter((w) => w === 'ir').length;
-      const expected = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+      const expected = clauseCount(difficulty);
       assert.strictEqual(irCount, expected, `clause count via ir in ${where}`);
       const suffixed = list.filter((w) => w.suffix !== '');
       assert.strictEqual(suffixed.length, expected, `suffixed verbs in ${where}`);
@@ -209,7 +215,7 @@ test('invocation clauses open on the vocative and reach my before the power word
     for (const seed of SEEDS) {
       const where = label('invocation', difficulty, seed);
       const line = words('invocation', difficulty, seed);
-      const expected = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+      const expected = clauseCount(difficulty);
       assert.strictEqual(
         line.filter((w) => w === 'mi').length,
         expected,
@@ -244,7 +250,7 @@ test('the epithet chain grows with the tier, four nouns at tier 9', () => {
       const line = words('invocation', difficulty, seed);
       // Each clause opens on the vocative i and stacks n-genitive epithets.
       const perClause = AGENT_CHAIN[difficulty] ?? 0;
-      const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+      const clauses = clauseCount(difficulty);
       const genitives = line.filter((w) => w === 'en').length;
       // The EO2 title line also spends one n at tiers 3, 4, 8 and 9, and each
       // gate name of the tier 8 litany spends one more.
@@ -282,7 +288,7 @@ test('every vocative heads a chain of exactly its tier length', () => {
           if (list[stop]?.spoken !== 'mi') return;
           chains.push(nouns);
         });
-        assert.strictEqual(chains.length, difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3, `clause count in ${where}`);
+        assert.strictEqual(chains.length, clauseCount(difficulty), `clause count in ${where}`);
         for (const nouns of chains) {
           assert.strictEqual(nouns, expected, `agent chain length in ${where}`);
         }
@@ -399,9 +405,6 @@ test('the seal count is written with repeated strokes, exempt from collapse', ()
 
 const DIVINATION_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
 
-const divinationClauses = (difficulty: number): number =>
-  difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
-
 test('the question particle opens the asking clause and stands first in it', () => {
   for (const difficulty of DIVINATION_TIERS) {
     for (const seed of SEEDS) {
@@ -438,7 +441,7 @@ test('every seeing clause carries the caster suffix and no nominal subject', () 
       const suffixed = list.filter((w) => w.suffix !== '');
       assert.strictEqual(
         suffixed.length,
-        divinationClauses(difficulty) - 1,
+        clauseCount(difficulty) - 1,
         `seeing clause count in ${where}`,
       );
       for (const verb of suffixed) {
@@ -549,7 +552,7 @@ test('every binding clause writes the sedjem-en-ef and no other clause does', ()
       const where = label('chronomancy', difficulty, seed);
       const list = egyptianWords('chronomancy', difficulty, seed);
       const performative = list.filter((w) => w.suffix === SEDJEM_EN_EF_SUFFIX);
-      const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+      const clauses = clauseCount(difficulty);
       assert.strictEqual(performative.length, clauses - 1, `binding clause count in ${where}`);
       for (const verb of performative) {
         // The water ripple stands between the determinative and the suffix,

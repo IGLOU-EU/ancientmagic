@@ -15,13 +15,10 @@ import * as assert from 'node:assert/strict';
 import { decode, encode, LANGUAGES, SCHOOLS, sealLink } from '../src/ts/share.js';
 import { GENOME_LOADERS } from '../src/ts/languages/index.js';
 import { ALL_SCHOOLS } from './gen.js';
+import { sorted } from './text.js';
 
 // The runic fixture of genomes.md section 5, the one the page ships pre-rendered.
 const FIXTURE = { settings: { language: 'runic', school: 'protection', difficulty: 5 }, seed: 66238 } as const;
-
-function sorted(values: Iterable<string>): string[] {
-  return Array.from(values).sort();
-}
 
 test('share: a formula is written as language.school.difficulty.seed', () => {
   assert.strictEqual(encode(FIXTURE.settings, FIXTURE.seed), 'runic.protection.5.66238');

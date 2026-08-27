@@ -79,6 +79,26 @@ export const DREAD_EPITHETS: ReadonlyArray<string> = [
 export const ELDRITCH_OPENING_SHORT = 'wgkrathuf';
 export const ELDRITCH_OPENING_FULL = 'odnglmebtszpeijinhwgkrathuf';
 
+// The time field of spec 2.3: the ten coined roots of the lexicon table, then
+// the two rune names the rune-name table puts in the same field. Transcribed
+// because the return anchor of spec 1.6 is held to this field and to no other,
+// so the assertion has to know the field independently of the data module that
+// fills it.
+export const TIME_FIELD: ReadonlyArray<string> = [
+  'tid',
+  'stund',
+  'sumar',
+  'ald',
+  'wurd',
+  'skap',
+  'morgan',
+  'aband',
+  'aiw',
+  'forn',
+  'jer',
+  'dag',
+];
+
 // The four direction words of spec 2.4 and the fixed tail of RC5 (2.6).
 export const DIRECTION_WORDS_SPEC: Readonly<Record<string, string>> = {
   back: 'aftar',
@@ -119,8 +139,4 @@ export function parseGlyphs(glyphs: string): ParsedFormula {
     .split(CLAUSE_SEP)
     .map((segment) => segment.split(WORD_SEP));
   return { segments, seal };
-}
-
-export function codePoints(text: string): string[] {
-  return Array.from(text);
 }

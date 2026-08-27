@@ -13,12 +13,9 @@ import {
   FIELD_DET,
   LEXICON,
   SIGN_TABLE,
-  codePoints,
 } from './egyptian-spec.js';
-import { ALL_SCHOOLS, egyptian, egyptianWords, sweepEgyptian } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
+import { codePoints } from './text.js';
+import { ALL_SCHOOLS, egyptian, egyptianWords, label, sweepEgyptian } from './gen.js';
 
 const PHONOGRAMS: ReadonlySet<string> = new Set(SIGN_TABLE.map(([, glyph]) => glyph));
 

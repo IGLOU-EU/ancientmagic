@@ -2,40 +2,19 @@
 // browser. The default language takes index.html, any other language is written
 // as a flat sibling next to it.
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { renderSite, sitemap, type LanguagePage, type PageStrings } from './render-page.js';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { renderSite, sitemap } from './render-site.js';
+import { readLanguages, readShared, REPO_ROOT } from './sources.js';
 
 const DEFAULT_LANGUAGE = 'en';
-const SHARED_FILE = 'common.json';
-const SUFFIX = '.json';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const templateFile = join(root, 'src', 'html', 'index.html');
-const stringsDir = join(root, 'src', 'strings');
-const outDir = join(root, 'pub');
-
-function readJson(file: string): PageStrings {
-  return JSON.parse(readFileSync(file, 'utf8')) as PageStrings;
-}
-
-// The strings directory is the register of languages. A file appearing there is
-// a language of the site, listed by every other page's switcher and by every
-// page's alternates, with no second place to remember to edit.
-function readLanguages(): LanguagePage[] {
-  return readdirSync(stringsDir)
-    .sort()
-    .filter((file) => file !== SHARED_FILE && file.endsWith(SUFFIX))
-    .map((file) => ({
-      name: file.slice(0, -SUFFIX.length),
-      strings: readJson(join(stringsDir, file)),
-    }));
-}
+const templateFile = join(REPO_ROOT, 'src', 'html', 'index.html');
+const outDir = join(REPO_ROOT, 'pub');
 
 function buildPages(): void {
   const template = readFileSync(templateFile, 'utf8');
-  const shared = readJson(join(stringsDir, SHARED_FILE));
+  const shared = readShared();
   const languages = readLanguages();
 
   for (const [file, page] of renderSite(template, shared, languages, DEFAULT_LANGUAGE)) {

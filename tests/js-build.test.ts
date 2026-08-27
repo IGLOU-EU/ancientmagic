@@ -11,11 +11,10 @@ import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { REPO_ROOT } from '../tools/sources.js';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const jsRoot = join(root, 'pub', 'js');
-const tsRoot = join(root, 'src', 'ts');
+const jsRoot = join(REPO_ROOT, 'pub', 'js');
+const tsRoot = join(REPO_ROOT, 'src', 'ts');
 
 function modules(dir: string, extension: string): string[] {
   return readdirSync(dir, { recursive: true })

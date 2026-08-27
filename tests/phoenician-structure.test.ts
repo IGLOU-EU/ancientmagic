@@ -32,12 +32,11 @@ import {
   BRIGHT_SCHOOLS,
   DIFFICULTIES,
   SEEDS,
+  clauseCount,
+  label,
   phoenician,
   phoenicianWords,
 } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
 
 const line = (school: string, difficulty: number, seed: number): string[] =>
   phoenician(school as never, difficulty, seed).transliteration.split(' ');
@@ -200,7 +199,7 @@ test('protection and curse clauses run verb, divine subject, object', () => {
         const pool = school === 'curse' ? DARK_SPOKEN : BRIGHT_SPOKEN;
         // Every jussive verb is followed directly by the divine name subject.
         const verbs = words.filter((w) => w.role === 'intent');
-        const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+        const clauses = clauseCount(difficulty);
         assert.strictEqual(verbs.length, clauses, `clause count in ${where}`);
         words.forEach((word, index) => {
           if (word.role !== 'intent') return;
@@ -263,7 +262,7 @@ test('invocation stacks the agent chain, then the imperative, then the power wor
       for (const seed of SEEDS) {
         const where = label(school, difficulty, seed);
         const words = phoenicianWords(school, difficulty, seed);
-        const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+        const clauses = clauseCount(difficulty);
         const chain = difficulty >= 9 ? 3 : difficulty >= 8 ? 2 : 1;
         const intents = words.filter((w) => w.role === 'intent');
         assert.strictEqual(intents.length, clauses, `clause count in ${where}`);
@@ -289,7 +288,7 @@ test('the agent construct chain grows with the tier in every school', () => {
         const where = label(school, difficulty, seed);
         const words = phoenicianWords(school, difficulty, seed);
         const chain = difficulty >= 9 ? 3 : difficulty >= 8 ? 2 : 1;
-        const clauses = difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
+        const clauses = clauseCount(difficulty);
         // Divination writes its power out in the asking clause alone, and
         // only from tier 8, where the construct chain has to hang on it
         // (spec 4.11). Below that the verb prefix carries the subject.
@@ -457,9 +456,6 @@ test('divine names never carry the article', () => {
 
 const DIVINATION_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
 
-const divinationClauses = (difficulty: number): number =>
-  difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
-
 test('the interrogative rides the verb of the asking clause and nothing else', () => {
   for (const difficulty of DIVINATION_TIERS) {
     for (const seed of SEEDS) {
@@ -491,7 +487,7 @@ test('every seeing clause opens on the imperfect 1sg, the form no other school d
       const where = label('divination', difficulty, seed);
       const words = phoenicianWords('divination', difficulty, seed);
       const intents = words.filter((w) => w.role === 'intent');
-      assert.strictEqual(intents.length, divinationClauses(difficulty), `clause count in ${where}`);
+      assert.strictEqual(intents.length, clauseCount(difficulty), `clause count in ${where}`);
       const seeing = intents.slice(1);
       for (const verb of seeing) {
         // The clause joiner rides in front of the prefix from tier 6 up.
@@ -531,7 +527,7 @@ test('the divination object is marked from tier 4 and takes the article from tie
       // from tier 4 up, without the delay the PO1 schools carry.
       assert.strictEqual(
         markers,
-        difficulty >= 4 ? divinationClauses(difficulty) : 0,
+        difficulty >= 4 ? clauseCount(difficulty) : 0,
         `object marker count in ${where}`,
       );
       spoken.forEach((word, index) => {
@@ -598,9 +594,6 @@ test('the caster of a divination presents himself as a seer', () => {
 
 const CHRONOMANCY_TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
 
-const chronomancyClauses = (difficulty: number): number =>
-  difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
-
 test('the crossing clause opens on the imperative and its direction word', () => {
   const directions = new Set(Object.values(DIRECTION_SPOKEN));
   for (const difficulty of CHRONOMANCY_TIERS) {
@@ -630,7 +623,7 @@ test('every binding clause writes the perfect 1sg, which no other school draws',
       const where = label('chronomancy', difficulty, seed);
       const words = phoenicianWords('chronomancy', difficulty, seed);
       const intents = words.filter((w) => w.role === 'intent');
-      assert.strictEqual(intents.length, chronomancyClauses(difficulty), `clause count in ${where}`);
+      assert.strictEqual(intents.length, clauseCount(difficulty), `clause count in ${where}`);
       for (const verb of intents.slice(1)) {
         // One letter more on the written root, the tau of the suffix, which
         // keeps this form apart from the perfect 3ms on the page as well as

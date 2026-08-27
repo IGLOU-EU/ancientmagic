@@ -21,6 +21,7 @@ import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
+import { sorted } from './text.js';
 
 interface GenomeGlossTables {
   roots: RootGlossTable;
@@ -105,10 +106,6 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     directions: Object.keys(greekData.DIRECTION_WORDS),
   },
 ];
-
-function sorted(values: Iterable<string>): string[] {
-  return Array.from(values).sort();
-}
 
 // The sweep below is only as wide as this table, and the table is written by
 // hand because each genome names its own data module. So the one thing it

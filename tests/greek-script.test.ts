@@ -18,12 +18,9 @@ import {
   NUMERAL_SIGN,
   NUMERALS,
   UNASSIGNED_SIGMA,
-  codePoints,
 } from './greek-spec.js';
-import { ALL_SCHOOLS, SEEDS, greek, greekWords, sweepGreek } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
+import { codePoints } from './text.js';
+import { ALL_SCHOOLS, SEEDS, greek, greekWords, label, sweepGreek } from './gen.js';
 
 test('letter table: every romanization token maps to the spec codepoint', () => {
   for (const [token, glyph] of LETTER_TABLE) {

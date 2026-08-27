@@ -5,13 +5,11 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
-import { buildPlan, DIRECTIONS } from '../src/ts/generator/plan.js';
-import { mulberry32 } from '../src/ts/generator/rng.js';
+import { DIRECTIONS } from '../src/ts/generator/plan.js';
 import {
   LANGUAGES,
   type BoundGenome,
   type LanguageId,
-  type School,
   type SemanticField,
 } from '../src/ts/generator/types.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
@@ -20,40 +18,24 @@ import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
-import { FIELDS as RUNIC_FIELDS } from '../src/ts/languages/runic-data.js';
-import { FIELDS as PHOENICIAN_FIELDS } from '../src/ts/languages/phoenician-data.js';
-import { DREAD_SPOKEN as EGYPTIAN_DREAD } from './egyptian-spec.js';
-import { DREAD_SPOKEN as PHOENICIAN_DREAD } from './phoenician-spec.js';
-import { DREAD_WORDS as GREEK_DREAD } from './greek-spec.js';
-import { DIRECTION_WORDS_SPEC, DREAD_EPITHETS as RUNIC_DREAD, RC5_TAIL_SPEC } from './spec.js';
+import { LEXICON as PHOENICIAN_LEXICON } from './phoenician-spec.js';
+import {
+  DIRECTION_WORDS_SPEC,
+  RC5_TAIL_SPEC,
+  TIME_FIELD as RUNIC_TIME_FIELD,
+} from './runic-spec.js';
 import {
   ALL_SCHOOLS,
   DIFFICULTIES,
+  DREAD,
   SEEDS,
   WRITERS,
   egyptianWords,
+  label,
   phoenicianWords,
+  plan,
   runic,
 } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
-
-// The dread words each script keeps out of this school, transcribed from the
-// spec next to the writer that must never emit one. Keyed by the shipped set,
-// so a genome added to the site is swept here or fails to compile.
-const DREAD: Readonly<Record<LanguageId, ReadonlyArray<string>>> = {
-  runic: RUNIC_DREAD,
-  egyptian: EGYPTIAN_DREAD,
-  phoenician: PHOENICIAN_DREAD,
-  greek: GREEK_DREAD,
-};
-
-const GENOMES = LANGUAGES.map((id) => ({ id, write: WRITERS[id], dread: DREAD[id] }));
-
-function plan(school: School, difficulty: number, seed: number): ReturnType<typeof buildPlan> {
-  return buildPlan(school, difficulty, mulberry32(seed >>> 0));
-}
 
 test('the first clause of a chronomantic formula crosses and every clause after it binds', () => {
   for (const difficulty of DIFFICULTIES) {
@@ -153,7 +135,7 @@ test('the course field is reached by chronomancy and by nothing else', () => {
         for (const word of egyptianWords(school, difficulty, seed)) {
           assert.notStrictEqual(word.field, 'course', `course word in ${where}`);
         }
-        const banned = new Set(PHOENICIAN_FIELDS.course.map((r) => r.root));
+        const banned = new Set(PHOENICIAN_LEXICON['course'].map(([skeleton]) => skeleton));
         for (const word of phoenicianWords(school, difficulty, seed)) {
           assert.ok(word.root === null || !banned.has(word.root), `course word in ${where}`);
         }
@@ -163,15 +145,15 @@ test('the course field is reached by chronomancy and by nothing else', () => {
 });
 
 test('no dread epithet ever enters a chronomantic formula', () => {
-  for (const genome of GENOMES) {
+  for (const id of LANGUAGES) {
     for (const difficulty of DIFFICULTIES) {
       for (const seed of SEEDS) {
-        const where = `${genome.id} ${label('chronomancy', difficulty, seed)}`;
-        const out = genome.write('chronomancy', difficulty, seed);
+        const where = `${id} ${label('chronomancy', difficulty, seed)}`;
+        const out = WRITERS[id]('chronomancy', difficulty, seed);
         for (const word of out.transliteration.split(' ')) {
-          assert.ok(!genome.dread.includes(word), `dread word ${word} in ${where}`);
+          assert.ok(!DREAD[id].includes(word), `dread word ${word} in ${where}`);
         }
-        if (genome.id === 'egyptian') {
+        if (id === 'egyptian') {
           assert.ok(
             !out.glyphs.includes('\u{13010}\u{1316A}'),
             `dread determinative pair in ${where}`,
@@ -185,8 +167,8 @@ test('no dread epithet ever enters a chronomantic formula', () => {
 // Spec 1.6: a formula that moves through time must say where it stops, and
 // what it stops at is always a time-field noun.
 test('the return anchor is drawn from the time field in every genome', () => {
-  const runicTime = new Set(RUNIC_FIELDS.time.map((r) => r.root));
-  const phoenicianTime = new Set(PHOENICIAN_FIELDS.time.map((r) => r.root));
+  const runicTime = new Set(RUNIC_TIME_FIELD);
+  const phoenicianTime = new Set(PHOENICIAN_LEXICON['time'].map(([skeleton]) => skeleton));
   for (const difficulty of [5, 6, 7, 8, 9]) {
     for (const seed of SEEDS) {
       const where = label('chronomancy', difficulty, seed);
@@ -237,11 +219,11 @@ test('the return anchor is drawn from the time field in every genome', () => {
 
 // Spec 1.6: nothing new is emitted at the seal, only glossed differently.
 test('the chronomantic seal is glossed as a depth in time, never as a count', () => {
-  for (const genome of GENOMES) {
+  for (const id of LANGUAGES) {
     for (const difficulty of [7, 8, 9]) {
       for (const seed of SEEDS) {
-        const where = `${genome.id} ${label('chronomancy', difficulty, seed)}`;
-        const gloss = genome.write('chronomancy', difficulty, seed).gloss;
+        const where = `${id} ${label('chronomancy', difficulty, seed)}`;
+        const gloss = WRITERS[id]('chronomancy', difficulty, seed).gloss;
         assert.match(gloss, /hours deep\.$/u, `seal not a depth in ${where}`);
         for (const wording of ['Sealed', 'Recited', 'times over']) {
           assert.ok(!gloss.includes(wording), `${wording} in ${where}`);
@@ -250,15 +232,15 @@ test('the chronomantic seal is glossed as a depth in time, never as a count', ()
     }
   }
   // And the other schools keep the reading they always had.
-  for (const genome of GENOMES) {
+  for (const id of LANGUAGES) {
     for (const school of ALL_SCHOOLS) {
       if (school === 'chronomancy') continue;
       for (const difficulty of [7, 8, 9]) {
         for (const seed of SEEDS) {
-          const gloss = genome.write(school, difficulty, seed).gloss;
+          const gloss = WRITERS[id](school, difficulty, seed).gloss;
           assert.ok(
             !gloss.includes('hours deep'),
-            `a depth in ${genome.id} ${label(school, difficulty, seed)}`,
+            `a depth in ${id} ${label(school, difficulty, seed)}`,
           );
         }
       }

@@ -18,13 +18,10 @@ import {
   LETTER_TABLE,
   NAME_TABLE,
   WORD_SEP,
-  codePoints,
   splitWords,
 } from './phoenician-spec.js';
-import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, phoenician, phoenicianWords, sweepPhoenician } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
+import { codePoints } from './text.js';
+import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, label, phoenician, phoenicianWords, sweepPhoenician } from './gen.js';
 
 test('letter table: every romanization token maps to the spec codepoint', () => {
   for (const [token, glyph] of LETTER_TABLE) {

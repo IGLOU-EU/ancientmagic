@@ -5,8 +5,6 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
-import { buildPlan } from '../src/ts/generator/plan.js';
-import { mulberry32 } from '../src/ts/generator/rng.js';
 import {
   LANGUAGES,
   type BoundGenome,
@@ -20,43 +18,23 @@ import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
-import { DREAD_SPOKEN as EGYPTIAN_DREAD } from './egyptian-spec.js';
-import { DREAD_SPOKEN as PHOENICIAN_DREAD } from './phoenician-spec.js';
-import { DREAD_WORDS as GREEK_DREAD } from './greek-spec.js';
-import { DREAD_EPITHETS as RUNIC_DREAD } from './spec.js';
-import { FIELDS as PHOENICIAN_FIELDS } from '../src/ts/languages/phoenician-data.js';
+import { LEXICON as PHOENICIAN_LEXICON } from './phoenician-spec.js';
 import {
   ALL_SCHOOLS,
   DIFFICULTIES,
+  DREAD,
   SEEDS,
   WRITERS,
   egyptianWords,
+  label,
   phoenicianWords,
+  plan,
 } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
 
 // The three fields the school brought with it (spec 1.5). Fate is the one it
 // shares with Chronomancy, which acts on what Divination reads, so only the
 // other two are exclusive to it.
 const DIVINATION_FIELDS: ReadonlyArray<SemanticField> = ['sight', 'signs'];
-
-// The dread words each script keeps out of this school, transcribed from the
-// spec next to the writer that must never emit one. Keyed by the shipped set,
-// so a genome added to the site is swept here or fails to compile.
-const DREAD: Readonly<Record<LanguageId, ReadonlyArray<string>>> = {
-  runic: RUNIC_DREAD,
-  egyptian: EGYPTIAN_DREAD,
-  phoenician: PHOENICIAN_DREAD,
-  greek: GREEK_DREAD,
-};
-
-const GENOMES = LANGUAGES.map((id) => ({ id, write: WRITERS[id], dread: DREAD[id] }));
-
-function plan(school: School, difficulty: number, seed: number): ReturnType<typeof buildPlan> {
-  return buildPlan(school, difficulty, mulberry32(seed >>> 0));
-}
 
 test('the first clause of a divination formula asks and every clause after it sees', () => {
   for (const difficulty of DIFFICULTIES) {
@@ -149,7 +127,9 @@ test('no word of another school is written with a divination-only field', () => 
           );
         }
         const banned = new Set(
-          DIVINATION_FIELDS.flatMap((field) => PHOENICIAN_FIELDS[field].map((r) => r.root)),
+          DIVINATION_FIELDS.flatMap((field) =>
+            PHOENICIAN_LEXICON[field].map(([skeleton]) => skeleton),
+          ),
         );
         for (const word of phoenicianWords(school, difficulty, seed)) {
           assert.ok(
@@ -163,17 +143,17 @@ test('no word of another school is written with a divination-only field', () => 
 });
 
 test('no dread epithet ever enters a divination formula', () => {
-  for (const genome of GENOMES) {
+  for (const id of LANGUAGES) {
     for (const difficulty of DIFFICULTIES) {
       for (const seed of SEEDS) {
-        const where = `${genome.id} ${label('divination', difficulty, seed)}`;
-        const out = genome.write('divination', difficulty, seed);
+        const where = `${id} ${label('divination', difficulty, seed)}`;
+        const out = WRITERS[id]('divination', difficulty, seed);
         for (const word of out.transliteration.split(' ')) {
-          assert.ok(!genome.dread.includes(word), `dread word ${word} in ${where}`);
+          assert.ok(!DREAD[id].includes(word), `dread word ${word} in ${where}`);
         }
         // The register's own determinative pair, on the one genome that marks
         // its epithets with signs rather than with sounds.
-        if (genome.id === 'egyptian') {
+        if (id === 'egyptian') {
           assert.ok(
             !out.glyphs.includes('\u{13010}\u{1316A}'),
             `dread determinative pair in ${where}`,
@@ -187,12 +167,12 @@ test('no dread epithet ever enters a divination formula', () => {
 // Spec 7: a question mark appears in the gloss line of a Divination asking
 // clause and nowhere else, since no script here writes one.
 test('the question mark lives in an asking clause gloss and nowhere else', () => {
-  for (const genome of GENOMES) {
+  for (const id of LANGUAGES) {
     for (const school of ALL_SCHOOLS) {
       for (const difficulty of DIFFICULTIES) {
         for (const seed of SEEDS) {
-          const where = `${genome.id} ${label(school, difficulty, seed)}`;
-          const gloss = genome.write(school, difficulty, seed).gloss;
+          const where = `${id} ${label(school, difficulty, seed)}`;
+          const gloss = WRITERS[id](school, difficulty, seed).gloss;
           const marks = Array.from(gloss).filter((c) => c === '?').length;
           // One asking clause per formula, from the tier the school clause
           // enters. Below that the formula is a power word or a bare order.

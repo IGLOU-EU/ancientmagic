@@ -5,12 +5,11 @@
 
 import { spawn } from 'node:child_process';
 import { watch } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { clearTimeout, setTimeout } from 'node:timers';
-import { fileURLToPath } from 'node:url';
+import { REPO_ROOT } from './sources.js';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const WATCHED = [join(root, 'src', 'html'), join(root, 'src', 'strings')];
+const WATCHED = [join(REPO_ROOT, 'src', 'html'), join(REPO_ROOT, 'src', 'strings')];
 
 // Editors fire several events per save, one settle window folds them into a
 // single rebuild.

@@ -6,12 +6,11 @@
 // module. Every import specifier, static and dynamic, comes out as it went in.
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { minify } from 'terser';
+import { REPO_ROOT } from './sources.js';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const jsRoot = join(root, 'pub', 'js');
+const jsRoot = join(REPO_ROOT, 'pub', 'js');
 
 for (const entry of readdirSync(jsRoot, { recursive: true })) {
   if (!entry.endsWith('.js')) continue;

@@ -366,10 +366,6 @@ export const NUMERALS: Readonly<Record<number, readonly [glyphs: string, spoken:
   12: [`${NUM_10}${NUM_2}`, 'shenem asar'],
 };
 
-export function codePoints(text: string): string[] {
-  return Array.from(text);
-}
-
 // The glyph line is stored in logical (reading) order, so splitting on the
 // separator yields the words in the order the transliteration lists them.
 export function splitWords(glyphs: string): string[] {

@@ -11,21 +11,19 @@ import {
   NUMERAL_WORDS,
   RC5_TAIL_SPEC,
   WORD_SEP,
-  codePoints,
   parseGlyphs,
-} from './spec.js';
+} from './runic-spec.js';
+import { codePoints } from './text.js';
 import {
   ALL_SCHOOLS,
   BRIGHT_SCHOOLS,
   SEEDS,
   alignSegments,
   clauseCount,
+  label,
   runic,
   sweep,
 } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
 
 test('transliteration is lowercase ascii words in every output', () => {
   sweep(ALL_SCHOOLS, (out, school, difficulty, seed) => {

@@ -3,9 +3,8 @@
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '../src/ts/generator/pipeline.js';
 import { LANGUAGES, SCHOOLS } from '../src/ts/generator/types.js';
 import {
@@ -14,14 +13,10 @@ import {
   renderComposition,
   renderLanguage,
   renderPage,
-  renderSite,
-  shareLinks,
-  sitemap,
-  SHARE_NETWORKS,
-  type LanguagePage,
 } from '../tools/render-page.js';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+import { renderSite, sitemap, type LanguagePage } from '../tools/render-site.js';
+import { shareLinks, SHARE_NETWORKS } from '../tools/share-targets.js';
+import { readLanguages, readShared, REPO_ROOT } from '../tools/sources.js';
 
 // The share row of the mini template, built from the network set instead of
 // spelled out, so adding a network is one edit in the tool and none here.
@@ -66,11 +61,7 @@ function miniSite(): Map<string, string> {
 }
 
 function read(...parts: string[]): string {
-  return readFileSync(join(root, ...parts), 'utf8');
-}
-
-function readJson(...parts: string[]): Record<string, string> {
-  return JSON.parse(read(...parts)) as Record<string, string>;
+  return readFileSync(join(REPO_ROOT, ...parts), 'utf8');
 }
 
 test('page build: substitutes every placeholder', () => {
@@ -415,23 +406,8 @@ test('sitemap: one url per language and nothing volatile', () => {
 
 // --------------------------------------------------------- the real pages
 
-function realLanguages(): LanguagePage[] {
-  return readdirSync(join(root, 'src', 'strings'))
-    .sort()
-    .filter((file) => file !== 'common.json' && file.endsWith('.json'))
-    .map((file) => ({
-      name: file.slice(0, -'.json'.length),
-      strings: readJson('src', 'strings', file),
-    }));
-}
-
 function site(): Map<string, string> {
-  return renderSite(
-    read('src', 'html', 'index.html'),
-    readJson('src', 'strings', 'common.json'),
-    realLanguages(),
-    'en',
-  );
+  return renderSite(read('src', 'html', 'index.html'), readShared(), readLanguages(), 'en');
 }
 
 test('page build: every published page is what the template and its strings render', () => {
@@ -441,10 +417,9 @@ test('page build: every published page is what the template and its strings rend
 });
 
 test('page build: the published sitemap is what the language set derives', () => {
-  const shared = readJson('src', 'strings', 'common.json');
   assert.strictEqual(
     read('pub', 'sitemap.xml'),
-    sitemap(realLanguages(), 'en', shared['site.url'] ?? ''),
+    sitemap(readLanguages(), 'en', readShared()['site.url'] ?? ''),
   );
 });
 
@@ -464,7 +439,7 @@ test('page build: every language ships the social preview its page points at', (
 // underneath is untouched: it is still what a crawler reads and what the
 // pre-rendered equality tests hold to the replay of its own link.
 test('page build: every page serves the Emanation hidden, sample and all', () => {
-  const glyphs = readJson('src', 'strings', 'common.json')['sample.glyphs'];
+  const glyphs = readShared()['sample.glyphs'];
 
   for (const page of site().values()) {
     const tag = /<section class="manifestation"[^>]*>/.exec(page)?.[0] ?? '';
@@ -494,19 +469,12 @@ test('page build: every share link names itself and hides its icon', () => {
 // The social preview bakes the promise line in, so it is a translation surface
 // like the page, and it fails the same way when a language falls behind.
 
-function languageFiles(): string[] {
-  return readdirSync(join(root, 'src', 'strings'))
-    .sort()
-    .filter((file) => file !== 'common.json' && file.endsWith('.json'));
-}
-
 test('og composition: renders for every language', () => {
   const template = read('src', 'html', 'og-image.html');
-  const shared = readJson('src', 'strings', 'common.json');
+  const shared = readShared();
 
-  for (const file of languageFiles()) {
-    const name = file.slice(0, -'.json'.length);
-    const image = renderComposition(template, shared, readJson('src', 'strings', file), name);
+  for (const { name, strings } of readLanguages()) {
+    const image = renderComposition(template, shared, strings, name);
     assert.ok(image.includes(`<html lang="${name}">`), name);
     assert.ok(!image.includes('{{'), `unresolved placeholder for ${name}`);
   }
@@ -514,11 +482,9 @@ test('og composition: renders for every language', () => {
 
 test('og composition: the promise line is the one its page shows', () => {
   const template = read('src', 'html', 'og-image.html');
-  const shared = readJson('src', 'strings', 'common.json');
+  const shared = readShared();
 
-  for (const file of languageFiles()) {
-    const name = file.slice(0, -'.json'.length);
-    const strings = readJson('src', 'strings', file);
+  for (const { name, strings } of readLanguages()) {
     const image = renderComposition(template, shared, strings, name);
     assert.ok(image.includes(strings['header.promise']), name);
   }
@@ -529,10 +495,7 @@ test('og composition: the glyph run is the sample formula, break hints aside', (
   // while the page leaves soft <wbr> hints. The glyphs themselves must not
   // drift apart, so they are compared with both kinds of hint stripped.
   const template = read('src', 'html', 'og-image.html');
-  const expected = readJson('src', 'strings', 'common.json')['sample.glyphs'].replaceAll(
-    '<wbr>',
-    '',
-  );
+  const expected = readShared()['sample.glyphs'].replaceAll('<wbr>', '');
 
   const runs = Array.from(template.matchAll(/<p class="glyph-line[^"]*"[^>]*>(.*?)<\/p>/gs));
   assert.strictEqual(runs.length, 2, 'the composition lost its vapor twin');

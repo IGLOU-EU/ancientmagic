@@ -24,15 +24,18 @@ import {
   GO6,
   NUMERALS,
 } from './greek-spec.js';
-import { ALL_SCHOOLS, BRIGHT_SCHOOLS, DIFFICULTIES, SEEDS, greek, greekWords } from './gen.js';
-
-const label = (school: string, difficulty: number, seed: number): string =>
-  `${school} d${difficulty} seed ${seed}`;
+import {
+  ALL_SCHOOLS,
+  BRIGHT_SCHOOLS,
+  DIFFICULTIES,
+  SEEDS,
+  clauseCount,
+  greek,
+  greekWords,
+  label,
+} from './gen.js';
 
 const TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
-
-const clauseCount = (difficulty: number): number =>
-  difficulty <= 5 ? 1 : difficulty <= 7 ? 2 : 3;
 
 // The school's own opener, which the Ephesian words may stand in front of.
 const OPENER: Readonly<Record<string, ReadonlyArray<string>>> = {
