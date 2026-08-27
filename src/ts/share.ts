@@ -9,11 +9,15 @@
 // meaning of a link has to be fixed the day the first one is copied. Nothing
 // here touches the DOM or the network: it is a spelling, both ways.
 
-import { clampDifficulty } from './generator/pipeline.js';
+import { clampDifficulty, MAX_DIFFICULTY, MIN_DIFFICULTY } from './generator/pipeline.js';
+import { MAX_SEED } from './generator/rng.js';
 import type { LanguageId, School, Settings } from './generator/types.js';
 
-// What a link may name. Held to the genome registry and to the schools the
-// plan builds by test, so the format cannot outlive or outrun the site.
+// What a link may name. The site's own sets live in generator/types.js, which
+// no wave of the page fetches, and reading a link must cost no request beyond
+// the generator core this module already pulls. So the format spells the two
+// sets out, and tests/share.test.ts fails the day either one disagrees with
+// the genome registry or with the schools the plan builds.
 export const LANGUAGES: ReadonlyArray<LanguageId> = [
   'runic',
   'egyptian',
@@ -37,9 +41,6 @@ export interface SharedFormula {
 // A dot: legal in a fragment, so nothing is ever percent-encoded, and a link
 // survives being pasted into a message unchanged.
 const SEPARATOR = '.';
-
-// The widest seed the rng takes, an unsigned 32 bit number.
-const MAX_SEED = 4294967295;
 
 // Exactly the decimal spelling a number gets from String(): no sign, no
 // leading zero, no exponent, no hex. Anything else is a different format
@@ -89,7 +90,9 @@ export function decode(text: string): SharedFormula | null {
   const seed = wholeNumber(seedText);
 
   if (language === undefined || school === undefined) return null;
-  if (difficulty === null || difficulty < 1 || difficulty > 9) return null;
+  if (difficulty === null || difficulty < MIN_DIFFICULTY || difficulty > MAX_DIFFICULTY) {
+    return null;
+  }
   if (seed === null || seed > MAX_SEED) return null;
 
   return { settings: { language, school, difficulty }, seed };

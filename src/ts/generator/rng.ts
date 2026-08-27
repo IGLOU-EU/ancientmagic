@@ -3,6 +3,12 @@
 
 export type Rng = () => number;
 
+// The widest seed there is, an unsigned 32 bit number: the state mulberry32
+// keeps, so anything above it seeds the same stream as something below it. A
+// draw and a link both name a seed, and neither may name one the rng cannot
+// take.
+export const MAX_SEED = 4294967295;
+
 // Mulberry32: tiny, fast, good enough distribution for content generation.
 export function mulberry32(seed: number): Rng {
   let state = seed >>> 0;
@@ -11,7 +17,7 @@ export function mulberry32(seed: number): Rng {
     let t = state;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return ((t ^ (t >>> 14)) >>> 0) / (MAX_SEED + 1);
   };
 }
 

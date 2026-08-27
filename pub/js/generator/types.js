@@ -1,1 +1,1 @@
-export{};
+export const LANGUAGES=["runic","egyptian","phoenician","greek"];export const SCHOOLS=["protection","curse","invocation","eldritch","divination","chronomancy"];

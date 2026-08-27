@@ -16,17 +16,18 @@ import { bindGenome } from '../src/ts/languages/index.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { greekGlosses } from '../src/ts/glosses/en/greek.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
-import type { FormulaOutput, School } from '../src/ts/generator/types.js';
+import {
+  SCHOOLS,
+  type FormulaOutput,
+  type LanguageId,
+  type School,
+} from '../src/ts/generator/types.js';
+import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '../src/ts/generator/pipeline.js';
 import { parseGlyphs } from './spec.js';
 
-export const ALL_SCHOOLS: ReadonlyArray<School> = [
-  'protection',
-  'curse',
-  'invocation',
-  'eldritch',
-  'divination',
-  'chronomancy',
-];
+// The sweeps run the schools the site teaches, so a school reaches the contract
+// tests the day it is declared, without a test edit that could forget it.
+export const ALL_SCHOOLS = SCHOOLS;
 
 // The schools built on the base tier table of each genome: clear register,
 // openers and closers of section N.9. Divination reads against its own table
@@ -37,7 +38,11 @@ export const BRIGHT_SCHOOLS: ReadonlyArray<School> = [
   'invocation',
 ];
 
-export const DIFFICULTIES: ReadonlyArray<number> = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+// Every tier the pipeline reads, so widening the range widens the sweep.
+export const DIFFICULTIES: ReadonlyArray<number> = Array.from(
+  { length: MAX_DIFFICULTY - MIN_DIFFICULTY + 1 },
+  (_unused, index) => MIN_DIFFICULTY + index,
+);
 
 export const SEEDS: ReadonlyArray<number> = [7, 1234, 987654321];
 
@@ -65,6 +70,19 @@ export function phoenician(school: School, difficulty: number, seed: number): Fo
 export function greek(school: School, difficulty: number, seed: number): FormulaOutput {
   return generate(GREEK, { language: 'greek', school, difficulty }, seed);
 }
+
+export type Writer = (school: School, difficulty: number, seed: number) => FormulaOutput;
+
+// Every shipped genome behind the writer this bench uses for it, keyed by the
+// shipped set itself. A test that sweeps all of them builds its table from
+// here instead of naming the genomes again, and a genome the site carries
+// cannot go unswept: leaving it out is a compile error.
+export const WRITERS: Readonly<Record<LanguageId, Writer>> = {
+  runic,
+  egyptian,
+  phoenician,
+  greek,
+};
 
 // Greek writes one flat word list, joined by the ano teleia from tier 3 up, so
 // its words are read off the transliteration like the Runic ones.

@@ -8,7 +8,7 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
-import type { BoundGenome, School } from '../src/ts/generator/types.js';
+import { LANGUAGES, SCHOOLS, type BoundGenome } from '../src/ts/generator/types.js';
 import { GLOSS_PACKS, resolveGlosses } from '../src/ts/glosses/index.js';
 import { enGlosses } from '../src/ts/glosses/en/index.js';
 import type { GlossPack, GlossTable, NamedPowerTable, RootGlossTable } from '../src/ts/glosses/types.js';
@@ -21,15 +21,6 @@ import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
-
-const SCHOOLS: ReadonlyArray<School> = [
-  'protection',
-  'curse',
-  'invocation',
-  'eldritch',
-  'divination',
-  'chronomancy',
-];
 
 interface GenomeGlossTables {
   roots: RootGlossTable;
@@ -118,6 +109,16 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
 function sorted(values: Iterable<string>): string[] {
   return Array.from(values).sort();
 }
+
+// The sweep below is only as wide as this table, and the table is written by
+// hand because each genome names its own data module. So the one thing it
+// cannot be trusted on is completeness, which this holds.
+test('the inventories cover every genome the site ships', () => {
+  assert.deepStrictEqual(
+    sorted(INVENTORIES.map((inventory) => inventory.genome)),
+    sorted(LANGUAGES),
+  );
+});
 
 for (const [language, loadPack] of GLOSS_PACKS) {
   for (const inventory of INVENTORIES) {

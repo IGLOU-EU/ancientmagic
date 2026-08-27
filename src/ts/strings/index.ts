@@ -24,3 +24,15 @@ export const UI_STRINGS: ReadonlyMap<string, StringsLoader> = new Map([
 export async function resolveStrings(tag: string): Promise<UiStrings> {
   return (UI_STRINGS.get(baseLanguage(tag)) ?? enStrings)();
 }
+
+// Which of the four tier words names a level of power. The page ships the tier
+// of its initial level pre-rendered and the runtime writes the tier of every
+// level after it, so where one tier ends and the next begins has to be one
+// reading both sides can be held to.
+export function difficultyTier(strings: UiStrings, value: number): string {
+  const tiers = strings.difficultyTiers;
+  if (value <= 2) return tiers.low;
+  if (value <= 5) return tiers.mid;
+  if (value <= 7) return tiers.high;
+  return tiers.peak;
+}

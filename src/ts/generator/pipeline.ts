@@ -8,11 +8,16 @@ import type { BoundGenome, FormulaOutput, Settings } from './types.js';
 // which script is loaded and in which language, and when, stays the caller's
 // decision. The core drags neither the registry of genomes nor a pack of
 // wordings behind it: it clamps, seeds, plans, and hands the plan over.
+
 // The nine tiers the plan knows, and the only reading of a difficulty there
 // is. Exported because a shared link must name the tier that was used, not the
-// number the altar happened to hold.
+// number the altar happened to hold, and because the control that offers a
+// level of power spans these same nine.
+export const MIN_DIFFICULTY = 1;
+export const MAX_DIFFICULTY = 9;
+
 export function clampDifficulty(value: number): number {
-  return Math.min(9, Math.max(1, Math.trunc(value)));
+  return Math.min(MAX_DIFFICULTY, Math.max(MIN_DIFFICULTY, Math.trunc(value)));
 }
 
 export function generate(

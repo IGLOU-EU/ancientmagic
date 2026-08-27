@@ -5,10 +5,10 @@ import { enGlosses } from '../src/ts/glosses/en/index.js';
 import { runicGlosses } from '../src/ts/glosses/en/runic.js';
 import { bindGenome, GENOME_LOADERS, loadGenome } from '../src/ts/languages/index.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
-import type { LanguageId } from '../src/ts/generator/types.js';
-import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, egyptian, greek, phoenician, runic } from './gen.js';
+import { LANGUAGES, type LanguageId } from '../src/ts/generator/types.js';
+import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, WRITERS } from './gen.js';
 
-const GENOMES = [runic, egyptian, phoenician, greek];
+const GENOMES = Object.values(WRITERS);
 
 test('same seed and settings produce byte-identical output', () => {
   for (const genome of GENOMES) {
@@ -44,12 +44,7 @@ test('every shipped genome renders one plan differently', () => {
 });
 
 test('the registry carries the shipped genomes and nothing else', async () => {
-  assert.deepStrictEqual(Object.keys(GENOME_LOADERS).sort(), [
-    'egyptian',
-    'greek',
-    'phoenician',
-    'runic',
-  ]);
+  assert.deepStrictEqual(Object.keys(GENOME_LOADERS).sort(), [...LANGUAGES].sort());
   for (const [id, load] of Object.entries(GENOME_LOADERS)) {
     assert.ok(load !== undefined, `registry key ${id} carries no loader`);
     const genome = await load(enGlosses);

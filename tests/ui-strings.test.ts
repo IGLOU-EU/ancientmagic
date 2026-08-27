@@ -21,7 +21,7 @@ import { runicGenome } from '../src/ts/languages/runic.js';
 import { decode } from '../src/ts/share.js';
 import { en } from '../src/ts/strings/en.js';
 import { fr } from '../src/ts/strings/fr.js';
-import { resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
+import { difficultyTier, resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -91,18 +91,22 @@ for (const [language, loadStrings] of UI_STRINGS) {
     for (const tier of tiers) assert.ok(tier.length > 0);
   });
 
+  // Read through the tier table rather than against a chosen tier, so moving a
+  // tier boundary is caught here instead of leaving the served page naming one
+  // tier and the first slider move naming another.
   test(`strings (${language}): the runtime tier matches the one the page ships`, async () => {
     const strings = await loadStrings();
-    assert.strictEqual(strings.difficultyTiers.mid, page['difficulty.initialTier']);
+    assert.strictEqual(
+      difficultyTier(strings, Number(page['difficulty.initialValue'])),
+      page['difficulty.initialTier'],
+    );
   });
 
   test(`strings (${language}): the runtime slider text matches the one the page ships`, async () => {
     const strings = await loadStrings();
+    const value = Number(page['difficulty.initialValue']);
     assert.strictEqual(
-      strings.difficultyValueText(
-        Number(page['difficulty.initialValue']),
-        strings.difficultyTiers.mid,
-      ),
+      strings.difficultyValueText(value, difficultyTier(strings, value)),
       page['difficulty.initialValueText'],
     );
   });

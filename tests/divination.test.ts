@@ -7,11 +7,12 @@ import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
 import { buildPlan } from '../src/ts/generator/plan.js';
 import { mulberry32 } from '../src/ts/generator/rng.js';
-import type {
-  BoundGenome,
-  LanguageId,
-  School,
-  SemanticField,
+import {
+  LANGUAGES,
+  type BoundGenome,
+  type LanguageId,
+  type School,
+  type SemanticField,
 } from '../src/ts/generator/types.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
 import { bindGenome } from '../src/ts/languages/index.js';
@@ -28,12 +29,9 @@ import {
   ALL_SCHOOLS,
   DIFFICULTIES,
   SEEDS,
-  egyptian,
+  WRITERS,
   egyptianWords,
-  greek,
-  phoenician,
   phoenicianWords,
-  runic,
 } from './gen.js';
 
 const label = (school: string, difficulty: number, seed: number): string =>
@@ -44,12 +42,17 @@ const label = (school: string, difficulty: number, seed: number): string =>
 // other two are exclusive to it.
 const DIVINATION_FIELDS: ReadonlyArray<SemanticField> = ['sight', 'signs'];
 
-const GENOMES = [
-  { id: 'runic', write: runic, dread: RUNIC_DREAD },
-  { id: 'egyptian', write: egyptian, dread: EGYPTIAN_DREAD },
-  { id: 'phoenician', write: phoenician, dread: PHOENICIAN_DREAD },
-  { id: 'greek', write: greek, dread: GREEK_DREAD },
-] as const;
+// The dread words each script keeps out of this school, transcribed from the
+// spec next to the writer that must never emit one. Keyed by the shipped set,
+// so a genome added to the site is swept here or fails to compile.
+const DREAD: Readonly<Record<LanguageId, ReadonlyArray<string>>> = {
+  runic: RUNIC_DREAD,
+  egyptian: EGYPTIAN_DREAD,
+  phoenician: PHOENICIAN_DREAD,
+  greek: GREEK_DREAD,
+};
+
+const GENOMES = LANGUAGES.map((id) => ({ id, write: WRITERS[id], dread: DREAD[id] }));
 
 function plan(school: School, difficulty: number, seed: number): ReturnType<typeof buildPlan> {
   return buildPlan(school, difficulty, mulberry32(seed >>> 0));

@@ -6,6 +6,8 @@ import * as assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '../src/ts/generator/pipeline.js';
+import { LANGUAGES, SCHOOLS } from '../src/ts/generator/types.js';
 import {
   assertTypographicQuotes,
   mergeStrings,
@@ -148,6 +150,58 @@ test('page build: the template carries no bare human-readable text', () => {
     const rest = between.replace(/\{\{[A-Za-z0-9_.-]+\}\}/g, '').trim();
     assert.strictEqual(rest, '', `bare text in the template: ${JSON.stringify(between)}`);
   }
+});
+
+// ------------------------------------------------------------------ the altar
+// The altar is the only way to a formula, so what it offers has to be what the
+// generator declares. An option nothing realizes is a dead control, a genome or
+// a school with no option of its own is unreachable, and neither shows.
+
+// One select's options, in the order the template lists them, each with the
+// mark that says whether a reader can choose it.
+function options(template: string, selectId: string): Array<{ value: string; live: boolean }> {
+  const select = new RegExp(`<select[^>]*id="${selectId}"[^>]*>(.*?)</select>`, 's').exec(
+    template,
+  );
+  assert.ok(select !== null, `no ${selectId} select in the template`);
+  return Array.from(select?.[1].matchAll(/<option value="([^"]+)"([^>]*)>/g) ?? [], (match) => ({
+    value: match[1],
+    live: !match[2].includes('disabled'),
+  }));
+}
+
+test('page build: the language select offers every genome that ships, and offers no other', () => {
+  const offered = options(read('src', 'html', 'index.html'), 'language');
+  const live = offered.filter((option) => option.live).map((option) => option.value);
+  assert.deepStrictEqual(live.sort(), [...LANGUAGES].sort());
+});
+
+test('page build: a genome still to come is offered disabled, never selectable', () => {
+  for (const option of options(read('src', 'html', 'index.html'), 'language')) {
+    const shipped = [...LANGUAGES].some((id) => id === option.value);
+    assert.strictEqual(option.live, shipped, `${option.value} is offered against its state`);
+  }
+});
+
+test('page build: the school select offers every school the site teaches', () => {
+  const offered = options(read('src', 'html', 'index.html'), 'school');
+  assert.deepStrictEqual(
+    offered.map((option) => option.value).sort(),
+    [...SCHOOLS].sort(),
+  );
+  for (const option of offered) assert.ok(option.live, `${option.value} cannot be chosen`);
+});
+
+test('page build: the power slider spans the tiers the pipeline reads, one tick each', () => {
+  const template = read('src', 'html', 'index.html');
+  const slider = /<input class="slider"[^>]*>/.exec(template)?.[0] ?? '';
+  assert.match(slider, new RegExp(`\\bmin="${MIN_DIFFICULTY}"`), slider);
+  assert.match(slider, new RegExp(`\\bmax="${MAX_DIFFICULTY}"`), slider);
+  assert.strictEqual(
+    (template.match(/<span class="tick[^"]*"><\/span>/g) ?? []).length,
+    MAX_DIFFICULTY - MIN_DIFFICULTY + 1,
+    'the tick row no longer marks one tier each',
+  );
 });
 
 // ------------------------------------------------------- typographic quotes

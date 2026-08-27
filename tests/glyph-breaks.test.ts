@@ -8,23 +8,11 @@
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
+import { LANGUAGES } from '../src/ts/generator/types.js';
 import { breakSegments } from '../src/ts/ui/manifestation.js';
-import {
-  ALL_SCHOOLS,
-  DIFFICULTIES,
-  SEEDS,
-  egyptian,
-  greek,
-  phoenician,
-  runic,
-} from './gen.js';
+import { ALL_SCHOOLS, DIFFICULTIES, SEEDS, WRITERS, egyptian, greek } from './gen.js';
 
-const GENOMES = [
-  { id: 'runic', write: runic },
-  { id: 'egyptian', write: egyptian },
-  { id: 'phoenician', write: phoenician },
-  { id: 'greek', write: greek },
-] as const;
+const GENOMES = LANGUAGES.map((id) => ({ id, write: WRITERS[id] }));
 
 // The separators the shipped genomes write, transcribed from their own data.
 const SEPARATORS: ReadonlySet<string> = new Set([

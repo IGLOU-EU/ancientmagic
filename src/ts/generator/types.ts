@@ -3,15 +3,25 @@
 
 import type { Rng } from './rng.js';
 
-export type LanguageId = 'runic' | 'egyptian' | 'phoenician' | 'greek';
+// The scripts the site writes in and the schools it teaches. Each set is
+// written once, as values, and its type is read back off it, so neither half
+// can gain a member the other one lacks. Everywhere else either derives from
+// here or is held to it by a test: the altar cannot offer a school no genome
+// realizes, and a link cannot name a script that never shipped.
+export const LANGUAGES = ['runic', 'egyptian', 'phoenician', 'greek'] as const;
 
-export type School =
-  | 'protection'
-  | 'curse'
-  | 'invocation'
-  | 'eldritch'
-  | 'divination'
-  | 'chronomancy';
+export type LanguageId = (typeof LANGUAGES)[number];
+
+export const SCHOOLS = [
+  'protection',
+  'curse',
+  'invocation',
+  'eldritch',
+  'divination',
+  'chronomancy',
+] as const;
+
+export type School = (typeof SCHOOLS)[number];
 
 export type GeneRole =
   | 'INTENT'

@@ -1,6 +1,6 @@
 import type { FormulaOutput, LanguageId, School, Settings } from './generator/types.js';
 import type { SharedFormula } from './share.js';
-import { resolveStrings } from './strings/index.js';
+import { difficultyTier, resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
 
 const COPY_HOLD_MS = 1600;
@@ -10,32 +10,7 @@ const COPY_HOLD_MS = 1600;
 const language = document.documentElement.lang;
 const strings = await resolveStrings(language);
 
-// Only the genomes that ship are selectable, the other options of the selects
-// stay disabled in the markup.
-const SHIPPED_LANGUAGES: ReadonlyArray<LanguageId> = [
-  'runic',
-  'egyptian',
-  'phoenician',
-  'greek',
-];
-const SHIPPED_SCHOOLS: ReadonlyArray<School> = [
-  'protection',
-  'curse',
-  'invocation',
-  'eldritch',
-  'divination',
-  'chronomancy',
-];
-
 type CopyState = 'idle' | 'copied' | 'failed';
-
-function tierWord(value: number): string {
-  const tiers = strings.difficultyTiers;
-  if (value <= 2) return tiers.low;
-  if (value <= 5) return tiers.mid;
-  if (value <= 7) return tiers.high;
-  return tiers.peak;
-}
 
 // The page already displays every option name, so reading it back keeps one
 // source per name instead of a second copy in the strings module.
@@ -56,7 +31,7 @@ function syncDifficulty(
   const min = Number(slider.min);
   const max = Number(slider.max);
   const ratio = max > min ? (value - min) / (max - min) : 0;
-  const tier = tierWord(value);
+  const tier = difficultyTier(strings, value);
 
   slider.style.setProperty('--fill-ratio', ratio.toFixed(4));
 
@@ -153,32 +128,35 @@ function wireCopy(): void {
   });
 }
 
-function isSchool(value: string): value is School {
-  return SHIPPED_SCHOOLS.some((id) => id === value);
+// What the altar offers is what the page already says it offers: one option
+// per id the site carries, the ones still to come left disabled in the markup.
+// So the selection is read off the option itself rather than checked against a
+// second list here, which nothing would hold to the first. The build holds the
+// options to the sets the generator declares (tests/page-build).
+function chosen<T extends string>(selectId: string, fallback: T): T {
+  const select = document.getElementById(selectId);
+  if (!(select instanceof HTMLSelectElement)) return fallback;
+  const option = select.selectedOptions[0];
+  if (option === undefined || option.disabled) return fallback;
+  return option.value as T;
 }
 
-function isLanguage(value: string): value is LanguageId {
-  return SHIPPED_LANGUAGES.some((id) => id === value);
-}
-
+// A seed is an unsigned 32 bit number, which is exactly what this array holds,
+// so the width stays the rng's own and is never a second number to keep in step.
 function freshSeed(): number {
-  return Math.floor(Math.random() * 4294967296) >>> 0;
+  const draw = new Uint32Array(1);
+  crypto.getRandomValues(draw);
+  return draw[0];
 }
 
 function readSettings(): Settings {
-  const language = document.getElementById('language');
-  const school = document.getElementById('school');
   const difficulty = document.getElementById('difficulty');
-  const languageValue =
-    language instanceof HTMLSelectElement && isLanguage(language.value)
-      ? language.value
-      : 'runic';
-  const schoolValue =
-    school instanceof HTMLSelectElement && isSchool(school.value)
-      ? school.value
-      : 'protection';
   const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
-  return { language: languageValue, school: schoolValue, difficulty: level };
+  return {
+    language: chosen<LanguageId>('language', 'runic'),
+    school: chosen<School>('school', 'protection'),
+    difficulty: level,
+  };
 }
 
 // The altar is set to what a link names before its formula is written, so the
