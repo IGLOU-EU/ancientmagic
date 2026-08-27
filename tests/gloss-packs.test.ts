@@ -223,6 +223,25 @@ for (const [language, loadPack] of GLOSS_PACKS) {
     });
   }
 
+  // Every genome fixes the same four direction words (spec 1.6), so a reader
+  // switching script mid-page must not see a crossing change its wording. The
+  // coverage checks above are per genome and would not notice, and each pack
+  // keeps its own table because a pack file is the whole wording of one genome
+  // in one language, so what holds the four together is here.
+  test(`${language}: the four genome slices word the directions alike`, async () => {
+    const pack = await loadPack();
+    const slices = await Promise.all(INVENTORIES.map((inventory) => inventory.slice(pack)));
+    // Serialized rather than compared key by key, so a reordering shows up too.
+    const first = JSON.stringify(slices[0]?.directions);
+    for (const [index, slice] of slices.entries()) {
+      assert.strictEqual(
+        JSON.stringify(slice.directions),
+        first,
+        `${INVENTORIES[index]?.genome} words a direction apart from ${INVENTORIES[0]?.genome}`,
+      );
+    }
+  });
+
   // The tables can be complete and the grammar still be a stub, so every
   // clause shape is driven through real plans and the result read back.
   test(`${language}: writes a whole gloss at every tier of every school`, async () => {

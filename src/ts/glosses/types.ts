@@ -85,6 +85,15 @@ export interface GenomeGlosses {
   sentences(parts: ReadonlyArray<string>): string;
 }
 
+// The four tables the methods above read. A pack hands them over as one named
+// group, so a count cannot reach the reading it was not written for.
+export interface GenomeTables {
+  readonly idioms: GlossTable;
+  readonly seals: GlossTable;
+  readonly depths: GlossTable;
+  readonly directions: GlossTable;
+}
+
 // What a Chronomancy clause hands its pack. The crossing clause carries a
 // direction and the binding clause never does (genomes.md 1.6).
 export interface ChronomancyCross {

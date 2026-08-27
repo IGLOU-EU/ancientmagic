@@ -33,6 +33,7 @@ import {
   definite,
   exclaim,
   genderOf,
+  genomeMethods,
   inverted,
   ofDefinite,
   ofPhrase,
@@ -386,11 +387,7 @@ export const greekGlosses: GreekGlosses = {
   depths,
   directions,
 
-  idiom: (id) => lookup(idioms, id, 'idiom'),
-  seal: (count) => lookup(seals, String(count), 'seal'),
-  sealDepth: (count) => lookup(depths, String(count), 'depth'),
-  direction: (id) => lookup(directions, id, 'direction'),
-  sentences: (parts) => parts.join(' '),
+  ...genomeMethods({ idioms, seals, depths, directions }),
 
   protectionClause: (p: GreekProtection) =>
     `${lead(p.joined, 'Moi')}, ${theNoun(p.agentRoot)}, ` +

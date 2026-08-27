@@ -1,7 +1,10 @@
 // French orthography and grammar helpers shared by every genome pack of this
 // language. They belong to the pack, not to the genomes: English has one
 // article and no agreement, French chooses an article, contracts it behind a
-// preposition and bends what it hangs on a noun.
+// preposition and bends what it hangs on a noun. The few that read like the
+// English ones, letter for letter, are restated here rather than shared: a
+// pack is reauthored whole, and a language that capitalizes or spaces words
+// otherwise must be free to say so without touching another.
 //
 // Two conventions the whole pack rests on.
 //
@@ -16,8 +19,14 @@
 // whole first group plus the ouvrir family (je lie, qu'il lie, lie). No
 // conjugator, and no wording that would need one.
 
-import { form } from '../table.js';
-import type { Gender, RootForm, RootGlossTable } from '../types.js';
+import { form, lookup } from '../table.js';
+import type {
+  Gender,
+  GenomeGlosses,
+  GenomeTables,
+  RootForm,
+  RootGlossTable,
+} from '../types.js';
 
 const APOSTROPHE = '’';
 
@@ -131,4 +140,18 @@ export function agreed(
 // carries the plural on its own, and the pack names no adjective in -al.
 export function plural(word: string): string {
   return /[sxz]$/u.test(word) ? word : `${word}s`;
+}
+
+// What every genome pack of this language answers alike: the four lookups into
+// its own tables, and the way French strings its sentences together. A genome
+// that joins otherwise restates `sentences` after this, where the difference
+// stays readable next to the clauses it belongs to.
+export function genomeMethods(tables: GenomeTables): GenomeGlosses {
+  return {
+    idiom: (id) => lookup(tables.idioms, id, 'idiom'),
+    seal: (count) => lookup(tables.seals, String(count), 'seal'),
+    sealDepth: (count) => lookup(tables.depths, String(count), 'depth'),
+    direction: (id) => lookup(tables.directions, id, 'direction'),
+    sentences: (parts) => parts.join(' '),
+  };
 }

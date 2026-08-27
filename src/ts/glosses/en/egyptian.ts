@@ -20,7 +20,7 @@ import type {
   NamedPowerTable,
   RootGlossTable,
 } from '../types.js';
-import { before, capitalize, vocative } from './text.js';
+import { before, capitalize, genomeMethods, vocative } from './text.js';
 
 const roots: RootGlossTable = {
   // warding
@@ -269,11 +269,7 @@ export const egyptianGlosses: EgyptianGlosses = {
   depths,
   directions,
 
-  idiom: (id) => lookup(idioms, id, 'idiom'),
-  seal: (count) => lookup(seals, String(count), 'seal'),
-  sealDepth: (count) => lookup(depths, String(count), 'depth'),
-  direction: (id) => lookup(directions, id, 'direction'),
-  sentences: (parts) => parts.join(' '),
+  ...genomeMethods({ idioms, seals, depths, directions }),
 
   protectionClause: (p: EgyptianProtection) =>
     `I ${form(roots, p.intentRoot, 'verb')} against the ` +

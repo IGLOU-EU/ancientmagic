@@ -34,6 +34,7 @@ import {
   definite,
   exclaim,
   genderOf,
+  genomeMethods,
   inverted,
   ofDefinite,
   ofPhrase,
@@ -662,10 +663,8 @@ export const phoenicianGlosses: PhoenicianGlosses = {
   depths,
   directions,
 
-  idiom: (id) => lookup(idioms, id, 'idiom'),
-  seal: (count) => lookup(seals, String(count), 'seal'),
-  sealDepth: (count) => lookup(depths, String(count), 'depth'),
-  direction: (id) => lookup(directions, id, 'direction'),
+  ...genomeMethods({ idioms, seals, depths, directions }),
+  // A Phoenician clause may leave a slot empty and the join a gap behind it.
   // Ordinary spaces only: collapsing every whitespace would eat the narrow
   // no-break space French sets before an exclamation mark.
   sentences: (parts) => parts.join(' ').replace(/ +/gu, ' ').trim(),

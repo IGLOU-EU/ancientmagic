@@ -17,7 +17,7 @@ import type {
   GlossTable,
   RootGlossTable,
 } from '../types.js';
-import { after, before, capitalize, vocative } from './text.js';
+import { after, before, capitalize, genomeMethods, vocative } from './text.js';
 
 const roots: RootGlossTable = {
   // warding
@@ -263,6 +263,18 @@ function noun(id: string): string {
   return form(roots, id, 'noun');
 }
 
+// A slot the plan may have left empty, ready for `before` or `after` to place.
+// Runic wants the words themselves rather than the placed forms: its curse
+// puts the adverb in front of the participle where every other clause trails
+// it behind the verb.
+function adverb(rootId: string | null): string | null {
+  return rootId === null ? null : form(roots, rootId, 'adv');
+}
+
+function adjective(rootId: string | null): string | null {
+  return rootId === null ? null : form(roots, rootId, 'adj');
+}
+
 function agentName(ref: GlossRef): string {
   return ref.kind === 'epithet' ? vocative(lookup(powers, ref.id, 'power')) : noun(ref.id);
 }
@@ -275,56 +287,44 @@ export const runicGlosses: RunicGlosses = {
   depths,
   directions,
 
-  idiom: (id) => lookup(idioms, id, 'idiom'),
-  seal: (count) => lookup(seals, String(count), 'seal'),
-  sealDepth: (count) => lookup(depths, String(count), 'depth'),
-  direction: (id) => lookup(directions, id, 'direction'),
-  sentences: (parts) => parts.join(' '),
+  ...genomeMethods({ idioms, seals, depths, directions }),
 
   protectionClause: (p: RunicProtection) =>
     `I, the ${noun(p.agentRoot)}, ${form(roots, p.intentRoot, 'verb')}` +
-    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
-    ` against the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
-    `${noun(p.targetRoot)}.`,
+    `${after(adverb(p.adverbRoot))} against the ` +
+    `${before(adjective(p.adjectiveRoot))}${noun(p.targetRoot)}.`,
 
   curseClause: (p: RunicCurse) =>
-    `May the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
-    `${noun(p.targetRoot)} be ` +
-    `${before(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
-    `${form(roots, p.intentRoot, 'pp')}.`,
+    `May the ${before(adjective(p.adjectiveRoot))}${noun(p.targetRoot)} be ` +
+    `${before(adverb(p.adverbRoot))}${form(roots, p.intentRoot, 'pp')}.`,
 
   invocationClause: (p: RunicInvocation) =>
     `${p.agents.map((ref) => `O ${agentName(ref)}`).join(', ')}, ` +
-    `${form(roots, p.intentRoot, 'verb')}` +
-    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}! ` +
+    `${form(roots, p.intentRoot, 'verb')}${after(adverb(p.adverbRoot))}! ` +
     `${capitalize(p.powerWord)}!`,
 
   divinationAsk: (p: RunicDivination) =>
     `Does the ${noun(p.agentRoot)} ${form(roots, p.intentRoot, 'verb')}` +
-    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
-    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
-    `${noun(p.targetRoot)}?`,
+    `${after(adverb(p.adverbRoot))} the ` +
+    `${before(adjective(p.adjectiveRoot))}${noun(p.targetRoot)}?`,
 
   divinationSee: (p: RunicDivination) =>
     `I, the ${noun(p.agentRoot)}, ${form(roots, p.intentRoot, 'verb')}` +
-    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
-    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
-    `${noun(p.targetRoot)}.`,
+    `${after(adverb(p.adverbRoot))} the ` +
+    `${before(adjective(p.adjectiveRoot))}${noun(p.targetRoot)}.`,
 
   // English has no performative verb form, so the mood is marked with an
   // adverb: a binding clause that reads like a plain report has lost the
   // school (spec 1.6).
   chronomancyCross: (p: ChronomancyCross) =>
     `${capitalize(form(roots, p.intentRoot, 'verb'))} ${directions[p.direction] ?? ''}` +
-    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
-    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
-    `${noun(p.targetRoot)}!`,
+    `${after(adverb(p.adverbRoot))} the ` +
+    `${before(adjective(p.adjectiveRoot))}${noun(p.targetRoot)}!`,
 
   chronomancyBind: (p: ChronomancyBind) =>
     `I hereby ${form(roots, p.intentRoot, 'verb')}` +
-    `${after(p.adverbRoot === null ? null : form(roots, p.adverbRoot, 'adv'))}` +
-    ` the ${before(p.adjectiveRoot === null ? null : form(roots, p.adjectiveRoot, 'adj'))}` +
-    `${noun(p.targetRoot)}.`,
+    `${after(adverb(p.adverbRoot))} the ` +
+    `${before(adjective(p.adjectiveRoot))}${noun(p.targetRoot)}.`,
 
   returnAnchor: (anchorRoot, genitiveRoot) =>
     `I turn back to the ${noun(anchorRoot)}` +
