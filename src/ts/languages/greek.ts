@@ -18,7 +18,8 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
-import type { GlossRef, GreekGlosses } from '../glosses/types.js';
+import type { GlossRef } from '../glosses/types.js';
+import type { GreekGlosses } from './greek-glosses.js';
 import {
   BRIGHT_POWER,
   DARK_POWER,
@@ -603,5 +604,6 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: GreekGlosses): For
 
 export const greekGenome: Genome<GreekGlosses> = {
   id: 'greek',
+  separators: [WORD_SEP],
   realize: realizeFormula,
 };

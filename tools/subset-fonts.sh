@@ -28,9 +28,10 @@
 #
 # The stylesheet registers all five under a single CSS family and routes each
 # codepoint to the right file by unicode-range, then calibrates every face onto
-# the height of the runic stave with size-adjust. Those calibration numbers were
-# measured on these exact releases, so the file names below are a contract with
-# src/scss/_fonts.scss, and moving a version means measuring again.
+# the height of the runic stave with size-adjust. The file names and the routing
+# are a contract with src/scss/_fonts.scss and tests/font-subsets holds them to
+# it. The calibration numbers cannot be held that way: they were measured in a
+# browser on these exact releases, so moving a version means measuring again.
 #
 # Requires curl, unzip and python3. fonttools and brotli are installed into a
 # throwaway virtualenv under the work directory when pyftsubset is missing, so
@@ -60,7 +61,9 @@ linearb_sha=16fe739f22242372a0a79189ac9692d59720db21f830523e6bc31b0e51709d24
 greek_url=$base/latin-greek-cyrillic/releases/download/NotoSans-v2.015/NotoSans-v2.015.zip
 greek_sha=0c34df072a3fa7efbb7cbf34950e1f971a4447cffe365d3a359e2d4089b958f5
 
-# Codepoint sets, kept in step with src/ts/languages/*-data.ts.
+# Codepoint sets, held to src/ts/languages/*-data.ts by tests/font-subsets: a
+# sign that reaches a lexicon and not this file fails there, instead of
+# shipping a font with a hole in it and tofu on the page.
 #
 # Runic and Phoenician take their whole block. Both are under 100 codepoints
 # and cost about 3 KB each, so pinning them to today's exact inventory would
@@ -68,10 +71,10 @@ greek_sha=0c34df072a3fa7efbb7cbf34950e1f971a4447cffe365d3a359e2d4089b958f5
 runic_unicodes='U+16A0-16F8'
 phoenician_unicodes='U+10900-1091F'
 
-# The Egyptian block holds 1071 signs and the data uses 47 of them, so this one
-# is subset sign by sign. From SIGN_MAP, the logograms and determinatives, and
-# the closed idiom signs of egyptian-data.ts.
-egyptian_unicodes='U+13000,U+13001,U+13010,U+13079,U+1308B,U+1309D,U+130A1,U+130A7,U+130BB,U+130C0,U+1313F,U+13153,U+1316A,U+13171,U+13191,U+13193,U+131CB,U+131CC,U+131F3,U+131FC,U+1320E,U+13216,U+13219,U+13254,U+13280,U+13297,U+132A4,U+132AA,U+132AE,U+132B9,U+132BD,U+132F4,U+132F9,U+13303,U+13351,U+1337F,U+13383,U+13386,U+1339B,U+133A1,U+133BC,U+133CF,U+133DB,U+133E4,U+133E5,U+1340D,U+13419'
+# The Egyptian block holds 1071 signs and the data uses a few dozen, so this
+# one is subset sign by sign. From SIGN_MAP, the logograms and determinatives,
+# and the closed idiom signs of egyptian-data.ts.
+egyptian_unicodes='U+13000,U+13001,U+13010,U+13079,U+1308B,U+1309D,U+130A1,U+130A7,U+130BB,U+130C0,U+1313F,U+13153,U+1316A,U+13171,U+13191,U+13193,U+131CB,U+131CC,U+131F3,U+131FC,U+1320E,U+13216,U+13219,U+13254,U+13280,U+13297,U+132A4,U+132AA,U+132AE,U+132B9,U+132BD,U+132F4,U+132F9,U+13303,U+13351,U+1335D,U+1337F,U+13383,U+13386,U+1339B,U+133A1,U+133BC,U+133CF,U+133DB,U+133DE,U+133E4,U+133E5,U+1340D,U+13419'
 
 # The four seal glyphs of SEAL_GLYPHS in runic-data.ts. The rest of Noto Sans
 # Linear B, syllabary and ideograms included, is never drawn.

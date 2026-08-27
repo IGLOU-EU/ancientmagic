@@ -13,16 +13,18 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
-  ChronomancyBind,
-  ChronomancyCross,
-  GlossRef,
-  GlossTable,
-  NamedPowerTable,
   PhoenicianDivinationAsk,
   PhoenicianDivinationSee,
   PhoenicianGlosses,
   PhoenicianInvocation,
   PhoenicianJussive,
+} from '../../languages/phoenician-glosses.js';
+import type {
+  ChronomancyBind,
+  ChronomancyCross,
+  GlossRef,
+  GlossTable,
+  NamedPowerTable,
   RootGlossTable,
 } from '../types.js';
 import {

@@ -1,5 +1,5 @@
-// French orthography and grammar helpers shared by the three genome packs of
-// this language. They belong to the pack, not to the genomes: English has one
+// French orthography and grammar helpers shared by every genome pack of this
+// language. They belong to the pack, not to the genomes: English has one
 // article and no agreement, French chooses an article, contracts it behind a
 // preposition and bends what it hangs on a noun.
 //

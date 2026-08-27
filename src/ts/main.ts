@@ -180,7 +180,13 @@ function applySettings(settings: Settings, syncSlider: () => void): void {
 // selected script, and its wordings in the page's language. The browser's
 // module map keeps what it fetched, so conjuring again costs nothing and
 // changing script costs that script.
-type Conjurer = (settings: Settings, seed: number) => FormulaOutput;
+interface Conjurer {
+  write(settings: Settings, seed: number): FormulaOutput;
+  // Travels with the writer because it belongs to the same script: the display
+  // is handed what this genome writes between words rather than keeping a list
+  // of every genome's.
+  separators: ReadonlyArray<string>;
+}
 
 async function loadConjurer(id: LanguageId): Promise<Conjurer> {
   const [pipeline, languages, glosses] = await Promise.all([
@@ -189,7 +195,10 @@ async function loadConjurer(id: LanguageId): Promise<Conjurer> {
     import('./glosses/index.js'),
   ]);
   const genome = await languages.loadGenome(id, await glosses.resolveGlosses(language));
-  return (settings, seed) => pipeline.generate(genome, settings, seed);
+  return {
+    write: (settings, seed) => pipeline.generate(genome, settings, seed),
+    separators: genome.separators,
+  };
 }
 
 // The panel the served page keeps hidden. Nothing opens it but a conjuration,
@@ -206,13 +215,13 @@ async function conjure(settings: Settings, seed: number): Promise<void> {
   // same wave as the generation code rather than the idle page. The share row
   // rides with it: its links are complete in the served page, and what they
   // are missing until here is a formula to hand over.
-  const [write, share, shareLinks] = await Promise.all([
+  const [conjurer, share, shareLinks] = await Promise.all([
     loadConjurer(settings.language),
     import('./share.js'),
     import('./ui/share-links.js'),
   ]);
 
-  const output = write(settings, seed);
+  const output = conjurer.write(settings, seed);
   const languageLabel = optionLabel('language', settings.language);
   const schoolLabel = optionLabel('school', settings.school);
 
@@ -224,6 +233,7 @@ async function conjure(settings: Settings, seed: number): Promise<void> {
   revealManifestation();
   renderFormula(output, {
     languageId: settings.language,
+    separators: conjurer.separators,
     glyphLabel: strings.glyphLineLabel(languageLabel),
     printCaption: strings.printCaption(languageLabel, schoolLabel, settings.difficulty),
   });

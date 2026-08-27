@@ -1,5 +1,5 @@
-// English orthography and grammar helpers shared by the three genome packs of
-// this language. They belong to the pack, not to the genomes: another language
+// English orthography and grammar helpers shared by every genome pack of this
+// language. They belong to the pack, not to the genomes: another language
 // capitalizes differently and has no definite article to strip.
 
 export function capitalize(text: string): string {

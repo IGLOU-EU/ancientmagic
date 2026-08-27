@@ -18,6 +18,7 @@ export type GenomeLoader = (glosses: GlossPack) => Promise<BoundGenome>;
 export function bindGenome<G>(genome: Genome<G>, glosses: G): BoundGenome {
   return {
     id: genome.id,
+    separators: genome.separators,
     realize: (plan, rng) => genome.realize(plan, rng, glosses),
   };
 }

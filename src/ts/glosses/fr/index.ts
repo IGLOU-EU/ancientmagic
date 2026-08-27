@@ -1,6 +1,6 @@
-// The French gloss pack. Same three genomes, same ids, French wordings and a
-// French clause grammar: articles, elision and agreement live here and nowhere
-// in the genome code.
+// The French gloss pack. The same genomes and the same ids as any other pack,
+// French wordings and a French clause grammar: articles, elision and agreement
+// live here and nowhere in the genome code.
 
 import type { GlossPack } from '../types.js';
 

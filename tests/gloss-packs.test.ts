@@ -3,7 +3,7 @@
 // A pack that misses one form, one epithet or one idiom must fail here rather
 // than reach a reader as a hole in a sentence. The sweep runs every registered
 // pack, awaiting its loader, so adding a language adds no test: it is checked
-// the moment it is registered, against all three genomes.
+// the moment it is registered, against every genome.
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';

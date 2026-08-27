@@ -18,6 +18,7 @@ import { greekGlosses } from '../src/ts/glosses/en/greek.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import {
   SCHOOLS,
+  type BoundGenome,
   type FormulaOutput,
   type LanguageId,
   type School,
@@ -50,25 +51,31 @@ export const SEEDS: ReadonlyArray<number> = [7, 1234, 987654321];
 // English slice of its own script, once, here. Nothing falls back to a default
 // language, and nothing is loaded on demand: the page fetches a pair when a
 // reader asks for one, a test bench has every pair from the start.
-const RUNIC = bindGenome(runicGenome, runicGlosses);
-const EGYPTIAN = bindGenome(egyptianGenome, egyptianGlosses);
-const PHOENICIAN = bindGenome(phoenicianGenome, phoenicianGlosses);
-const GREEK = bindGenome(greekGenome, greekGlosses);
+//
+// The bound genomes are exported, not only written through, because a test
+// about what a script declares (its separators, for one) asks the genome
+// rather than a transcription of it.
+export const GENOMES: Readonly<Record<LanguageId, BoundGenome>> = {
+  runic: bindGenome(runicGenome, runicGlosses),
+  egyptian: bindGenome(egyptianGenome, egyptianGlosses),
+  phoenician: bindGenome(phoenicianGenome, phoenicianGlosses),
+  greek: bindGenome(greekGenome, greekGlosses),
+};
 
 export function runic(school: School, difficulty: number, seed: number): FormulaOutput {
-  return generate(RUNIC, { language: 'runic', school, difficulty }, seed);
+  return generate(GENOMES.runic, { language: 'runic', school, difficulty }, seed);
 }
 
 export function egyptian(school: School, difficulty: number, seed: number): FormulaOutput {
-  return generate(EGYPTIAN, { language: 'egyptian', school, difficulty }, seed);
+  return generate(GENOMES.egyptian, { language: 'egyptian', school, difficulty }, seed);
 }
 
 export function phoenician(school: School, difficulty: number, seed: number): FormulaOutput {
-  return generate(PHOENICIAN, { language: 'phoenician', school, difficulty }, seed);
+  return generate(GENOMES.phoenician, { language: 'phoenician', school, difficulty }, seed);
 }
 
 export function greek(school: School, difficulty: number, seed: number): FormulaOutput {
-  return generate(GREEK, { language: 'greek', school, difficulty }, seed);
+  return generate(GENOMES.greek, { language: 'greek', school, difficulty }, seed);
 }
 
 export type Writer = (school: School, difficulty: number, seed: number) => FormulaOutput;

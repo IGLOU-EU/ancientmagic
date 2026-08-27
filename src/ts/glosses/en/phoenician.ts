@@ -4,16 +4,18 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
+  PhoenicianDivinationAsk,
+  PhoenicianDivinationSee,
+  PhoenicianGlosses,
+  PhoenicianInvocation,
+  PhoenicianJussive,
+} from '../../languages/phoenician-glosses.js';
+import type {
   ChronomancyBind,
   ChronomancyCross,
   GlossRef,
   GlossTable,
   NamedPowerTable,
-  PhoenicianGlosses,
-  PhoenicianDivinationAsk,
-  PhoenicianDivinationSee,
-  PhoenicianInvocation,
-  PhoenicianJussive,
   RootGlossTable,
 } from '../types.js';
 import { before, capitalize, vocative } from './text.js';

@@ -7,11 +7,11 @@ export type GlossPackLoader = () => Promise<GlossPack>;
 // only registered.
 const enPack: GlossPackLoader = () => import('./en/index.js').then((m) => m.enGlosses);
 
-// Every pack that ships, behind its own loader. A pack weighs three genomes of
-// wordings and nothing reads it until a conjuration asks, so it is fetched
-// then, and only the one the page resolves to. The completeness tests sweep
-// this registry, so a pack added here is checked against all three genomes
-// without touching the tests.
+// Every pack that ships, behind its own loader. A pack weighs one set of
+// wordings per genome the site writes and nothing reads it until a conjuration
+// asks, so it is fetched then, and only the one the page resolves to. The
+// completeness tests sweep this registry, so a pack added here is checked
+// against every genome without touching the tests.
 export const GLOSS_PACKS: ReadonlyMap<string, GlossPackLoader> = new Map([
   ['en', enPack],
   ['fr', () => import('./fr/index.js').then((m) => m.frGlosses)],

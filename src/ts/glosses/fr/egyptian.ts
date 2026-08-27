@@ -8,8 +8,6 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
-  ChronomancyBind,
-  ChronomancyCross,
   EgyptianAddress,
   EgyptianCurse,
   EgyptianDivinationAsk,
@@ -17,6 +15,10 @@ import type {
   EgyptianGlosses,
   EgyptianInvocation,
   EgyptianProtection,
+} from '../../languages/egyptian-glosses.js';
+import type {
+  ChronomancyBind,
+  ChronomancyCross,
   GlossRef,
   GlossTable,
   NamedPowerTable,

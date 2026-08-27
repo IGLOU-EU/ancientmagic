@@ -9,7 +9,6 @@
 
 import { form, lookup, power } from '../table.js';
 import type {
-  GlossTable,
   GreekChronomancyBind,
   GreekChronomancyCross,
   GreekCurse,
@@ -17,10 +16,8 @@ import type {
   GreekGlosses,
   GreekInvocation,
   GreekProtection,
-  GlossRef,
-  NamedPowerTable,
-  RootGlossTable,
-} from '../types.js';
+} from '../../languages/greek-glosses.js';
+import type { GlossRef, GlossTable, NamedPowerTable, RootGlossTable } from '../types.js';
 import { after, before, capitalize, vocative } from './text.js';
 
 const roots: RootGlossTable = {

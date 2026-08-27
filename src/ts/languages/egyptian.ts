@@ -15,12 +15,8 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
-import type {
-  EgyptianAddress,
-  EgyptianGlosses,
-  GlossRef,
-  RootForm,
-} from '../glosses/types.js';
+import type { GlossRef, RootForm } from '../glosses/types.js';
+import type { EgyptianAddress, EgyptianGlosses } from './egyptian-glosses.js';
 import {
   A14_ENEMY,
   AGENT_POWER,
@@ -1148,5 +1144,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): 
 
 export const egyptianGenome: Genome<EgyptianGlosses> = {
   id: 'egyptian',
+  // The script writes continuously, with nothing standing between its words.
+  separators: [],
   realize: realizeFormula,
 };

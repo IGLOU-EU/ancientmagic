@@ -295,7 +295,7 @@ test('no chronomantic gloss carries a question mark, in either language', async 
 });
 
 // The four values are language independent, so one plan gives the same
-// direction in all three genomes (spec 1.6). Each genome writes it its own
+// direction in every genome (spec 1.6). Each genome writes it its own
 // way, and each pack words it its own way, but never a fifth one.
 test('every genome writes exactly the four directions and no other', () => {
   const runicWords = new Set(Object.values(DIRECTION_WORDS_SPEC));

@@ -8,16 +8,18 @@
 
 import { form, lookup } from '../table.js';
 import type {
-  ChronomancyBind,
-  ChronomancyCross,
-  GlossRef,
   RunicCurse,
   RunicDivination,
   RunicGlosses,
   RunicInvocation,
   RunicProtection,
-  RootGlossTable,
+} from '../../languages/runic-glosses.js';
+import type {
+  ChronomancyBind,
+  ChronomancyCross,
+  GlossRef,
   GlossTable,
+  RootGlossTable,
 } from '../types.js';
 import {
   after,

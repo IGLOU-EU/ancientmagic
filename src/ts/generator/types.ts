@@ -76,8 +76,8 @@ export interface GeneInstance {
 export type ClauseKind = 'asking' | 'seeing' | 'crossing' | 'binding';
 
 // Which way a crossing clause moves through time. Closed and language
-// independent, so one clause plan gives the same direction in all three
-// genomes (genomes.md 1.6).
+// independent, so one clause plan gives the same direction in every genome
+// (genomes.md 1.6).
 export type TimeDirection = 'back' | 'forth' | 'again' | 'still';
 
 export interface ClausePlan {
@@ -122,6 +122,11 @@ export interface Settings {
 // runic conjuration must not carry the Egyptian glosses of any language.
 export interface Genome<Glosses> {
   readonly id: LanguageId;
+  // The characters this script writes between its words, declared where they
+  // are written. What is done with them is the display's business, and a
+  // script that runs continuously declares none: the empty list is an answer,
+  // not a gap.
+  readonly separators: ReadonlyArray<string>;
   realize(plan: FormulaPlan, rng: Rng, glosses: Glosses): FormulaOutput;
 }
 
@@ -131,5 +136,6 @@ export interface Genome<Glosses> {
 // bound shape is what a loader can hand back.
 export interface BoundGenome {
   readonly id: LanguageId;
+  readonly separators: ReadonlyArray<string>;
   realize(plan: FormulaPlan, rng: Rng): FormulaOutput;
 }

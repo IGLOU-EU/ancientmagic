@@ -14,7 +14,8 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
-import type { GlossRef, RunicGlosses } from '../glosses/types.js';
+import type { GlossRef } from '../glosses/types.js';
+import type { RunicGlosses } from './runic-glosses.js';
 import {
   BRIGHT_POWER,
   CLAUSE_SEP,
@@ -606,5 +607,6 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
 
 export const runicGenome: Genome<RunicGlosses> = {
   id: 'runic',
+  separators: [WORD_SEP, CLAUSE_SEP, CROSS_SEP],
   realize: realizeFormula,
 };

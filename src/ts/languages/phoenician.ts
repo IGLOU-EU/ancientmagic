@@ -19,11 +19,8 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
-import type {
-  GlossRef,
-  PhoenicianGlosses,
-  RootForm,
-} from '../glosses/types.js';
+import type { GlossRef, RootForm } from '../glosses/types.js';
+import type { PhoenicianGlosses } from './phoenician-glosses.js';
 import {
   ALF,
   BRIGHT_NAMES,
@@ -1089,5 +1086,6 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses)
 
 export const phoenicianGenome: Genome<PhoenicianGlosses> = {
   id: 'phoenician',
+  separators: [WORD_SEP],
   realize: realizeFormula,
 };

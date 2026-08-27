@@ -5,38 +5,30 @@ import type { FormulaOutput, LanguageId } from '../generator/types.js';
 export interface FormulaMeta {
   // Drives the font stack the stylesheet picks per script.
   languageId: LanguageId;
+  // What the genome writes between its words, handed over by the genome that
+  // wrote them: a script's own knowledge is never transcribed up here, so a
+  // genome added later is hinted without a line of its own in this layer.
+  separators: ReadonlyArray<string>;
   // Text arrives already localized, so this module holds no wording of its own.
   glyphLabel: string;
   printCaption: string;
 }
 
-// The word separators the shipped genomes write. Measured in the browser
-// rather than assumed: the Runic three (᛫ ᛬ ᛭) and the Phoenician 𐤟 already
-// offer the line breaker an opportunity of their own, and the Greek ano teleia
-// offers none, so a Greek run is one unbreakable word and wraps in the middle
-// of it. Egyptian writes continuously and has no separator at all, which is
-// the script's own doing and not something to hint around.
-//
-// The mechanism reads separators, never languages: a hint after one that
-// already breaks changes nothing, and a genome added later inherits the
-// behaviour by declaring its separator here.
-const WORD_SEPARATORS: ReadonlySet<string> = new Set([
-  '\u{16EB}',
-  '\u{16EC}',
-  '\u{16ED}',
-  '\u{1091F}',
-  '\u{0387}',
-]);
-
 // The glyph run cut after every separator. Joining the pieces gives the input
 // back character for character, which is what keeps the copied text, the
 // accessible name and the announcement equal to the pipeline's own output.
-export function breakSegments(glyphs: string): string[] {
+//
+// The cut falls after every separator the caller declares, measured in the
+// browser rather than assumed: some separators already offer the line breaker
+// an opportunity of their own, where the hint changes nothing, and some offer
+// none, where a whole formula wraps as one unbreakable word without it.
+export function breakSegments(glyphs: string, separators: ReadonlyArray<string>): string[] {
+  const cut = new Set(separators);
   const segments: string[] = [];
   let current = '';
   for (const character of glyphs) {
     current += character;
-    if (WORD_SEPARATORS.has(character)) {
+    if (cut.has(character)) {
       segments.push(current);
       current = '';
     }
@@ -50,8 +42,12 @@ export function breakSegments(glyphs: string): string[] {
 // textContent, so the copy path hands over the pipeline's exact glyphs and no
 // screen reader has anything extra to say. It is the same device the served
 // page already uses on its pre-rendered sample.
-function writeGlyphs(target: HTMLElement, glyphs: string): void {
-  const segments = breakSegments(glyphs);
+function writeGlyphs(
+  target: HTMLElement,
+  glyphs: string,
+  separators: ReadonlyArray<string>,
+): void {
+  const segments = breakSegments(glyphs, separators);
   target.replaceChildren();
   segments.forEach((segment, index) => {
     target.append(segment);
@@ -98,14 +94,14 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   const gloss = well.querySelector<HTMLElement>('.gloss');
   const caption = document.querySelector<HTMLElement>('.print-caption');
 
-  writeGlyphs(glyphLine, output.glyphs);
+  writeGlyphs(glyphLine, output.glyphs, meta.separators);
   // The glyph block is named for what it is, not for what it says: the well is
   // one atomic live region, and naming it with the transliteration made the
   // region announce that same line twice, once here and once below.
   glyphLine.setAttribute('aria-label', meta.glyphLabel);
   // The vapor twin must stay in text sync with the visible line (design 13.2),
   // and that includes where the line may break, or the two wrap apart.
-  if (vapor !== null) writeGlyphs(vapor, output.glyphs);
+  if (vapor !== null) writeGlyphs(vapor, output.glyphs, meta.separators);
   if (translit !== null) translit.textContent = output.transliteration;
   if (gloss !== null) gloss.textContent = output.gloss;
 
