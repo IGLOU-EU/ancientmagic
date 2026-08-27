@@ -19,8 +19,21 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
-import type { GlossRef, RootForm } from '../glosses/types.js';
+import type { GlossRef } from '../glosses/types.js';
 import type { PhoenicianGlosses } from './phoenician-glosses.js';
+import {
+  VOWELS,
+  anchorPair,
+  drawUnused,
+  geneField,
+  greedyTokens,
+  pickModifier,
+  requireField,
+  sealGloss,
+  tierTwoClause,
+  transitive,
+  withForm,
+} from './shared.js';
 import {
   ALF,
   BRIGHT_NAMES,
@@ -69,28 +82,15 @@ export {
   composePhoenician,
 };
 
-const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
-
-// Greedy longest match. The spec guarantees no lexicon entry contains kh, tt,
-// ts, sh or gh as two separate letters, so two characters are tried first.
+// The spec guarantees no lexicon entry contains kh, tt, ts, sh or gh as two
+// separate letters. A vowel is a letter of the romanization here even though
+// the abjad never writes it, because the patterns of 4.4 speak it.
 function tokenize(word: string): string[] {
-  const tokens: string[] = [];
-  let i = 0;
-  while (i < word.length) {
-    const two = word.slice(i, i + 2);
-    if (two.length === 2 && LETTER_MAP[two] !== undefined) {
-      tokens.push(two);
-      i += 2;
-      continue;
-    }
-    const one = word.charAt(i);
-    if (LETTER_MAP[one] === undefined && !VOWELS.has(one)) {
-      throw new Error(`letter outside the phoenician romanization: ${one} in ${word}`);
-    }
-    tokens.push(one);
-    i += 1;
-  }
-  return tokens;
+  return greedyTokens(
+    word,
+    (token) => LETTER_MAP[token] !== undefined || VOWELS.has(token),
+    'phoenician',
+  );
 }
 
 // The abjad writes consonants. Every vowel is deleted, except a word-initial
@@ -324,15 +324,6 @@ function verbWord(
   return derived(affix(stem, options), 'intent', skeleton);
 }
 
-function requireField(field: SemanticField | null): SemanticField {
-  if (field === null) throw new Error('gene is missing its semantic field');
-  return field;
-}
-
-function geneField(clause: ClausePlan, role: 'INTENT' | 'TARGET' | 'AGENT'): SemanticField {
-  return requireField(clause.genes.find((g) => g.role === role)?.field ?? null);
-}
-
 // The register writes quadriliterals, so it only draws triconsonantal roots:
 // the fourth radical rule of 4.10 has nothing to add to a two radical root.
 function poolOf(field: SemanticField, eldritch: boolean): PhoenicianRoot[] {
@@ -340,26 +331,22 @@ function poolOf(field: SemanticField, eldritch: boolean): PhoenicianRoot[] {
   return eldritch ? roots.filter((r) => radicals(r.root).length === 3) : [...roots];
 }
 
-function fills(root: PhoenicianRoot, role: RootForm): boolean {
-  return root.forms.includes(role);
-}
-
 function nounsOf(field: SemanticField, eldritch = false): PhoenicianRoot[] {
-  return poolOf(field, eldritch).filter((r) => fills(r, 'noun'));
+  return withForm(poolOf(field, eldritch), 'noun');
 }
 
 function verbsOf(field: SemanticField, eldritch = false): PhoenicianRoot[] {
-  return poolOf(field, eldritch).filter((r) => fills(r, 'verb'));
+  return withForm(poolOf(field, eldritch), 'verb');
 }
 
 // An intransitive root never fills a slot that takes a direct object or an
 // 'yt phrase (spec 4.3).
 function transitiveVerbsOf(field: SemanticField, eldritch = false): PhoenicianRoot[] {
-  return verbsOf(field, eldritch).filter((r) => r.intransitive !== true);
+  return transitive(verbsOf(field, eldritch));
 }
 
 function adjectivesOf(field: SemanticField, eldritch = false): PhoenicianRoot[] {
-  return poolOf(field, eldritch).filter((r) => fills(r, 'adj'));
+  return withForm(poolOf(field, eldritch), 'adj');
 }
 
 function comeVerbsOf(eldritch: boolean): PhoenicianRoot[] {
@@ -378,13 +365,15 @@ interface Modifier {
 
 const NO_MODIFIER: Modifier = { adjective: null, adverb: null };
 
+// The adverb of this genome is a noun behind b-, so it draws from the noun
+// pool and not from an adverb pool of its own (spec 4.5).
 function drawModifier(clause: ClausePlan, rng: Rng, eldritch: boolean): Modifier {
-  const field = clause.modifierField;
-  if (clause.modifier === null || field === null) return NO_MODIFIER;
-  if (clause.modifier === 'adjective') {
-    return { adjective: pick(rng, adjectivesOf(field, eldritch)), adverb: null };
-  }
-  return { adjective: null, adverb: pick(rng, nounsOf(field, eldritch)) };
+  return pickModifier(
+    clause,
+    rng,
+    (field) => adjectivesOf(field, eldritch),
+    (field) => nounsOf(field, eldritch),
+  );
 }
 
 // The adverbial modifier is b- plus a noun, placed at clause end (spec 4.5).
@@ -438,8 +427,7 @@ function genitiveChain(
   const words: PhoenicianWord[] = [];
   const roots: string[] = [];
   for (let i = 0; i < count; i += 1) {
-    const root = pick(rng, nounsOf(field, eldritch).filter((r) => !used.has(r.root)));
-    used.add(root.root);
+    const root = drawUnused(rng, nounsOf(field, eldritch), used, (r) => r.root);
     words.push(nounWord(root, 'agent', { eldritch, plural: true }));
     roots.push(root.root);
   }
@@ -459,8 +447,7 @@ function realizeJussiveClause(
   glosses: PhoenicianGlosses,
 ): Realization {
   const clauseUsed = new Set(used);
-  const agent = pick(rng, powerPool(plan).filter((n) => !clauseUsed.has(n.skeleton)));
-  clauseUsed.add(agent.skeleton);
+  const agent = drawUnused(rng, powerPool(plan), clauseUsed, (n) => n.skeleton);
 
   const agentField = plan.school === 'curse' ? 'harm' : geneField(clause, 'AGENT');
   const chain = genitiveChain(agentField, chainLength(plan.difficulty) - 1, rng, false, new Set());
@@ -486,8 +473,7 @@ function realizeJussiveClause(
 
   let power: DivineName | null = null;
   if (plan.school === 'protection') {
-    power = pick(rng, powerPool(plan).filter((n) => !clauseUsed.has(n.skeleton)));
-    clauseUsed.add(power.skeleton);
+    power = drawUnused(rng, powerPool(plan), clauseUsed, (n) => n.skeleton);
     words.push(nameWord(power, 'power'));
   }
 
@@ -660,18 +646,13 @@ function returnAnchor(
   rng: Rng,
   glosses: PhoenicianGlosses,
 ): Realization {
-  const anchor = pick(rng, nounsOf('time'));
+  const { anchor, genitive } = anchorPair(plan, rng, nounsOf('time'));
   const words: PhoenicianWord[] = [
     fixed(PC5_HEAD),
     nounWord(anchor, 'target', { eldritch: false, proclitic: 'l' }),
   ];
-  let genitive: string | null = null;
-  if (plan.difficulty >= 9) {
-    const held = pick(rng, nounsOf('time').filter((r) => r.root !== anchor.root));
-    genitive = held.root;
-    words.push(nounWord(held, 'target', { eldritch: false }));
-  }
-  return { words, gloss: glosses.returnAnchor(anchor.root, genitive) };
+  if (genitive !== null) words.push(nounWord(genitive, 'target', { eldritch: false }));
+  return { words, gloss: glosses.returnAnchor(anchor.root, genitive?.root ?? null) };
 }
 
 function realizeInvocationClause(
@@ -689,15 +670,13 @@ function realizeInvocationClause(
 
   for (let i = 0; i < chainLength(plan.difficulty); i += 1) {
     if (eldritch) {
-      const epithet = pick(rng, DREAD_POWER.filter((e) => !clauseUsed.has(e.skeleton)));
-      clauseUsed.add(epithet.skeleton);
+      const epithet = drawUnused(rng, DREAD_POWER, clauseUsed, (e) => e.skeleton);
       words.push(dreadWord(epithet, 'agent'));
       agents.push({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken });
       continue;
     }
     const field = requireField(agentGenes[i]?.field ?? agentGenes[0]?.field ?? null);
-    const root = pick(rng, nounsOf(field).filter((r) => !clauseUsed.has(r.root)));
-    clauseUsed.add(root.root);
+    const root = drawUnused(rng, nounsOf(field), clauseUsed, (r) => r.root);
     words.push(nounWord(root, 'agent', { eldritch: false, plural: i > 0 }));
     agents.push({ kind: 'root', id: root.root });
   }
@@ -707,13 +686,11 @@ function realizeInvocationClause(
 
   let invoked: GlossRef;
   if (eldritch) {
-    const epithet = pick(rng, DREAD_POWER.filter((e) => !clauseUsed.has(e.skeleton)));
-    clauseUsed.add(epithet.skeleton);
+    const epithet = drawUnused(rng, DREAD_POWER, clauseUsed, (e) => e.skeleton);
     words.push(dreadWord(epithet, 'power'));
     invoked = { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken };
   } else {
-    const name = pick(rng, BRIGHT_NAMES.filter((n) => !clauseUsed.has(n.skeleton)));
-    clauseUsed.add(name.skeleton);
+    const name = drawUnused(rng, BRIGHT_NAMES, clauseUsed, (n) => n.skeleton);
     words.push(nameWord(name, 'power'));
     invoked = { kind: 'power', id: name.skeleton };
   }
@@ -744,8 +721,7 @@ function selfPresentation(
 ): Realization {
   const words: PhoenicianWord[] = [fixed(PO2_HEAD)];
   if (plan.eldritch) {
-    const epithet = pick(rng, DREAD_POWER.filter((e) => !used.has(e.skeleton)));
-    used.add(epithet.skeleton);
+    const epithet = drawUnused(rng, DREAD_POWER, used, (e) => e.skeleton);
     words.push(dreadWord(epithet, 'idiom', 'l'));
     return { words, gloss: glosses.selfPresentationByEpithet(epithet.skeleton) };
   }
@@ -804,8 +780,7 @@ function schoolOpener(
   // The register inverts the amulet opener: the incantation now speaks with
   // the demon's voice rather than against it (spec 4.10).
   if (plan.eldritch) {
-    const epithet = pick(rng, DREAD_POWER.filter((e) => !used.has(e.skeleton)));
-    used.add(epithet.skeleton);
+    const epithet = drawUnused(rng, DREAD_POWER, used, (e) => e.skeleton);
     return {
       words: [fixed(PO1_HEAD), dreadWord(epithet, 'target', 'b')],
       gloss: glosses.openerByEpithet(epithet.skeleton),
@@ -951,8 +926,7 @@ function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses)
 }
 
 function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: PhoenicianGlosses): Realization {
-  const clause = plan.clauses[0];
-  if (clause === undefined) throw new Error('tier 2 plan has no clause');
+  const clause = tierTwoClause(plan);
   const eldritch = plan.eldritch;
   const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT'), eldritch));
   const target = pick(rng, nounsOf(geneField(clause, 'TARGET'), eldritch));
@@ -1064,10 +1038,7 @@ function composePhoenician(
       vocalized: null,
       root: null,
     });
-    // Chronomancy reads the count as a depth in time (spec 1.6).
-    glossParts.push(
-      plan.school === 'chronomancy' ? glosses.sealDepth(count) : glosses.seal(count),
-    );
+    glossParts.push(sealGloss(plan, count, glosses));
   }
 
   return { words, gloss: glosses.sentences(glossParts) };

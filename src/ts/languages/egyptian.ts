@@ -15,8 +15,19 @@ import type {
   Genome,
   SemanticField,
 } from '../generator/types.js';
-import type { GlossRef, RootForm } from '../glosses/types.js';
+import type { GlossRef } from '../glosses/types.js';
 import type { EgyptianAddress, EgyptianGlosses } from './egyptian-glosses.js';
+import {
+  VOWELS,
+  anchorPair,
+  drawUnused,
+  geneField,
+  pickModifier,
+  requireField,
+  sealGloss,
+  tierTwoClause,
+  withForm,
+} from './shared.js';
 import {
   A14_ENEMY,
   AGENT_POWER,
@@ -96,8 +107,6 @@ const SPOKEN_VALUE: Readonly<Record<string, string>> = {
   D: 'dj',
 };
 
-const VOWEL_LETTERS = new Set(['a', 'e', 'i', 'o', 'u']);
-
 interface SpokenUnit {
   text: string;
   // A unit that never triggers the e insertion of spec 3.2. y is spoken as a
@@ -151,18 +160,18 @@ function speakUnits(units: ReadonlyArray<SpokenUnit>): string {
 function speakSkeleton(skeleton: string): string {
   const spoken = speakUnits(spokenUnits(skeleton));
   // A one-letter function word with no vowel gains a leading e (spec 3.2).
-  const voweled = Array.from(spoken).some((letter) => VOWEL_LETTERS.has(letter));
+  const voweled = Array.from(spoken).some((letter) => VOWELS.has(letter));
   return voweled ? spoken : `e${spoken}`;
 }
 
 function endsInConsonant(spoken: string): boolean {
   const last = spoken.charAt(spoken.length - 1);
-  return last !== '' && !VOWEL_LETTERS.has(last);
+  return last !== '' && !VOWELS.has(last);
 }
 
 function startsWithConsonant(spoken: string): boolean {
   const first = spoken.charAt(0);
-  return first !== '' && !VOWEL_LETTERS.has(first);
+  return first !== '' && !VOWELS.has(first);
 }
 
 // Appends a suffix skeleton to an already spoken stem, inserting the e that
@@ -289,29 +298,16 @@ function powerWord(power: PowerWord): EgyptianWord {
   };
 }
 
-function fills(root: EgyptianRoot, role: RootForm): boolean {
-  return root.forms.includes(role);
-}
-
 function nounsOf(field: SemanticField): EgyptianRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'noun'));
+  return withForm(FIELDS[field], 'noun');
 }
 
 function verbsOf(field: SemanticField): EgyptianRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'verb'));
+  return withForm(FIELDS[field], 'verb');
 }
 
 function adjectivesOf(field: SemanticField): EgyptianRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'adj'));
-}
-
-function requireField(field: SemanticField | null): SemanticField {
-  if (field === null) throw new Error('gene is missing its semantic field');
-  return field;
-}
-
-function geneField(clause: ClausePlan, role: 'INTENT' | 'TARGET' | 'AGENT'): SemanticField {
-  return requireField(clause.genes.find((g) => g.role === role)?.field ?? null);
+  return withForm(FIELDS[field], 'adj');
 }
 
 interface Realization {
@@ -324,13 +320,10 @@ interface Modifier {
   adverb: EgyptianRoot | null;
 }
 
+// The adverb of this genome is a noun behind m, so it draws from the noun pool
+// and not from an adverb pool of its own (spec 3.4).
 function drawModifier(clause: ClausePlan, rng: Rng): Modifier {
-  const field = clause.modifierField;
-  if (clause.modifier === null || field === null) return { adjective: null, adverb: null };
-  if (clause.modifier === 'adjective') {
-    return { adjective: pick(rng, adjectivesOf(field)), adverb: null };
-  }
-  return { adjective: null, adverb: pick(rng, nounsOf(field)) };
+  return pickModifier(clause, rng, adjectivesOf, nounsOf);
 }
 
 // The adverbial modifier is m plus a noun, placed at clause end (spec 3.4).
@@ -386,10 +379,8 @@ function realizeProtectionClause(
   const targetField = geneField(clause, 'TARGET');
   const target = pick(rng, nounsOf(targetField));
   const modifier = drawModifier(clause, rng);
-  const agent = pick(rng, AGENT_POWER.filter((p) => !usedPowers.has(p.skeleton)));
-  usedPowers.add(agent.skeleton);
-  const power = pick(rng, BRIGHT_POWER.filter((p) => !usedPowers.has(p.skeleton)));
-  usedPowers.add(power.skeleton);
+  const agent = drawUnused(rng, AGENT_POWER, usedPowers, (p) => p.skeleton);
+  const power = drawUnused(rng, BRIGHT_POWER, usedPowers, (p) => p.skeleton);
   const adverb = adverbPhrase(modifier, clause, false);
 
   const words: EgyptianWord[] = [
@@ -514,8 +505,7 @@ function realizeDivinationAsk(
   const chainRoots: string[] = [];
   const used = new Set<string>();
   for (let i = 0; i < divinationGenitives(plan.difficulty); i += 1) {
-    const root = pick(rng, nounsOf(chainField).filter((r) => !used.has(r.skeleton)));
-    used.add(root.skeleton);
+    const root = drawUnused(rng, nounsOf(chainField), used, (r) => r.skeleton);
     words.push(fixed(FN_N));
     words.push(
       contentWord({
@@ -665,7 +655,7 @@ function realizeChronomancyClause(
 // EC5, the return anchor: prt m plus a time-field noun, with a second noun
 // behind the genitive n at tier 9 (spec 3.6).
 function returnAnchor(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): Realization {
-  const anchor = pick(rng, nounsOf('time'));
+  const { anchor, genitive } = anchorPair(plan, rng, nounsOf('time'));
   const words: EgyptianWord[] = [
     ...EC5_HEAD.map(idiomWord),
     contentWord({
@@ -676,22 +666,19 @@ function returnAnchor(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): Re
       verb: false,
     }),
   ];
-  let genitive: string | null = null;
-  if (plan.difficulty >= 9) {
-    const held = pick(rng, nounsOf('time').filter((r) => r.skeleton !== anchor.skeleton));
-    genitive = held.skeleton;
+  if (genitive !== null) {
     words.push(fixed(FN_N));
     words.push(
       contentWord({
-        skeleton: held.skeleton,
-        spoken: held.spoken,
+        skeleton: genitive.skeleton,
+        spoken: genitive.spoken,
         field: 'time',
         eldritch: false,
         verb: false,
       }),
     );
   }
-  return { words, gloss: glosses.returnAnchor(anchor.skeleton, genitive) };
+  return { words, gloss: glosses.returnAnchor(anchor.skeleton, genitive?.skeleton ?? null) };
 }
 
 function realizeInvocationClause(
@@ -715,14 +702,12 @@ function realizeInvocationClause(
   chain.forEach((gene, index) => {
     if (index > 0) words.push(fixed(FN_N));
     if (eldritch) {
-      const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
-      used.add(epithet.skeleton);
+      const epithet = drawUnused(rng, DREAD_POWER, used, (p) => p.skeleton);
       words.push(dreadWord(epithet));
       agents.push({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken });
     } else {
       const field = requireField(gene.field);
-      const root = pick(rng, nounsOf(field).filter((r) => !used.has(r.skeleton)));
-      used.add(root.skeleton);
+      const root = drawUnused(rng, nounsOf(field), used, (r) => r.skeleton);
       words.push(
         contentWord({
           skeleton: root.skeleton,
@@ -742,13 +727,11 @@ function realizeInvocationClause(
 
   let invoked: GlossRef;
   if (eldritch) {
-    const power = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
-    used.add(power.skeleton);
+    const power = drawUnused(rng, DREAD_POWER, used, (p) => p.skeleton);
     words.push(dreadWord(power));
     invoked = { kind: 'epithet', id: power.skeleton, spoken: power.spoken };
   } else {
-    const power = pick(rng, BRIGHT_POWER.filter((p) => !used.has(p.skeleton)));
-    used.add(power.skeleton);
+    const power = drawUnused(rng, BRIGHT_POWER, used, (p) => p.skeleton);
     words.push(powerWord(power));
     invoked = { kind: 'power', id: power.skeleton };
   }
@@ -783,8 +766,7 @@ function openingWords(
   const pushTitle = (): void => {
     for (const word of EO2_HEAD) words.push(idiomWord(word));
     if (plan.eldritch) {
-      const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
-      used.add(epithet.skeleton);
+      const epithet = drawUnused(rng, DREAD_POWER, used, (p) => p.skeleton);
       words.push(dreadWord(epithet));
       glossParts.push(
         glosses.spellTitle({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken }),
@@ -875,8 +857,7 @@ function singleAddress(
     );
   }
   if (plan.eldritch) {
-    const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
-    used.add(epithet.skeleton);
+    const epithet = drawUnused(rng, DREAD_POWER, used, (p) => p.skeleton);
     return nameKnowledgeLine(
       plan,
       [dreadWord(epithet)],
@@ -922,8 +903,7 @@ function gateLitany(
 
   for (let i = 0; i < count; i += 1) {
     if (plan.eldritch) {
-      const epithet = pick(rng, DREAD_POWER.filter((p) => !used.has(p.skeleton)));
-      used.add(epithet.skeleton);
+      const epithet = drawUnused(rng, DREAD_POWER, used, (p) => p.skeleton);
       const line = nameKnowledgeLine(
         plan,
         [dreadWord(epithet)],
@@ -940,8 +920,7 @@ function gateLitany(
     // which is the Book of Gates rather than the Book of the Dead (3.12).
     const divination = plan.school === 'divination';
     const headField = divination ? pick(rng, ['signs', 'sight'] as const) : 'gates';
-    const head = pick(rng, nounsOf(headField).filter((r) => !heads.has(r.skeleton)));
-    heads.add(head.skeleton);
+    const head = drawUnused(rng, nounsOf(headField), heads, (r) => r.skeleton);
     const tailField = divination
       ? pick(rng, ['fate', 'time'] as const)
       : plan.school === 'chronomancy'
@@ -1023,8 +1002,7 @@ function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): 
 }
 
 function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses): Realization {
-  const clause = plan.clauses[0];
-  if (clause === undefined) throw new Error('tier 2 plan has no clause');
+  const clause = tierTwoClause(plan);
   const intentField = geneField(clause, 'INTENT');
   const targetField = geneField(clause, 'TARGET');
   const intent = pick(rng, verbsOf(intentField));
@@ -1122,10 +1100,7 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses):
     const count = sealCountFor(plan, rng);
     words.push(idiomWord(SEAL_HEAD));
     for (const numeral of NUMERAL_WORDS[count]) words.push(idiomWord(numeral));
-    // Chronomancy reads the count as a depth in time (spec 1.6).
-    glossParts.push(
-      plan.school === 'chronomancy' ? glosses.sealDepth(count) : glosses.seal(count),
-    );
+    glossParts.push(sealGloss(plan, count, glosses));
   }
 
   return { words, gloss: glosses.sentences(glossParts) };

@@ -17,6 +17,20 @@ import type {
 import type { GlossRef } from '../glosses/types.js';
 import type { RunicGlosses } from './runic-glosses.js';
 import {
+  VOWELS,
+  anchorPair,
+  drawUnused,
+  geneField,
+  greedyTokens,
+  pickModifier,
+  requireField,
+  sealGloss,
+  shrinkingSteps,
+  tierTwoClause,
+  transitive,
+  withForm,
+} from './shared.js';
+import {
   BRIGHT_POWER,
   CLAUSE_SEP,
   CROSS_SEP,
@@ -37,32 +51,14 @@ import {
 
 export { tokenizeRunic, runesFor, nounForm, verbForm, adjectiveForm, adverbForm, eldritchRoot };
 
-const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
-
 function isVowelToken(token: string): boolean {
   return token === 'ei' || VOWELS.has(token);
 }
 
-// Greedy longest-match tokenization. The spec guarantees no lexicon entry
-// contains t plus h, n plus g or e plus i as two separate sounds.
+// The spec guarantees no lexicon entry contains t plus h, n plus g or e plus i
+// as two separate sounds, so the longest match is always the intended letter.
 function tokenizeRunic(word: string): string[] {
-  const tokens: string[] = [];
-  let i = 0;
-  while (i < word.length) {
-    const two = word.slice(i, i + 2);
-    if (two.length === 2 && RUNE_MAP[two] !== undefined) {
-      tokens.push(two);
-      i += 2;
-      continue;
-    }
-    const one = word.charAt(i);
-    if (RUNE_MAP[one] === undefined) {
-      throw new Error(`letter outside the futhark romanization: ${one} in ${word}`);
-    }
-    tokens.push(one);
-    i += 1;
-  }
-  return tokens;
+  return greedyTokens(word, (token) => RUNE_MAP[token] !== undefined, 'futhark');
 }
 
 // Carving practice: adjacent identical runes collapse within a word, the
@@ -132,39 +128,35 @@ function eldritchRoot(root: string): string {
   return darkened.join('');
 }
 
-function fills(root: RunicRoot, role: 'noun' | 'verb' | 'adj' | 'adv'): boolean {
-  return root.forms.includes(role);
-}
-
 function nounsOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'noun'));
+  return withForm(FIELDS[field], 'noun');
 }
 
 function verbsOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'verb'));
+  return withForm(FIELDS[field], 'verb');
 }
 
 // An intransitive root never fills a slot that takes a direct object
 // (spec 2.3), which the tier 2 imperative does.
 function transitiveVerbsOf(field: SemanticField): RunicRoot[] {
-  return verbsOf(field).filter((r) => r.intransitive !== true);
+  return transitive(verbsOf(field));
 }
 
 function adjectivesOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'adj'));
+  return withForm(FIELDS[field], 'adj');
 }
 
 function adverbsOf(field: SemanticField): RunicRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'adv'));
+  return withForm(FIELDS[field], 'adv');
 }
 
 function byNames(names: ReadonlyArray<string>): RunicRoot[] {
   return FIELDS.summoning.filter((r) => names.includes(r.root));
 }
 
-function requireField(field: SemanticField | null): SemanticField {
-  if (field === null) throw new Error('gene is missing its semantic field');
-  return field;
+// The register distorts every content root it writes, and nothing else.
+function distortion(plan: FormulaPlan): (root: string) => string {
+  return (root) => (plan.eldritch ? eldritchRoot(root) : root);
 }
 
 interface Segment {
@@ -181,16 +173,13 @@ function realizeModifier(
   rng: Rng,
   distort: (root: string) => string,
 ): { adj: RunicRoot | null; adv: RunicRoot | null; adjWord: string; advWord: string } {
-  const field = clause.modifierField;
-  if (clause.modifier === null || field === null) {
-    return { adj: null, adv: null, adjWord: '', advWord: '' };
-  }
-  if (clause.modifier === 'adjective') {
-    const root = pick(rng, adjectivesOf(field));
-    return { adj: root, adv: null, adjWord: distort(root.root), advWord: '' };
-  }
-  const root = pick(rng, adverbsOf(field));
-  return { adj: null, adv: root, adjWord: '', advWord: adverbForm(distort(root.root)) };
+  const { adjective, adverb } = pickModifier(clause, rng, adjectivesOf, adverbsOf);
+  return {
+    adj: adjective,
+    adv: adverb,
+    adjWord: adjective === null ? '' : distort(adjective.root),
+    advWord: adverb === null ? '' : adverbForm(distort(adverb.root)),
+  };
 }
 
 function realizeProtectionClause(
@@ -200,8 +189,8 @@ function realizeProtectionClause(
   glosses: RunicGlosses,
 ): ClauseRealization {
   const agent = pick(rng, nounsOf('warding'));
-  const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
-  const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
+  const intentField = geneField(clause, 'INTENT');
+  const targetField = geneField(clause, 'TARGET');
   const intent = pick(rng, verbsOf(intentField));
   const target = pick(rng, nounsOf(targetField));
   const mod = realizeModifier(clause, rng, distort);
@@ -233,9 +222,9 @@ function realizeDivinationClause(
   glosses: RunicGlosses,
 ): ClauseRealization {
   const keep = (root: string): string => root;
-  const agentField = requireField(clause.genes.find((g) => g.role === 'AGENT')?.field ?? null);
-  const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
-  const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
+  const agentField = geneField(clause, 'AGENT');
+  const intentField = geneField(clause, 'INTENT');
+  const targetField = geneField(clause, 'TARGET');
   const agent = pick(rng, nounsOf(agentField));
   // Both clause kinds take an object, so neither may draw an intransitive
   // root (spec 2.3).
@@ -280,8 +269,8 @@ function realizeChronomancyClause(
   glosses: RunicGlosses,
 ): ClauseRealization {
   const keep = (root: string): string => root;
-  const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
-  const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
+  const intentField = geneField(clause, 'INTENT');
+  const targetField = geneField(clause, 'TARGET');
   const intent = pick(rng, transitiveVerbsOf(intentField));
   const target = pick(rng, nounsOf(targetField));
   const mod = realizeModifier(clause, rng, keep);
@@ -321,16 +310,11 @@ function returnAnchor(
   rng: Rng,
   glosses: RunicGlosses,
 ): ClauseRealization {
-  const anchor = pick(rng, nounsOf('time'));
+  const { anchor, genitive } = anchorPair(plan, rng, nounsOf('time'));
   const words = [nounForm(anchor.root, 'an')];
-  let genitive: string | null = null;
-  if (plan.difficulty >= 9) {
-    const held = pick(rng, nounsOf('time').filter((r) => r.root !== anchor.root));
-    genitive = held.root;
-    words.push(nounForm(held.root, 'as'));
-  }
+  if (genitive !== null) words.push(nounForm(genitive.root, 'as'));
   words.push(...RC5_TAIL);
-  return { words, gloss: glosses.returnAnchor(anchor.root, genitive) };
+  return { words, gloss: glosses.returnAnchor(anchor.root, genitive?.root ?? null) };
 }
 
 function realizeCurseClause(
@@ -339,7 +323,7 @@ function realizeCurseClause(
   distort: (root: string) => string,
   glosses: RunicGlosses,
 ): ClauseRealization {
-  const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
+  const targetField = geneField(clause, 'TARGET');
   const target = pick(rng, nounsOf(targetField));
   const intent = pick(rng, verbsOf('harm'));
   const mod = realizeModifier(clause, rng, distort);
@@ -374,15 +358,12 @@ function realizeInvocationClause(
 
   for (const gene of clause.genes.filter((g) => g.role === 'AGENT')) {
     if (eldritch) {
-      const pool = DREAD_POWER.filter((word) => !usedEpithets.has(word));
-      const epithet = pick(rng, pool);
-      usedEpithets.add(epithet);
+      const epithet = drawUnused(rng, DREAD_POWER, usedEpithets, (word) => word);
       words.push(epithet);
       agents.push({ kind: 'epithet', id: epithet, spoken: epithet });
     } else {
-      const pool = nounsOf(requireField(gene.field)).filter((r) => !usedEpithets.has(r.root));
-      const agent = pick(rng, pool);
-      usedEpithets.add(agent.root);
+      const pool = nounsOf(requireField(gene.field));
+      const agent = drawUnused(rng, pool, usedEpithets, (r) => r.root);
       words.push(nounForm(agent.root, 'az'));
       agents.push({ kind: 'root', id: agent.root });
     }
@@ -393,13 +374,9 @@ function realizeInvocationClause(
   if (mod.adv !== null) words.push(mod.advWord);
   words.push(verbForm(distort(intent.root), 'bare'));
 
-  let power: string;
-  if (eldritch) {
-    power = pick(rng, DREAD_POWER.filter((word) => !usedEpithets.has(word)));
-    usedEpithets.add(power);
-  } else {
-    power = pick(rng, BRIGHT_POWER);
-  }
+  const power = eldritch
+    ? drawUnused(rng, DREAD_POWER, usedEpithets, (word) => word)
+    : pick(rng, BRIGHT_POWER);
   words.push(power);
 
   return {
@@ -459,18 +436,24 @@ function litanySegment(
     return { words: [word, word, word], gloss: glosses.litanyTriple(word) };
   }
   // Shrinking triangle: the word loses its first rune at each repetition,
-  // down to a single rune. Steps drop whole rune tokens so a digraph never
-  // splits into two letters.
+  // down to a single rune.
   const pool = plan.eldritch
     ? DREAD_POWER
     : BRIGHT_POWER.filter((word) => word !== 'alu' && word !== 'ota');
   const base = pick(rng, pool);
-  const tokens = tokenizeRunic(base);
-  const words: string[] = [];
-  for (let i = 0; i < tokens.length; i += 1) {
-    words.push(tokens.slice(i).join(''));
-  }
-  return { words, gloss: glosses.litanyTriangle(base) };
+  return { words: shrinkingSteps(tokenizeRunic(base)), gloss: glosses.litanyTriangle(base) };
+}
+
+function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
+  if (plan.eldritch) return 9;
+  // The tier 7 divination seal is three and never another count: the rite
+  // lifts three lots (spec 2.11). The chronomantic one is twelve, for the
+  // hours of the night the crossing has to pass (spec 2.12).
+  if (plan.difficulty === 7 && plan.school === 'divination') return 3;
+  if (plan.difficulty === 7 && plan.school === 'chronomancy') return 12;
+  if (plan.difficulty === 7) return pick(rng, [3, 7] as const);
+  if (plan.difficulty === 8) return pick(rng, [7, 9] as const);
+  return pick(rng, [9, 12] as const);
 }
 
 function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): FormulaOutput {
@@ -483,11 +466,10 @@ function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
 }
 
 function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): FormulaOutput {
-  const distort = (root: string): string => (plan.eldritch ? eldritchRoot(root) : root);
-  const clause = plan.clauses[0];
-  if (clause === undefined) throw new Error('tier 2 plan has no clause');
-  const intentField = requireField(clause.genes.find((g) => g.role === 'INTENT')?.field ?? null);
-  const targetField = requireField(clause.genes.find((g) => g.role === 'TARGET')?.field ?? null);
+  const distort = distortion(plan);
+  const clause = tierTwoClause(plan);
+  const intentField = geneField(clause, 'INTENT');
+  const targetField = geneField(clause, 'TARGET');
 
   const intent = pick(rng, transitiveVerbsOf(intentField));
   const target = pick(rng, nounsOf(targetField));
@@ -504,7 +486,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
   if (plan.difficulty === 1) return realizeTierOne(plan, rng, glosses);
   if (plan.difficulty === 2) return realizeTierTwo(plan, rng, glosses);
 
-  const distort = (root: string): string => (plan.eldritch ? eldritchRoot(root) : root);
+  const distort = distortion(plan);
   const segments: Segment[] = [];
   const glossParts: string[] = [];
 
@@ -575,22 +557,8 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
 
   let sealCount: SealCount | null = null;
   if (plan.seal) {
-    if (plan.eldritch) sealCount = 9;
-    // The tier 7 divination seal is three and never another count: the rite
-    // lifts three lots (spec 2.11). The chronomantic one is twelve, for the
-    // hours of the night the crossing has to pass (spec 2.12).
-    else if (plan.difficulty === 7 && divination) sealCount = 3;
-    else if (plan.difficulty === 7 && plan.school === 'chronomancy') sealCount = 12;
-    else if (plan.difficulty === 7) sealCount = pick(rng, [3, 7] as const);
-    else if (plan.difficulty === 8) sealCount = pick(rng, [7, 9] as const);
-    else sealCount = pick(rng, [9, 12] as const);
-    // Chronomancy reads the count as how far the crossing went, so the same
-    // seal is worded as a depth in time (spec 1.6).
-    glossParts.push(
-      plan.school === 'chronomancy'
-        ? glosses.sealDepth(sealCount)
-        : glosses.seal(sealCount),
-    );
+    sealCount = sealCountFor(plan, rng);
+    glossParts.push(sealGloss(plan, sealCount, glosses));
   }
 
   let glyphs = segments

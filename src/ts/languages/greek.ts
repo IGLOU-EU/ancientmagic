@@ -21,6 +21,19 @@ import type {
 import type { GlossRef } from '../glosses/types.js';
 import type { GreekGlosses } from './greek-glosses.js';
 import {
+  anchorPair,
+  drawUnused,
+  geneField,
+  greedyTokens,
+  pickModifier,
+  requireField,
+  sealGloss,
+  shrinkingSteps,
+  tierTwoClause,
+  transitive,
+  withForm,
+} from './shared.js';
+import {
   BRIGHT_POWER,
   DARK_POWER,
   DIRECTION_WORDS,
@@ -49,27 +62,10 @@ export { tokenizeGreek, lettersFor, nounForm, verbForm, aoristForm, adverbForm, 
 type NounEnding = 'os' | 'on' | 'ou' | 'e';
 type VerbForm = 'oo' | 'ei' | 'e' | 'etoo' | 'aorist';
 
-// Greedy longest match. The spec forbids any root that would reparse, so no
-// lexicon entry contains t plus h, p plus s, e plus e and so on meaning two
-// separate sounds.
+// The spec forbids any root that would reparse, so no lexicon entry contains
+// t plus h, p plus s, e plus e and so on meaning two separate sounds.
 function tokenizeGreek(word: string): string[] {
-  const tokens: string[] = [];
-  let i = 0;
-  while (i < word.length) {
-    const two = word.slice(i, i + 2);
-    if (two.length === 2 && LETTER_MAP[two] !== undefined) {
-      tokens.push(two);
-      i += 2;
-      continue;
-    }
-    const one = word.charAt(i);
-    if (LETTER_MAP[one] === undefined) {
-      throw new Error(`letter outside the greek romanization: ${one} in ${word}`);
-    }
-    tokens.push(one);
-    i += 1;
-  }
-  return tokens;
+  return greedyTokens(word, (token) => LETTER_MAP[token] !== undefined, 'greek');
 }
 
 // No collapse rule: Greek writes its geminates, and this genome is the only
@@ -126,40 +122,30 @@ function eldritchRoot(root: string): string {
     .join('');
 }
 
-function fills(root: GreekRoot, role: 'noun' | 'verb' | 'adj' | 'adv' | 'pp'): boolean {
-  return root.forms.includes(role);
-}
-
 function nounsOf(field: SemanticField): GreekRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'noun'));
+  return withForm(FIELDS[field], 'noun');
 }
 
 function verbsOf(field: SemanticField): GreekRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'verb'));
+  return withForm(FIELDS[field], 'verb');
 }
 
 // An intransitive root never fills a slot that takes an object (spec 8.3).
 function transitiveVerbsOf(field: SemanticField): GreekRoot[] {
-  return verbsOf(field).filter((r) => r.intransitive !== true);
+  return transitive(verbsOf(field));
 }
 
 function adjectivesOf(field: SemanticField): GreekRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'adj'));
+  return withForm(FIELDS[field], 'adj');
 }
 
 function adverbsOf(field: SemanticField): GreekRoot[] {
-  return FIELDS[field].filter((r) => fills(r, 'adv'));
+  return withForm(FIELDS[field], 'adv');
 }
 
-function requireField(field: SemanticField | null): SemanticField {
-  return (() => {
-    if (field === null) throw new Error('gene is missing its semantic field');
-    return field;
-  })();
-}
-
-function geneField(clause: ClausePlan, role: 'INTENT' | 'TARGET' | 'AGENT'): SemanticField {
-  return requireField(clause.genes.find((g) => g.role === role)?.field ?? null);
+// The register distorts every content root it writes, and nothing else.
+function distortion(plan: FormulaPlan): (root: string) => string {
+  return (root) => (plan.eldritch ? eldritchRoot(root) : root);
 }
 
 interface ClauseRealization {
@@ -174,17 +160,14 @@ interface Modifier {
   advWord: string;
 }
 
-const NO_MODIFIER: Modifier = { adj: null, adv: null, adjWord: '', advWord: '' };
-
 function drawModifier(clause: ClausePlan, rng: Rng, distort: (root: string) => string): Modifier {
-  const field = clause.modifierField;
-  if (clause.modifier === null || field === null) return NO_MODIFIER;
-  if (clause.modifier === 'adjective') {
-    const root = pick(rng, adjectivesOf(field));
-    return { adj: root, adv: null, adjWord: distort(root.root), advWord: '' };
-  }
-  const root = pick(rng, adverbsOf(field));
-  return { adj: null, adv: root, adjWord: '', advWord: adverbForm(distort(root.root)) };
+  const { adjective, adverb } = pickModifier(clause, rng, adjectivesOf, adverbsOf);
+  return {
+    adj: adjective,
+    adv: adverb,
+    adjWord: adjective === null ? '' : distort(adjective.root),
+    advWord: adverb === null ? '' : adverbForm(distort(adverb.root)),
+  };
 }
 
 // An attributive adjective copies the ending of the noun that follows it
@@ -284,7 +267,7 @@ function realizeInvocationClause(
   glosses: GreekGlosses,
 ): ClauseRealization {
   const eldritch = plan.eldritch;
-  const distort = (root: string): string => (eldritch ? eldritchRoot(root) : root);
+  const distort = distortion(plan);
   const words: string[] = [];
   const agents: GlossRef[] = [];
 
@@ -293,15 +276,13 @@ function realizeInvocationClause(
     .forEach((gene, index) => {
       const ending: NounEnding = index === 0 ? 'e' : 'ou';
       if (eldritch) {
-        const epithet = pick(rng, DREAD_POWER.filter((word) => !used.has(word)));
-        used.add(epithet);
+        const epithet = drawUnused(rng, DREAD_POWER, used, (word) => word);
         // A dread epithet is indeclinable and appears only in its listed form.
         words.push(epithet);
         agents.push({ kind: 'epithet', id: epithet, spoken: epithet });
         return;
       }
-      const root = pick(rng, nounsOf(requireField(gene.field)).filter((r) => !used.has(r.root)));
-      used.add(root.root);
+      const root = drawUnused(rng, nounsOf(requireField(gene.field)), used, (r) => r.root);
       words.push(nounForm(root.root, ending));
       agents.push({ kind: 'root', id: root.root });
     });
@@ -310,13 +291,9 @@ function realizeInvocationClause(
   const mod = drawModifier(clause, rng, distort);
   words.push(verbForm(distort(intent.root), 'e'), ...adverbWords(mod));
 
-  let power: string;
-  if (eldritch) {
-    power = pick(rng, DREAD_POWER.filter((word) => !used.has(word)));
-    used.add(power);
-  } else {
-    power = pick(rng, BRIGHT_POWER);
-  }
+  const power = eldritch
+    ? drawUnused(rng, DREAD_POWER, used, (word) => word)
+    : pick(rng, BRIGHT_POWER);
   words.push(power);
 
   return {
@@ -427,16 +404,11 @@ function realizeChronomancyClause(
 // with a second time noun in the genitive behind it at tier 9, drawn without
 // replacement so it is never the first (spec 8.6).
 function returnAnchor(plan: FormulaPlan, rng: Rng, glosses: GreekGlosses): ClauseRealization {
-  const anchor = pick(rng, nounsOf('time'));
+  const { anchor, genitive } = anchorPair(plan, rng, nounsOf('time'));
   const words = [FN_EIS, nounForm(anchor.root, 'on')];
-  let genitive: string | null = null;
-  if (plan.difficulty >= 9) {
-    const held = pick(rng, nounsOf('time').filter((r) => r.root !== anchor.root));
-    genitive = held.root;
-    words.push(nounForm(held.root, 'ou'));
-  }
+  if (genitive !== null) words.push(nounForm(genitive.root, 'ou'));
   words.push(GC5_TAIL);
-  return { words, gloss: glosses.returnAnchor(anchor.root, genitive) };
+  return { words, gloss: glosses.returnAnchor(anchor.root, genitive?.root ?? null) };
 }
 
 const SCHOOL_OPENER: Readonly<Record<string, GreekIdiomId>> = {
@@ -484,16 +456,14 @@ function litany(plan: FormulaPlan, rng: Rng, glosses: GreekGlosses): ClauseReali
     return { words: [word, word, word], gloss: glosses.litanyTriple(word, plan.eldritch) };
   }
   // The shrinking sequence drops a letter at each step down to a single one.
-  // Iao does it exactly, which is why the spec names it; the schools that must
-  // not speak a bright word shrink one of their own instead.
-  const base = plan.school === 'protection' || plan.school === 'invocation'
-    ? SHRINKING_WORD
-    : plan.eldritch || plan.school === 'curse'
-      ? pick(rng, powerPool(plan))
-      : SHRINKING_WORD;
-  const tokens = tokenizeGreek(base);
-  const words = tokens.map((_, index) => tokens.slice(index).join(''));
-  return { words, gloss: glosses.litanyShrink(base, plan.eldritch) };
+  // Iao does it exactly, which is why the spec names it. The two schools that
+  // must not speak a bright word shrink one of their own instead.
+  const base =
+    plan.eldritch || plan.school === 'curse' ? pick(rng, powerPool(plan)) : SHRINKING_WORD;
+  return {
+    words: shrinkingSteps(tokenizeGreek(base)),
+    gloss: glosses.litanyShrink(base, plan.eldritch),
+  };
 }
 
 function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
@@ -515,9 +485,8 @@ function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: GreekGlosses): For
 }
 
 function realizeTierTwo(plan: FormulaPlan, rng: Rng, glosses: GreekGlosses): FormulaOutput {
-  const clause = plan.clauses[0];
-  if (clause === undefined) throw new Error('tier 2 plan has no clause');
-  const distort = (root: string): string => (plan.eldritch ? eldritchRoot(root) : root);
+  const clause = tierTwoClause(plan);
+  const distort = distortion(plan);
   const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
   const target = pick(rng, nounsOf(geneField(clause, 'TARGET')));
   const words = [
@@ -593,10 +562,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: GreekGlosses): For
     const count = sealCountFor(plan, rng);
     glyphs += `${WORD_SEP}${lettersFor(SEAL_HEAD)}${WORD_SEP}${SEAL_GLYPHS[count]}`;
     transliteration += ` ${SEAL_HEAD} ${SEAL_WORDS[count]}`;
-    // Chronomancy reads the count as how far the crossing went (spec 1.6).
-    glossParts.push(
-      plan.school === 'chronomancy' ? glosses.sealDepth(count) : glosses.seal(count),
-    );
+    glossParts.push(sealGloss(plan, count, glosses));
   }
 
   return { glyphs, transliteration, gloss: glosses.sentences(glossParts) };
