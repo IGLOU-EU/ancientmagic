@@ -363,7 +363,13 @@ interface Modifier {
   adverb: PhoenicianRoot | null;
 }
 
-const NO_MODIFIER: Modifier = { adjective: null, adverb: null };
+// What the opener already spent of the first clause. The amulet opener PO1
+// names the target itself and draws the adjective that follows it, so the
+// clause behind it must write neither a second time (spec 4.4). Every other
+// opener leaves the first clause whole, and that is the null.
+interface OpenerTarget {
+  modifier: Modifier;
+}
 
 // The adverb of this genome is a noun behind b-, so it draws from the noun
 // pool and not from an adverb pool of its own (spec 4.5).
@@ -443,17 +449,16 @@ function realizeJussiveClause(
   clause: ClausePlan,
   rng: Rng,
   used: Set<string>,
-  consumed: { target: boolean; modifier: Modifier },
+  openerTarget: OpenerTarget | null,
   glosses: PhoenicianGlosses,
 ): Realization {
-  const clauseUsed = new Set(used);
-  const agent = drawUnused(rng, powerPool(plan), clauseUsed, (n) => n.skeleton);
+  const agent = drawUnused(rng, powerPool(plan), used, (n) => n.skeleton);
 
   const agentField = plan.school === 'curse' ? 'harm' : geneField(clause, 'AGENT');
   const chain = genitiveChain(agentField, chainLength(plan.difficulty) - 1, rng, false, new Set());
 
   const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
-  const modifier = consumed.target ? consumed.modifier : drawModifier(clause, rng, false);
+  const modifier = openerTarget === null ? drawModifier(clause, rng, false) : openerTarget.modifier;
 
   const words: PhoenicianWord[] = [
     verbWord(intent, agent.feminine ? 'jussive-3fs' : 'jussive-3ms', { eldritch: false }),
@@ -461,19 +466,23 @@ function realizeJussiveClause(
     ...chain.words,
   ];
 
+  // Target and adjective are written and glossed together, or not at all: the
+  // opener wrote both already.
   let targetRoot: string | null = null;
-  if (!consumed.target) {
+  let adjectiveRoot: string | null = null;
+  if (openerTarget === null) {
     const targetField = geneField(clause, 'TARGET');
     const target = pick(rng, nounsOf(targetField));
     words.push(fixed(YT, 'marker'));
     words.push(nounWord(target, 'target', { eldritch: false, article: true }));
     words.push(...adjectiveWord(modifier, false, { article: true, plural: false }));
     targetRoot = target.root;
+    adjectiveRoot = modifier.adjective?.root ?? null;
   }
 
   let power: DivineName | null = null;
   if (plan.school === 'protection') {
-    power = drawUnused(rng, powerPool(plan), clauseUsed, (n) => n.skeleton);
+    power = drawUnused(rng, powerPool(plan), used, (n) => n.skeleton);
     words.push(nameWord(power, 'power'));
   }
 
@@ -486,9 +495,8 @@ function realizeJussiveClause(
       agentPower: agent.skeleton,
       chainRoots: chain.roots,
       intentRoot: intent.root,
-      // The opener already named the target, so the clause does not repeat it.
       targetRoot,
-      adjectiveRoot: targetRoot === null ? null : modifier.adjective?.root ?? null,
+      adjectiveRoot,
       freePower: power?.skeleton ?? null,
       adverbRoot: adverb.root,
     }),
@@ -663,20 +671,19 @@ function realizeInvocationClause(
   glosses: PhoenicianGlosses,
 ): Realization {
   const eldritch = plan.eldritch;
-  const clauseUsed = new Set(used);
   const words: PhoenicianWord[] = [];
   const agents: GlossRef[] = [];
   const agentGenes = clause.genes.filter((g) => g.role === 'AGENT');
 
   for (let i = 0; i < chainLength(plan.difficulty); i += 1) {
     if (eldritch) {
-      const epithet = drawUnused(rng, DREAD_POWER, clauseUsed, (e) => e.skeleton);
+      const epithet = drawUnused(rng, DREAD_POWER, used, (e) => e.skeleton);
       words.push(dreadWord(epithet, 'agent'));
       agents.push({ kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken });
       continue;
     }
     const field = requireField(agentGenes[i]?.field ?? agentGenes[0]?.field ?? null);
-    const root = drawUnused(rng, nounsOf(field), clauseUsed, (r) => r.root);
+    const root = drawUnused(rng, nounsOf(field), used, (r) => r.root);
     words.push(nounWord(root, 'agent', { eldritch: false, plural: i > 0 }));
     agents.push({ kind: 'root', id: root.root });
   }
@@ -686,11 +693,11 @@ function realizeInvocationClause(
 
   let invoked: GlossRef;
   if (eldritch) {
-    const epithet = drawUnused(rng, DREAD_POWER, clauseUsed, (e) => e.skeleton);
+    const epithet = drawUnused(rng, DREAD_POWER, used, (e) => e.skeleton);
     words.push(dreadWord(epithet, 'power'));
     invoked = { kind: 'epithet', id: epithet.skeleton, spoken: epithet.spoken };
   } else {
-    const name = drawUnused(rng, BRIGHT_NAMES, clauseUsed, (n) => n.skeleton);
+    const name = drawUnused(rng, BRIGHT_NAMES, used, (n) => n.skeleton);
     words.push(nameWord(name, 'power'));
     invoked = { kind: 'power', id: name.skeleton };
   }
@@ -752,7 +759,7 @@ function schoolOpener(
   used: Set<string>,
   glosses: PhoenicianGlosses,
   questioned: DivineName | null,
-): Realization & { consumed: { target: boolean; modifier: Modifier } } {
+): Realization & { openerTarget: OpenerTarget | null } {
   const clause = plan.clauses[0];
   if (clause === undefined) throw new Error('plan has no clause');
 
@@ -763,7 +770,7 @@ function schoolOpener(
     return {
       words: [fixed(PO5_HEAD), nounWord(year, 'target', { eldritch: false })],
       gloss: glosses.openerYear(year.root),
-      consumed: { target: false, modifier: NO_MODIFIER },
+      openerTarget: null,
     };
   }
 
@@ -773,7 +780,7 @@ function schoolOpener(
     return {
       words: [fixed(PO4_HEAD), nameWord(questioned, 'idiom', 'l')],
       gloss: glosses.openerQuestion(questioned.skeleton),
-      consumed: { target: false, modifier: NO_MODIFIER },
+      openerTarget: null,
     };
   }
 
@@ -784,7 +791,7 @@ function schoolOpener(
     return {
       words: [fixed(PO1_HEAD), dreadWord(epithet, 'target', 'b')],
       gloss: glosses.openerByEpithet(epithet.skeleton),
-      consumed: { target: false, modifier: NO_MODIFIER },
+      openerTarget: null,
     };
   }
 
@@ -794,10 +801,12 @@ function schoolOpener(
     return {
       words: [fixed(PO3_HEAD), nameWord(god, 'idiom', 'l')],
       gloss: glosses.openerToLord(god.skeleton),
-      consumed: { target: false, modifier: NO_MODIFIER },
+      openerTarget: null,
     };
   }
 
+  // The amulet form, and the only opener that spends the first clause's
+  // target: it writes the noun and draws the adjective that agrees with it.
   const targetField = geneField(clause, 'TARGET');
   const target = pick(rng, nounsOf(targetField));
   const modifier = drawModifier(clause, rng, false);
@@ -809,7 +818,7 @@ function schoolOpener(
   return {
     words,
     gloss: glosses.openerAgainst(target.root, modifier.adjective?.root ?? null),
-    consumed: { target: true, modifier },
+    openerTarget: { modifier },
   };
 }
 
@@ -984,8 +993,11 @@ function composePhoenician(
 
   const jussive = plan.school === 'protection' || plan.school === 'curse';
   plan.clauses.forEach((clause, index) => {
-    const consumed =
-      index === 0 ? opener.consumed : { target: false, modifier: NO_MODIFIER };
+    // A clause starts from the names the openers reserved and adds only to its
+    // own copy, so the pools reopen at the next clause.
+    const clauseUsed = new Set(used);
+    // Only the first clause can have had its target spent by the opener.
+    const openerTarget = index === 0 ? opener.openerTarget : null;
     let realized: Realization;
     if (plan.school === 'chronomancy') {
       realized = realizeChronomancyClause(plan, clause, rng, glosses);
@@ -995,9 +1007,9 @@ function composePhoenician(
           ? realizeDivinationAsk(plan, clause, rng, questioned, glosses)
           : realizeDivinationSee(plan, clause, rng, glosses);
     } else if (jussive) {
-      realized = realizeJussiveClause(plan, clause, rng, used, consumed, glosses);
+      realized = realizeJussiveClause(plan, clause, rng, clauseUsed, openerTarget, glosses);
     } else {
-      realized = realizeInvocationClause(plan, clause, rng, used, glosses);
+      realized = realizeInvocationClause(plan, clause, rng, clauseUsed, glosses);
     }
     // Spec 4.9: clauses after the first are joined by the w- proclitic, which
     // rides the first word of the clause with no separator between them.

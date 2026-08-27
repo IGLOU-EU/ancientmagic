@@ -12,6 +12,8 @@ import type {
   ClausePlan,
   FormulaOutput,
   FormulaPlan,
+  GeneInstance,
+  GeneRole,
   Genome,
   SemanticField,
 } from '../generator/types.js';
@@ -746,6 +748,14 @@ function realizeInvocationClause(
   };
 }
 
+// The opening titles and addresses the spell by what it is about, and what it
+// is about is the first clause's own subject matter. So it reads that clause's
+// gene without spending it: the clause draws its own root from the same field
+// when its turn comes, and the two may well land on different words.
+function firstClauseGene(plan: FormulaPlan, role: GeneRole): GeneInstance | undefined {
+  return plan.clauses[0]?.genes.find((g) => g.role === role);
+}
+
 function openingWords(
   plan: FormulaPlan,
   rng: Rng,
@@ -773,15 +783,13 @@ function openingWords(
       );
       return;
     }
-    const clause = plan.clauses[0];
     // The Divination title noun comes from the signs field, so the spell is
     // titled by what it reads (spec 3.11). That field is the asking clause's
     // own AGENT, which is where the genome looks for it.
     const gene =
       plan.school === 'divination'
-        ? clause?.genes.find((g) => g.role === 'AGENT')
-        : clause?.genes.find((g) => g.role === 'TARGET') ??
-          clause?.genes.find((g) => g.role === 'AGENT');
+        ? firstClauseGene(plan, 'AGENT')
+        : firstClauseGene(plan, 'TARGET') ?? firstClauseGene(plan, 'AGENT');
     // A chronomantic spell is titled by the stretch of time it works on, so
     // its title noun comes from time whatever the clause acts on (spec 3.12).
     const field = plan.school === 'chronomancy' ? 'time' : requireField(gene?.field ?? null);
@@ -869,7 +877,7 @@ function singleAddress(
     const god = pick(rng, AGENT_POWER);
     return nameKnowledgeLine(plan, [powerWord(god)], { kind: 'power', id: god.skeleton }, glosses);
   }
-  const field = requireField(plan.clauses[0]?.genes.find((g) => g.role === 'AGENT')?.field ?? null);
+  const field = requireField(firstClauseGene(plan, 'AGENT')?.field ?? null);
   const root = pick(rng, nounsOf(field));
   return nameKnowledgeLine(
     plan,
@@ -1064,6 +1072,8 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses):
   }
 
   for (const clause of plan.clauses) {
+    // A clause starts from the names the opening lines reserved and adds only
+    // to its own copy, so the pools reopen at the next clause.
     const clauseUsed = new Set<string>(used);
     let realized: Realization;
     if (plan.school === 'protection') {

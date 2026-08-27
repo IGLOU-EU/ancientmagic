@@ -29,21 +29,35 @@ const ELDRITCH_TARGET: ReadonlyArray<SemanticField> = ['night', 'death', 'gates'
 const DIVINATION_INTENT: ReadonlyArray<SemanticField> = ['sight', 'summoning'];
 const DIVINATION_TARGET: ReadonlyArray<SemanticField> = ['fate', 'hidden', 'time'];
 
-// Modifier fields are keyed by kind so every reachable pool holds at least
-// one root carrying the needed form.
-const ADJECTIVE_FIELDS: ReadonlyArray<SemanticField> = ['night', 'harm', 'death'];
-const ADVERB_FIELDS: ReadonlyArray<SemanticField> = ['hidden', 'night', 'harm'];
-const DIVINATION_ADJECTIVE_FIELDS: ReadonlyArray<SemanticField> = ['night', 'sight', 'fate'];
-const DIVINATION_ADVERB_FIELDS: ReadonlyArray<SemanticField> = ['sight', 'night', 'hidden'];
-
 // Chronomancy commands time directly and names no god to do it for the caster
 // (spec 1.6), so it carries no AGENT gene at all and its clause is verb,
 // object, qualifier. Fate is the one field it shares with Divination: the one
 // reads what is decreed, the other acts on it.
 const CHRONOMANCY_INTENT: ReadonlyArray<SemanticField> = ['course', 'binding'];
 const CHRONOMANCY_TARGET: ReadonlyArray<SemanticField> = ['time', 'gates', 'fate'];
-const CHRONOMANCY_ADJECTIVE_FIELDS: ReadonlyArray<SemanticField> = ['course', 'night', 'fate'];
-const CHRONOMANCY_ADVERB_FIELDS: ReadonlyArray<SemanticField> = ['course', 'night', 'hidden'];
+
+// Modifier fields are keyed by kind so every reachable pool holds at least
+// one root carrying the needed form.
+type ModifierFields = Readonly<Record<ModifierKind, ReadonlyArray<SemanticField>>>;
+
+const BASE_MODIFIER_FIELDS: ModifierFields = {
+  adjective: ['night', 'harm', 'death'],
+  adverb: ['hidden', 'night', 'harm'],
+};
+
+// The two schools that qualify from fields of their own. Every other school
+// reads the base pair, so one lookup answers for all six and the adjective and
+// the adverb can never fall on different sides of the same question.
+const SCHOOL_MODIFIER_FIELDS: Readonly<Partial<Record<School, ModifierFields>>> = {
+  divination: {
+    adjective: ['night', 'sight', 'fate'],
+    adverb: ['sight', 'night', 'hidden'],
+  },
+  chronomancy: {
+    adjective: ['course', 'night', 'fate'],
+    adverb: ['course', 'night', 'hidden'],
+  },
+};
 
 // The four values a crossing clause moves by, in the order the spec lists
 // them. Exported because the packs must gloss exactly these four and the
@@ -73,8 +87,12 @@ function buildClause(
   kind: ClauseKind | null,
 ): ClausePlan {
   const genes: GeneInstance[] = [];
-  let invocationLike = false;
   let direction: TimeDirection | null = null;
+
+  // The invocation family is the clause no branch below claims, and it is read
+  // three times over: it builds the agent chain, it fixes the modifier kind,
+  // and it is what makes a clause report an agent count at all.
+  const invocationLike = school === 'invocation' || school === 'eldritch';
 
   if (school === 'protection') {
     genes.push({ role: 'AGENT', field: 'warding', flavor: null });
@@ -110,7 +128,6 @@ function buildClause(
   } else {
     // Invocation carries the same skeleton with or without the Eldritch
     // register, per genomes.md 1.3.
-    invocationLike = true;
     for (let i = 0; i < agentCount(difficulty); i += 1) {
       genes.push({ role: 'AGENT', field: pick(rng, INVOCATION_AGENT), flavor: null });
     }
@@ -127,19 +144,8 @@ function buildClause(
     // Invocation epithets stay uninflected under Eldritch, so the
     // invocation family only takes adverbs and dodges agreement entirely.
     modifier = invocationLike ? 'adverb' : pick(rng, ['adjective', 'adverb'] as const);
-    const adjectives =
-      school === 'divination'
-        ? DIVINATION_ADJECTIVE_FIELDS
-        : school === 'chronomancy'
-          ? CHRONOMANCY_ADJECTIVE_FIELDS
-          : ADJECTIVE_FIELDS;
-    const adverbs =
-      school === 'divination'
-        ? DIVINATION_ADVERB_FIELDS
-        : school === 'chronomancy'
-          ? CHRONOMANCY_ADVERB_FIELDS
-          : ADVERB_FIELDS;
-    modifierField = pick(rng, modifier === 'adjective' ? adjectives : adverbs);
+    const fields = SCHOOL_MODIFIER_FIELDS[school] ?? BASE_MODIFIER_FIELDS;
+    modifierField = pick(rng, fields[modifier]);
     genes.push({ role: 'MODIFIER', field: modifierField, flavor: null });
   }
 

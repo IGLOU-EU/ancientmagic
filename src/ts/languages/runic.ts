@@ -494,15 +494,16 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
   for (const id of openings) glossParts.push(glosses.idiom(id));
   const openingWords = openings.flatMap((id) => [...IDIOM_WORDS[id]]);
 
-  // RO4 is a full clause and takes ᛬ after it, so a divination opening stands
-  // as its own segment instead of joining the first clause (spec 2.2).
+  // The opening words go one of two ways and the choice is settled here, not
+  // half of it inside the loop. RO4 is a full clause and takes ᛬ after it, so a
+  // divination opening stands as its own segment (spec 2.2), while every other
+  // school carries the same words into the first clause with word separators,
+  // as in the section 5 rendering. Only clause boundaries take the colon.
   const divination = plan.school === 'divination';
+  const firstClauseLead = divination ? [] : openingWords;
   if (divination) segments.push({ words: openingWords });
 
   plan.clauses.forEach((clause, index) => {
-    // Epithets stay distinct within one clause. Across clauses the pools
-    // reopen, litanies may echo a power already named.
-    const usedEpithets = new Set<string>();
     let realized: ClauseRealization;
     if (plan.school === 'protection') {
       realized = realizeProtectionClause(clause, rng, distort, glosses);
@@ -513,19 +514,20 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: RunicGlosses): For
     } else if (plan.school === 'chronomancy') {
       realized = realizeChronomancyClause(clause, rng, glosses);
     } else {
+      // Epithets stay distinct within one clause and no further: the fresh set
+      // reopens the pools at every clause, so a litany may echo a power already
+      // named.
       realized = realizeInvocationClause(
         clause,
         rng,
         plan.eldritch,
         distort,
-        usedEpithets,
+        new Set<string>(),
         glosses,
       );
     }
-    // The opening idioms join the first clause with word separators, as in
-    // the section 5 rendering. Only clause boundaries take the colon.
     segments.push({
-      words: index === 0 && !divination ? [...openingWords, ...realized.words] : realized.words,
+      words: index === 0 ? [...firstClauseLead, ...realized.words] : realized.words,
     });
     glossParts.push(realized.gloss);
   });
