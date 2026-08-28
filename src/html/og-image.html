@@ -8,7 +8,10 @@
    rendered by tools/og-images.sh. The copy comes from src/strings, so the
    image says in each language what its page says. */
 
-/* Tokens lifted from pub/css/main.css, retuned for a fixed 1200x630 canvas.
+/* The palette, and the atmosphere drawn below it, are the stylesheet's own,
+   retuned for a fixed 1200x630 canvas. Neither side moves alone:
+   tests/og-atmosphere.test.ts derives every shared rule from the stylesheet
+   through a declared list of those retunes, and names whichever value drifted.
    Violet carries the mass, gold is spent only on the wordmark and the runes. */
 :root{
   --ink: #0b0714;
