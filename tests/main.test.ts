@@ -17,7 +17,7 @@ import { bindGenome } from '../src/ts/languages/index.js';
 import { en } from '../src/ts/strings/en.js';
 import { difficultyTier } from '../src/ts/strings/index.js';
 import { breakSegments } from '../src/ts/ui/manifestation.js';
-import { installPage, settle, until, type Page } from './dom.js';
+import { FakeInputElement, installPage, settle, until, type Page } from './dom.js';
 
 const ADDRESS = 'https://example.test/';
 
@@ -51,6 +51,15 @@ function glyphLineNodes(page: Page): string[] {
     .nodes.map((node) => (typeof node === 'string' ? node : node.tagName));
 }
 
+// What a reader does to the level of power, which the browser reports as one
+// input event per value it lands on.
+function moveSlider(page: Page, value: string): void {
+  const slider = page.byId('difficulty');
+  if (!(slider instanceof FakeInputElement)) throw new Error('the page double has no slider');
+  slider.value = value;
+  slider.dispatch('input');
+}
+
 test('entry: an idle page shows the level of power it was served with', async () => {
   const page = installPage();
   await loadEntry();
@@ -60,6 +69,42 @@ test('entry: an idle page shows the level of power it was served with', async ()
   assert.strictEqual(page.byId('difficulty-value').textContent, '5');
   assert.strictEqual(page.find('.manifestation').hidden, true, 'the well opened with no formula');
   assert.deepStrictEqual(page.written, [], 'an idle page named a formula in the address');
+});
+
+// Everything the level of power shows moves with the slider, in the same
+// breath as the reader's own gesture: the number, the tier, the fill of the
+// track, what a screen reader is told, and the mark under the thumb.
+test('entry: moving the slider rewrites everything the level of power shows', async () => {
+  const page = installPage();
+  await loadEntry();
+  await settle();
+
+  moveSlider(page, '8');
+
+  const tier = difficultyTier(en, 8);
+  const slider = page.byId('difficulty');
+  assert.strictEqual(page.byId('difficulty-value').textContent, '8');
+  assert.strictEqual(page.byId('difficulty-tier').textContent, tier);
+  assert.strictEqual(slider.style.properties.get('--fill-ratio'), '0.8750');
+  assert.strictEqual(slider.getAttribute('aria-valuetext'), en.difficultyValueText(8, tier));
+  assert.ok(
+    page.byId('difficulty-ticks').children[7].classes.has('tick--current'),
+    'the mark stayed where the thumb no longer is',
+  );
+});
+
+// A level of power the page is already showing is nothing to show again, and
+// writing it anyway would restyle the track and the ticks for no change.
+test('entry: a level of power the page already shows is not written again', async () => {
+  const page = installPage();
+  await loadEntry();
+  await settle();
+
+  const valueOut = page.byId('difficulty-value');
+  valueOut.textContent = 'left alone';
+  moveSlider(page, '5');
+
+  assert.strictEqual(valueOut.textContent, 'left alone');
 });
 
 // The guard the loading contract rests on: the first click has modules to
@@ -92,6 +137,22 @@ test('entry: a conjuration after the first one lands is granted', async () => {
   await until(() => page.written.length > 1, 'the second conjuration');
 
   assert.strictEqual(page.written.length, 2);
+});
+
+// Restarting an animation costs one reading of the page's geometry, and the
+// well restarts four of them at once. They share that one reading: the whole
+// strike is taken down, the page is read, and the whole strike is put back.
+test('entry: a conjuration reads the page once, whatever it has to replay', async () => {
+  const page = installPage();
+  await loadEntry();
+
+  page.click('generate');
+  await until(() => page.written.length > 0, 'the conjuration');
+  await settle();
+
+  assert.strictEqual(page.reflows(), 1, 'the strike was replayed one element at a time');
+  assert.strictEqual(page.byId('glyph-line').style.animation, '', 'the formula never re-armed');
+  assert.strictEqual(page.find('.well-stage').getAttribute('data-forge'), 'struck');
 });
 
 // An arrival is the click's flow with the seed already chosen, so everything a

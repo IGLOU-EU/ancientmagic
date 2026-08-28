@@ -43,17 +43,17 @@ export function breakSegments(glyphs: string, separators: ReadonlyArray<string>)
 // textContent, so the copy path hands over the pipeline's exact glyphs and no
 // screen reader has anything extra to say. It is the same device the served
 // page already uses on its pre-rendered sample.
-function writeGlyphs(
-  target: HTMLElement,
-  glyphs: string,
-  separators: ReadonlyArray<string>,
-): void {
-  const segments = breakSegments(glyphs, separators);
-  target.replaceChildren();
-  segments.forEach((segment, index) => {
-    target.append(segment);
-    if (index < segments.length - 1) target.append(document.createElement('wbr'));
-  });
+//
+// The line is handed the run already cut, because the same cut is written
+// twice, and the run goes in as one replacement, so the tree is disturbed once
+// instead of once per piece.
+function writeGlyphs(target: HTMLElement, segments: ReadonlyArray<string>): void {
+  const run: Array<string | HTMLElement> = [];
+  for (const segment of segments) {
+    if (run.length > 0) run.push(document.createElement('wbr'));
+    run.push(segment);
+  }
+  target.replaceChildren(...run);
 }
 
 // Size tiers by glyph count (design 4.2). Counted in codepoints because
@@ -66,22 +66,26 @@ function sizeTier(glyphs: string): 'large' | 'medium' | 'small' {
 }
 
 // Standard animation re-trigger: detach the animation, force one reflow,
-// reattach. The reveal and the forge then replay from their start.
-function replayAnimations(element: HTMLElement): void {
-  element.style.animation = 'none';
-  void element.offsetWidth;
-  element.style.animation = '';
-}
-
+// reattach. The reveal, the forge and the sparks then replay from their start.
+//
+// The strike comes down as one: everything is detached, the page is read once,
+// everything is put back. A reading of any geometry lays the whole document
+// out, so one read settles every detachment written before it, and asking each
+// element for its own would only lay the same page out again.
+//
 // The spark fields of design 13.6 are pseudo-elements, and an inline animation
 // set on an element never reaches its ::before, so what is dropped and put
 // back for them is the attribute that declares them. It rides the stage rather
 // than anything inside the well, which keeps every attribute change out of the
 // live region the well announces.
-function replaySparks(stage: HTMLElement): void {
-  stage.removeAttribute('data-forge');
-  void stage.offsetWidth;
-  stage.dataset.forge = 'struck';
+function replayStrike(lines: ReadonlyArray<HTMLElement>, stage: HTMLElement | null): void {
+  for (const line of lines) line.style.animation = 'none';
+  if (stage !== null) stage.removeAttribute('data-forge');
+
+  void document.documentElement.offsetWidth;
+
+  for (const line of lines) line.style.animation = '';
+  if (stage !== null) stage.dataset.forge = 'struck';
 }
 
 // The panel the served page keeps hidden. Nothing opens it but a formula, and
@@ -107,14 +111,16 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   const gloss = well.querySelector<HTMLElement>('.gloss');
   const caption = document.querySelector<HTMLElement>('.print-caption');
 
-  writeGlyphs(glyphLine, output.glyphs, meta.separators);
+  const segments = breakSegments(output.glyphs, meta.separators);
+
+  writeGlyphs(glyphLine, segments);
   // The glyph block is named for what it is, not for what it says: the well is
   // one atomic live region, and naming it with the transliteration made the
   // region announce that same line twice, once here and once below.
   glyphLine.setAttribute('aria-label', meta.glyphLabel);
   // The vapor twin must stay in text sync with the visible line (design 13.2),
   // and that includes where the line may break, or the two wrap apart.
-  if (vapor !== null) writeGlyphs(vapor, output.glyphs, meta.separators);
+  if (vapor !== null) writeGlyphs(vapor, segments);
   if (translit !== null) translit.textContent = output.transliteration;
   if (gloss !== null) gloss.textContent = output.gloss;
 
@@ -123,8 +129,5 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
 
   if (caption !== null) caption.textContent = meta.printCaption;
 
-  replayAnimations(glyphLine);
-  if (translit !== null) replayAnimations(translit);
-  if (gloss !== null) replayAnimations(gloss);
-  if (stage !== null) replaySparks(stage);
+  replayStrike([glyphLine, translit, gloss].filter((line) => line !== null), stage);
 }

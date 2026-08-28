@@ -83,11 +83,11 @@ function applySettings(settings: Settings, syncSlider: () => void): void {
 
 function syncDifficulty(
   slider: HTMLInputElement,
+  value: number,
   valueOut: Element | null,
   tierOut: Element | null,
   ticks: Element | null,
 ): void {
-  const value = Number(slider.value);
   const min = Number(slider.min);
   const max = Number(slider.max);
   const ratio = max > min ? (value - min) / (max - min) : 0;
@@ -121,7 +121,17 @@ function wireDifficulty(): () => void {
   const tierOut = document.getElementById('difficulty-tier');
   const ticks = document.getElementById('difficulty-ticks');
 
-  const update = (): void => syncDifficulty(slider, valueOut, tierOut, ticks);
+  // The level the readout is already showing. Writing it again would repaint
+  // the track and restyle the ticks to land on what is on screen, and the
+  // slider is asked to sync itself on arrival as well as on every move.
+  let shown = Number.NaN;
+
+  const update = (): void => {
+    const value = Number(slider.value);
+    if (value === shown) return;
+    shown = value;
+    syncDifficulty(slider, value, valueOut, tierOut, ticks);
+  };
 
   update();
   slider.addEventListener('input', update);

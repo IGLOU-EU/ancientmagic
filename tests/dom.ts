@@ -71,9 +71,15 @@ export class FakeElement {
   nodes: Array<string | FakeElement> = [];
   hidden = false;
   lang = '';
-  // Read once to force a reflow before an animation replays. A number is all
-  // that read needs, and nothing asserts on it.
-  readonly offsetWidth = 0;
+  reads = 0;
+
+  // Read to force a reflow before an animation replays. The number itself is
+  // never wanted, so what the page answers is a count of how many times it was
+  // asked, which is the cost the reading is done for.
+  get offsetWidth(): number {
+    this.reads += 1;
+    return 0;
+  }
 
   constructor(
     readonly tagName: string,
@@ -289,6 +295,9 @@ export interface Page {
   find(selector: string): FakeElement;
   findAll(selector: string): FakeElement[];
   click(id: string): void;
+  // What the geometry the page was asked for cost it, counted over the whole
+  // document because one read anywhere lays the whole of it out.
+  reflows(): number;
 }
 
 // The served page, reduced to what the interface layer reaches for: the ids it
@@ -411,6 +420,12 @@ export function installPage(options: PageOptions = {}): Page {
     find,
     findAll: (selector: string) => document.querySelectorAll(selector),
     click: (id: string) => byId(id).dispatch('click'),
+    reflows: () => {
+      const root = document.documentElement;
+      let total = root.reads;
+      for (const element of root.descendants()) total += element.reads;
+      return total;
+    },
   };
 }
 
