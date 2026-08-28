@@ -121,11 +121,20 @@ export function anchorPair<R>(
   return { anchor, genitive: pick(rng, nouns.filter((noun) => noun !== anchor)) };
 }
 
-// The shrinking triangle drops one token from the front at each repetition,
-// down to the last one. Steps are whole tokens, so a digraph never splits into
-// two letters.
-export function shrinkingSteps(tokens: ReadonlyArray<string>): string[] {
-  return tokens.map((_unused, index) => tokens.slice(index).join(''));
+// Which end of a word the shrinking triangle eats into. Four genomes borrowed
+// the device and drop the first letter, and the one genome that owns it
+// attested drops the last, since that is what its own amulet prescribes.
+export type ShrinkEnd = 'front' | 'back';
+
+// The shrinking triangle drops one token at each repetition, down to the last
+// one. Steps are whole tokens, so a digraph never splits into two letters.
+export function shrinkingSteps(
+  tokens: ReadonlyArray<string>,
+  drop: ShrinkEnd = 'front',
+): string[] {
+  return tokens.map((_unused, index) =>
+    (drop === 'front' ? tokens.slice(index) : tokens.slice(0, tokens.length - index)).join(''),
+  );
 }
 
 // Chronomancy reads the count as how far the crossing went, so the same seal

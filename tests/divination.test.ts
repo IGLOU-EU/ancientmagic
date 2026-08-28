@@ -16,6 +16,7 @@ import { resolveGlosses } from '../src/ts/glosses/index.js';
 import { bindGenome } from '../src/ts/languages/index.js';
 import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
+import { latinGenome } from '../src/ts/languages/latin.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import { LEXICON as PHOENICIAN_LEXICON } from './phoenician-spec.js';
@@ -194,6 +195,7 @@ test('a french question mark carries the narrow no-break space before it', async
     ['egyptian', bindGenome(egyptianGenome, await pack.egyptian())],
     ['phoenician', bindGenome(phoenicianGenome, await pack.phoenician())],
     ['greek', bindGenome(greekGenome, await pack.greek())],
+    ['latin', bindGenome(latinGenome, await pack.latin())],
   ];
   for (const [id, genome] of bound) {
     for (const difficulty of DIFFICULTIES) {

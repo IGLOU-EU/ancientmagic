@@ -20,6 +20,7 @@
 import type { TimeDirection } from '../generator/types.js';
 import type { EgyptianGlosses } from '../languages/egyptian-glosses.js';
 import type { GreekGlosses } from '../languages/greek-glosses.js';
+import type { LatinGlosses } from '../languages/latin-glosses.js';
 import type { PhoenicianGlosses } from '../languages/phoenician-glosses.js';
 import type { RunicGlosses } from '../languages/runic-glosses.js';
 
@@ -127,4 +128,5 @@ export interface GlossPack {
   readonly egyptian: () => Promise<EgyptianGlosses>;
   readonly phoenician: () => Promise<PhoenicianGlosses>;
   readonly greek: () => Promise<GreekGlosses>;
+  readonly latin: () => Promise<LatinGlosses>;
 }

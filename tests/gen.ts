@@ -21,6 +21,8 @@ import {
 import { bindGenome } from '../src/ts/languages/index.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { greekGlosses } from '../src/ts/glosses/en/greek.js';
+import { latinGenome } from '../src/ts/languages/latin.js';
+import { latinGlosses } from '../src/ts/glosses/en/latin.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import {
   SCHOOLS,
@@ -32,6 +34,7 @@ import {
 } from '../src/ts/generator/types.js';
 import { DREAD_SPOKEN as EGYPTIAN_DREAD } from './egyptian-spec.js';
 import { DREAD_WORDS as GREEK_DREAD } from './greek-spec.js';
+import { DREAD_WORDS as LATIN_DREAD } from './latin-spec.js';
 import { DREAD_SPOKEN as PHOENICIAN_DREAD } from './phoenician-spec.js';
 import { DREAD_EPITHETS as RUNIC_DREAD, parseGlyphs } from './runic-spec.js';
 
@@ -70,6 +73,7 @@ export const DREAD: Readonly<Record<LanguageId, ReadonlyArray<string>>> = {
   egyptian: EGYPTIAN_DREAD,
   phoenician: PHOENICIAN_DREAD,
   greek: GREEK_DREAD,
+  latin: LATIN_DREAD,
 };
 
 // The contract tests read the English gloss, so each genome is bound to the
@@ -85,6 +89,7 @@ export const GENOMES: Readonly<Record<LanguageId, BoundGenome>> = {
   egyptian: bindGenome(egyptianGenome, egyptianGlosses),
   phoenician: bindGenome(phoenicianGenome, phoenicianGlosses),
   greek: bindGenome(greekGenome, greekGlosses),
+  latin: bindGenome(latinGenome, latinGlosses),
 };
 
 export function runic(school: School, difficulty: number, seed: number): FormulaOutput {
@@ -103,6 +108,10 @@ export function greek(school: School, difficulty: number, seed: number): Formula
   return generate(GENOMES.greek, { language: 'greek', school, difficulty }, seed);
 }
 
+export function latin(school: School, difficulty: number, seed: number): FormulaOutput {
+  return generate(GENOMES.latin, { language: 'latin', school, difficulty }, seed);
+}
+
 export type Writer = (school: School, difficulty: number, seed: number) => FormulaOutput;
 
 // Every shipped genome behind the writer this bench uses for it, keyed by the
@@ -114,12 +123,20 @@ export const WRITERS: Readonly<Record<LanguageId, Writer>> = {
   egyptian,
   phoenician,
   greek,
+  latin,
 };
 
 // Greek writes one flat word list, joined by the ano teleia from tier 3 up, so
 // its words are read off the transliteration like the Runic ones.
 export function greekWords(school: School, difficulty: number, seed: number): string[] {
   return greek(school, difficulty, seed).transliteration.split(' ');
+}
+
+// Latin does the same behind the interpunct, and its reading line is the one
+// in this project a reader can lay under the glyphs and match letter for
+// letter, so reading the words off it costs nothing.
+export function latinWords(school: School, difficulty: number, seed: number): string[] {
+  return latin(school, difficulty, seed).transliteration.split(' ');
 }
 
 export type Sweep = (
@@ -146,6 +163,7 @@ export const sweep: Sweep = sweeper(runic);
 export const sweepEgyptian: Sweep = sweeper(egyptian);
 export const sweepPhoenician: Sweep = sweeper(phoenician);
 export const sweepGreek: Sweep = sweeper(greek);
+export const sweepLatin: Sweep = sweeper(latin);
 
 // The clause plan a seed and a school produce, for the assertions that read a
 // formula's structure before any script has written it. The pipeline's own

@@ -18,6 +18,7 @@ import { join } from 'node:path';
 import { LANGUAGES, type LanguageId } from '../src/ts/generator/types.js';
 import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as greekData from '../src/ts/languages/greek-data.js';
+import * as latinData from '../src/ts/languages/latin-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
 import * as runicData from '../src/ts/languages/runic-data.js';
 import { REPO_ROOT } from '../tools/sources.js';
@@ -33,6 +34,17 @@ const DATA: Readonly<Record<LanguageId, object>> = {
   egyptian: egyptianData,
   phoenician: phoenicianData,
   greek: greekData,
+  latin: latinData,
+};
+
+// The one genome that ships no font, by the ruling of genomes.md 9.1: every
+// codepoint it writes sits in Basic Latin or Latin-1 and is carried by every
+// font on every system, so no subset is cut for it and none has to be. The
+// exemption is written down rather than left implicit, and it is narrow: the
+// interpunct is the single codepoint above ASCII this genome emits, so a
+// second one appearing here is a real hole and fails below.
+const NO_SUBSET: Readonly<Partial<Record<LanguageId, ReadonlyArray<number>>>> = {
+  latin: [0x00b7],
 };
 
 // A genome writes its scripts in strings and nothing else, so the whole module
@@ -114,6 +126,15 @@ test('font subsets: every codepoint a genome writes is carried by a subset', () 
 
   for (const id of LANGUAGES) {
     const written = codepointsOf(DATA[id], new Set<number>());
+    const exempt = NO_SUBSET[id];
+    if (exempt !== undefined) {
+      assert.deepStrictEqual(
+        Array.from(written).sort((a, b) => a - b).map(name),
+        exempt.map(name),
+        `${id} ships no font, so what it writes above ASCII must stay exactly what 9.1 allows`,
+      );
+      continue;
+    }
     assert.ok(written.size > 0, `the ${id} data module writes no script at all`);
     const missing = Array.from(written)
       .filter((codepoint) => !carried.has(codepoint))

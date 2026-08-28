@@ -1,6 +1,6 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { egyptian, greek, phoenician, runic } from './gen.js';
+import { egyptian, greek, latin, phoenician, runic } from './gen.js';
 
 // A seed whose difficulty 5 Protection draws reproduce the shared plan of
 // genomes.md section 5 exactly: opener RO1, agent ward, intent bind, target
@@ -361,4 +361,148 @@ test('greek fixture: the register of section 8.10', () => {
     'The Ephesian words, spoken against their order! O shape at the door, come! ' +
       'Thrugksooth! Ruin forever.',
   );
+});
+
+// --- Latin ------------------------------------------------------------------
+// Section 9.13 asks for one Latin fixture per school, six in all, targeting the
+// school-and-difficulty pairs of the section's short worked examples so that a
+// seed has something to land on. All six land: this is the first genome whose
+// every pinned fixture reproduces a worked example byte for byte, glyph line,
+// reading line and gloss, and the author wrote those lines by hand before any
+// seed existed.
+//
+// Latin glyphs are written as literals, as the Greek ones are: the reason the
+// first three genomes escape theirs is that their blocks render as tofu in a
+// terminal, and this one is the alphabet the terminal is already in. The
+// separator is the one exception, escaped everywhere, because U+00B7 and
+// U+0387 draw the same picture and this suite writes both.
+const SEP = '\u{00B7}';
+
+// Difficulty 5: the section 5 plan rendered a fifth time (spec 9.13). Opener
+// LO1, the agent in the nominative, the threat behind CONTRA in the
+// accusative, the verb last, the free power word, closer LC1.
+const LATIN_PROTECTION_SEED = 25842;
+
+test('latin fixture: the amulet of section 9.13, letter for letter', () => {
+  const out = latin('protection', 5, LATIN_PROTECTION_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    ['AMVLETVM', 'TVTELA', 'CONTRA', 'LARVAM', 'LIGO', 'FASCINVS', 'IAM', 'IAM', 'CITO', 'CITO'].join(SEP),
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'amuletum tutela contra larvam ligo fascinus iam iam cito cito',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'Amulet. I, the guardian, bind against the ghost. Fascinus! Now, now, quickly, quickly.',
+  );
+});
+
+// Difficulty 6: the tablet of spec 9.13. The victim is named first and the law
+// pronounced on him, twice, the second carrying its adverb clause-final, which
+// is where the school order puts it against the general rule.
+const LATIN_CURSE_SEED = 376508;
+
+test('latin fixture: the defixio of section 9.13', () => {
+  const out = latin('curse', 6, LATIN_CURSE_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    ['DEFIGO', 'SIMVLACRVM', 'VEXATO', 'ET', 'LARVAM', 'FLAGELLATO', 'AMARE', 'IAM', 'IAM', 'CITO', 'CITO'].join(SEP),
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'defigo simulacrum vexato et larvam flagellato amare iam iam cito cito',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'I nail it down. May the phantom be tormented. And may the ghost be scourged ' +
+      'bitterly. Now, now, quickly, quickly.',
+  );
+});
+
+// Difficulty 5: the prayer of spec 9.13, Cato's opening word for word. The
+// -um class vocative stands identical to its nominative, which is what real
+// Latin neuters do, and the intransitive proper is legal here and nowhere else.
+const LATIN_INVOCATION_SEED = 883;
+
+test('latin fixture: the prayer of section 9.13', () => {
+  const out = latin('invocation', 5, LATIN_INVOCATION_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    ['TE', 'PRECOR', 'QVAESOQVE', 'SAECVLVM', 'PROPERA', 'ANGITIA', 'IAM', 'IAM', 'CITO', 'CITO'].join(SEP),
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'te precor quaesoque saeculum propera angitia iam iam cito cito',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'I pray and beseech you. O age, hasten near! Angitia! Now, now, quickly, quickly.',
+  );
+});
+
+// Difficulty 3: the lot of spec 9.11. The enclitic hangs on the verb, which is
+// what makes the verb the first word of its clause.
+const LATIN_DIVINATION_SEED = 77;
+
+test('latin fixture: the sortes of section 9.11', () => {
+  const out = latin('divination', 3, LATIN_DIVINATION_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    ['SORTEM', 'DVCO', 'MONSTRATNE', 'AQVILA', 'FATVM'].join(SEP),
+  );
+  assert.strictEqual(out.transliteration, 'sortem duco monstratne aquila fatum');
+  assert.strictEqual(out.gloss, 'I draw the lot. Does the eagle show the fate?');
+});
+
+// Difficulty 3: the crossing of spec 9.12, opened by the attested first-named
+// of Roman prayer order.
+const LATIN_CHRONOMANCY_SEED = 2898;
+
+test('latin fixture: the crossing of section 9.12', () => {
+  const out = latin('chronomancy', 3, LATIN_CHRONOMANCY_SEED);
+  assert.strictEqual(out.glyphs, ['IANE', 'PATER', 'SVPERA', 'RETRO', 'HORAM'].join(SEP));
+  assert.strictEqual(out.transliteration, 'iane pater supera retro horam');
+  assert.strictEqual(out.gloss, 'Father Janus! Overpass backward the hour!');
+});
+
+// Difficulty 5: the register of spec 9.10, whose whole face is what it does not
+// do. ADVOLA is unbroken Latin, the square is attested letters in an attested
+// order, and everything alien in the line arrived whole, as a name.
+const LATIN_ELDRITCH_SEED = 308;
+
+test('latin fixture: the register of section 9.10', () => {
+  const out = latin('eldritch', 5, LATIN_ELDRITCH_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    ['ROTAS', 'OPERA', 'XVLGOTH', 'ADVOLA', 'THROXVL', 'RVINA', 'AETERNA'].join(SEP),
+  );
+  assert.strictEqual(out.transliteration, 'rotas opera xulgoth advola throxul ruina aeterna');
+  assert.strictEqual(
+    out.gloss,
+    'The square, read against its order! O maw beneath the threshold, fly hither! ' +
+      'Throxul! Everlasting ruin.',
+  );
+});
+
+test('latin fixture: the fifth genome renders the section 5 plan its own way', () => {
+  const a = runic('protection', 5, SECTION5_SEED);
+  const b = greek('protection', 5, GREEK_PROTECTION_SEED);
+  const c = latin('protection', 5, LATIN_PROTECTION_SEED);
+  // Against Greek, the closest twin, three things move: CONTRA governs the
+  // accusative where KATA governs the genitive, the epithet shows the feminine
+  // -A where Greek showed -OS, and the reading line is the same language as
+  // the glyph line rather than a romanization of another script (spec 9.13).
+  assert.ok(c.glyphs.includes(`CONTRA${SEP}LARVAM`), 'latin lost its accusative phrase');
+  assert.ok(b.glyphs.includes('ΚΑΤΑ'), 'greek lost its preposition');
+  assert.ok(!/[\u{0370}-\u{03FF}\u{16A0}-\u{16F8}]/u.test(c.glyphs), 'latin leaked a foreign codepoint');
+  // The one genome whose reading line is its glyph line lowercased, letter for
+  // letter, once u and v are told apart again.
+  assert.strictEqual(
+    c.glyphs.split(SEP).join(' '),
+    c.transliteration.toUpperCase().replace(/U/gu, 'V'),
+    'the two latin lines came apart',
+  );
+  assert.notStrictEqual(a.glyphs, c.glyphs);
 });

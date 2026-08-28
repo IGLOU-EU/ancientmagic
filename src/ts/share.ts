@@ -23,6 +23,7 @@ export const LANGUAGES: ReadonlyArray<LanguageId> = [
   'egyptian',
   'phoenician',
   'greek',
+  'latin',
 ];
 export const SCHOOLS: ReadonlyArray<School> = [
   'protection',

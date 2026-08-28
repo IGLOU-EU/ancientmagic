@@ -16,10 +16,12 @@ import * as runicData from '../src/ts/languages/runic-data.js';
 import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
 import * as greekData from '../src/ts/languages/greek-data.js';
+import * as latinData from '../src/ts/languages/latin-data.js';
 import { bindGenome } from '../src/ts/languages/index.js';
 import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
+import { latinGenome } from '../src/ts/languages/latin.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import { sorted } from './text.js';
 
@@ -104,6 +106,19 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     idioms: Object.keys(greekData.IDIOM_WORDS),
     seals: [...greekData.SEAL_COUNTS],
     directions: Object.keys(greekData.DIRECTION_WORDS),
+  },
+  {
+    genome: 'latin',
+    slice: (pack) => pack.latin(),
+    bind: async (pack) => bindGenome(latinGenome, await pack.latin()),
+    roots: rootsOf(latinData.FIELDS, (r: { root: string }) => r.root),
+    // Two of the attested rows are whole chants, so a power is keyed by its
+    // id here rather than by the one word the shorter rows happen to be.
+    powers: [...latinData.BRIGHT_POWER, ...latinData.DARK_POWER].map((p) => p.id),
+    epithets: [...latinData.DREAD_POWER],
+    idioms: Object.keys(latinData.IDIOM_WORDS),
+    seals: [...latinData.SEAL_COUNTS],
+    directions: Object.keys(latinData.DIRECTION_WORDS),
   },
 ];
 

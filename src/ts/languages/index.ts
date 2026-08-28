@@ -39,6 +39,7 @@ export const GENOME_LOADERS: Readonly<Partial<Record<LanguageId, GenomeLoader>>>
   phoenician: (pack) =>
     fetchBound(import('./phoenician.js').then((m) => m.phoenicianGenome), pack.phoenician),
   greek: (pack) => fetchBound(import('./greek.js').then((m) => m.greekGenome), pack.greek),
+  latin: (pack) => fetchBound(import('./latin.js').then((m) => m.latinGenome), pack.latin),
 };
 
 export async function loadGenome(id: LanguageId, glosses: GlossPack): Promise<BoundGenome> {

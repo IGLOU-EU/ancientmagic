@@ -10,4 +10,5 @@ export const frGlosses: GlossPack = {
   egyptian: () => import('./egyptian.js').then((m) => m.egyptianGlosses),
   phoenician: () => import('./phoenician.js').then((m) => m.phoenicianGlosses),
   greek: () => import('./greek.js').then((m) => m.greekGlosses),
+  latin: () => import('./latin.js').then((m) => m.latinGlosses),
 };
