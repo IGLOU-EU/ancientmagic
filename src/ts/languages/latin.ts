@@ -43,6 +43,7 @@ import {
 import {
   BRIGHT_POWER,
   DARK_POWER,
+  DARK_SHRINKING_WORD,
   DIRECTION_WORDS,
   DREAD_POWER,
   ENCLITIC_NE,
@@ -180,6 +181,7 @@ function realizeProtectionClause(
   rng: Rng,
   joined: boolean,
   glosses: LatinGlosses,
+  settled: string | null,
 ): ClauseRealization {
   const agent = pick(rng, nounsOf('warding'));
   const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
@@ -197,7 +199,7 @@ function realizeProtectionClause(
 
   // At tiers 8 and 9 the free power word is subsumed by the repetition, so it
   // is never written four times over (spec 9.13).
-  const power = plan.difficulty >= 8 ? null : pick(rng, powerPool(plan));
+  const power = plan.difficulty >= 8 ? null : pick(rng, freePool(plan, settled));
   if (power !== null) words.push(...power.words);
 
   return {
@@ -252,6 +254,7 @@ function realizeInvocationClause(
   used: Set<string>,
   joined: boolean,
   glosses: LatinGlosses,
+  settled: string | null,
 ): ClauseRealization {
   const eldritch = plan.eldritch;
   const words: string[] = [];
@@ -280,10 +283,15 @@ function realizeInvocationClause(
   // not: the verb is untouched and the names are the whole of the dread.
   let powerId: string;
   if (eldritch) {
-    powerId = drawUnused(rng, DREAD_POWER, used, (word) => word);
+    powerId = drawUnused(
+      rng,
+      DREAD_POWER.filter((word) => word !== settled),
+      used,
+      (word) => word,
+    );
     words.push(powerId);
   } else {
-    const power = pick(rng, powerPool(plan));
+    const power = pick(rng, freePool(plan, settled));
     powerId = power.id;
     words.push(...power.words);
   }
@@ -445,32 +453,69 @@ function powerPool(plan: FormulaPlan): ReadonlyArray<LatinPower> {
   return plan.school === 'curse' ? DARK_POWER : BRIGHT_POWER;
 }
 
-function litany(plan: FormulaPlan, rng: Rng, glosses: LatinGlosses): ClauseRealization | null {
+// The adjacency rule of spec 9.9: at the top tiers the repetition word is
+// settled first, and every free power word of the same formula then avoids it,
+// so the head of a triple or a triangle is never also the word a clause just
+// spoke.
+function freePool(plan: FormulaPlan, settled: string | null): ReadonlyArray<LatinPower> {
+  return powerPool(plan).filter((power) => power.id !== settled);
+}
+
+// The clear register's triangle word, fixed per school and never drawn: the
+// attested amulet for the bright four, the queen below for Curse (spec 9.9).
+function triangleEntry(plan: FormulaPlan): LatinPower {
+  const id = plan.school === 'curse' ? DARK_SHRINKING_WORD : SHRINKING_WORD;
+  const entry = powerPool(plan).find((power) => power.id === id);
+  if (entry === undefined) throw new Error(`the triangle word ${id} is outside its own pool`);
+  return entry;
+}
+
+// The repeated segment of tiers 8 and 9, settled before any clause draws so
+// that the clauses can avoid its word (spec 9.9). A fixed triangle word
+// consumes no draw, which is why the schools that spend no free power word
+// write the same tier 9 line as before the rule existed.
+interface Repetition {
+  readonly words: ReadonlyArray<string>;
+  readonly gloss: string;
+  readonly word: string;
+}
+
+function settleRepetition(
+  plan: FormulaPlan,
+  rng: Rng,
+  glosses: LatinGlosses,
+): Repetition | null {
   if (plan.powerWordStyle === 'none') return null;
-  // The register transforms nothing and speaks only listed forms, so it has no
-  // shrinking device of its own: a shrunk epithet would be a shape neither a
-  // dictionary nor spec 9.10 could account for, and abracadabra is banned
-  // under the register with the rest of 9.7. It speaks a listed epithet three
-  // times at both top tiers.
+  const triple = plan.powerWordStyle === 'triple';
+  // The register keeps both devices and keeps them alien: it triples the
+  // epithet it drew, and shrinks that same epithet at tier 9. Fragments of a
+  // word that was never Latin cannot read as broken Latin, so the register's
+  // no-transformation ruling survives its own top tier (spec 9.10).
   if (plan.eldritch) {
     const epithet = pick(rng, DREAD_POWER);
     return {
-      words: [epithet, epithet, epithet],
-      gloss: glosses.litanyTriple(epithet, true),
+      words: triple
+        ? [epithet, epithet, epithet]
+        : shrinkingSteps(tokenizeLatin(epithet), 'back'),
+      gloss: triple
+        ? glosses.litanyTriple(epithet, true)
+        : glosses.litanyShrink(epithet, true),
+      word: epithet,
     };
   }
-  if (plan.powerWordStyle === 'triple') {
+  if (triple) {
     const power = pick(rng, powerPool(plan).filter((entry) => entry.chant !== true));
     return {
       words: [...power.words, ...power.words, ...power.words],
       gloss: glosses.litanyTriple(power.id, false),
+      word: power.id,
     };
   }
-  // The tier 9 sequence is abracadabra and no other word, losing its final
-  // letter at each of its eleven steps (spec 9.9).
+  const power = triangleEntry(plan);
   return {
-    words: shrinkingSteps(tokenizeLatin(SHRINKING_WORD), 'back'),
-    gloss: glosses.litanyShrink(SHRINKING_WORD),
+    words: shrinkingSteps(tokenizeLatin(power.words.join('')), 'back'),
+    gloss: glosses.litanyShrink(power.id, false),
+    word: power.id,
   };
 }
 
@@ -483,8 +528,9 @@ function sealCountFor(plan: FormulaPlan, rng: Rng): SealCount {
   return pick(rng, [7, 9] as const);
 }
 
-// Tier 1 writes no separator, so only a row that is one word can be whispered
-// (spec 9.9).
+// Tier 1 writes no separator, so the chant rows are out and a row of two words
+// is whispered continuous, DIS PATER as DISPATER, a one-word form the record
+// itself carries (spec 9.7, 9.9).
 function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: LatinGlosses): FormulaOutput {
   if (plan.eldritch) {
     const epithet = pick(rng, DREAD_POWER);
@@ -494,7 +540,7 @@ function realizeTierOne(plan: FormulaPlan, rng: Rng, glosses: LatinGlosses): For
       gloss: glosses.tierOne(epithet, true),
     };
   }
-  const power = pick(rng, powerPool(plan).filter((entry) => entry.words.length === 1));
+  const power = pick(rng, powerPool(plan).filter((entry) => entry.chant !== true));
   const word = power.words.join('');
   return {
     glyphs: lettersFor(word),
@@ -522,6 +568,11 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: LatinGlosses): For
   const words: string[] = [];
   const glossParts: string[] = [];
 
+  // Settled before anything is drawn for a clause, which is the whole of the
+  // adjacency rule: what the clauses may not spend has to be known first.
+  const repeated = settleRepetition(plan, rng, glosses);
+  const settled = repeated?.word ?? null;
+
   for (const id of pickOpenings(plan)) {
     words.push(...IDIOM_WORDS[id]);
     glossParts.push(glosses.idiom(id));
@@ -538,7 +589,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: LatinGlosses): For
     const joined = index > 0;
     let realized: ClauseRealization;
     if (plan.school === 'protection') {
-      realized = realizeProtectionClause(plan, clause, rng, joined, glosses);
+      realized = realizeProtectionClause(plan, clause, rng, joined, glosses, settled);
     } else if (plan.school === 'curse') {
       realized = realizeCurseClause(clause, rng, joined, glosses);
     } else if (plan.school === 'divination') {
@@ -546,13 +597,12 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: LatinGlosses): For
     } else if (plan.school === 'chronomancy') {
       realized = realizeChronomancyClause(clause, rng, joined, glosses);
     } else {
-      realized = realizeInvocationClause(plan, clause, rng, used, joined, glosses);
+      realized = realizeInvocationClause(plan, clause, rng, used, joined, glosses, settled);
     }
     words.push(...realized.words);
     glossParts.push(realized.gloss);
   });
 
-  const repeated = litany(plan, rng, glosses);
   if (repeated !== null) {
     words.push(...repeated.words);
     glossParts.push(repeated.gloss);

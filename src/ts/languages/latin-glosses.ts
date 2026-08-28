@@ -105,7 +105,7 @@ export interface LatinGlosses extends GenomeGlosses {
   // epithet under the other, and this genome keeps the two tables apart, so
   // the flag rides along as it does on tierOne.
   litanyTriple(word: string, eldritch: boolean): string;
-  litanyShrink(word: string): string;
+  litanyShrink(word: string, eldritch: boolean): string;
   tierOne(word: string, eldritch: boolean): string;
   tierTwo(intentRoot: string, targetRoot: string): string;
 }

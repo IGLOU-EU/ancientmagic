@@ -379,7 +379,13 @@ export const NUMERALS: Readonly<Record<number, readonly [glyphs: string, spoken:
 
 export const SEAL_TAIL_SPOKEN = 'dicito';
 
-// The shrinking sequence of tier 9, whole: eleven steps down to a single A.
+// The tier 1 form of the one two-word row, written continuous because tier 1
+// writes no separator (spec 9.7).
+export const DISPATER_TIER1 = 'dispater';
+
+// The triangle words of the clear register, one per case of the three-case
+// rule of spec 9.9. The register's own case draws its word, so it has no
+// fixed sequence to transcribe.
 export const SHRINKING_STEPS: ReadonlyArray<string> = [
   'abracadabra',
   'abracadabr',
@@ -393,3 +399,25 @@ export const SHRINKING_STEPS: ReadonlyArray<string> = [
   'ab',
   'a',
 ];
+
+// PROSERPINA, ten steps down to a single P: a bright fever amulet has no place
+// under a nailing, so Curse shrinks the queen below instead (spec 9.9).
+export const DARK_SHRINKING_STEPS: ReadonlyArray<string> = [
+  'proserpina',
+  'proserpin',
+  'proserpi',
+  'proserp',
+  'proser',
+  'prose',
+  'pros',
+  'pro',
+  'pr',
+  'p',
+];
+
+// How a word shrinks under this genome's device: the final letter goes at each
+// step, down to a single letter. The register spends it on whatever epithet
+// its repetition drew, so the steps are computed rather than listed.
+export function truncations(word: string): string[] {
+  return Array.from(word).map((_unused, index) => word.slice(0, word.length - index));
+}

@@ -4,11 +4,13 @@ import { lettersFor } from '../src/ts/languages/latin.js';
 import { FIELDS } from '../src/ts/languages/latin-data.js';
 import {
   CHANT_IDS,
+  DARK_SHRINKING_STEPS,
   DIRECTION_WORDS_SPEC,
+  DISPATER_TIER1,
+  DREAD_WORDS,
   FN_AD_SPEC,
   FN_CONTRA_SPEC,
   FN_ET_SPEC,
-  DREAD_WORDS,
   FROZEN_WORDS,
   LC1,
   LC2,
@@ -27,6 +29,7 @@ import {
   SEAL_TAIL_SPOKEN,
   SHRINKING_STEPS,
   VERB_ENDINGS,
+  truncations,
 } from './latin-spec.js';
 import {
   ALL_SCHOOLS,
@@ -86,7 +89,10 @@ const LISTED: ReadonlySet<string> = new Set([
   FN_ET_SPEC,
   ...Object.values(DIRECTION_WORDS_SPEC),
   ...Object.values(POWER_WORDS).flat(),
+  DISPATER_TIER1,
   ...SHRINKING_STEPS,
+  ...DARK_SHRINKING_STEPS,
+  ...DREAD_WORDS.flatMap(truncations),
   ...Object.values(NUMERALS).flatMap(([, spoken]) => spoken.split(' ')),
 ]);
 
@@ -455,7 +461,9 @@ test('the repetition stands after the last clause and before the closer', () => 
   for (const school of ALL_SCHOOLS) {
     for (const seed of SEEDS) {
       // The chants fill only the free power word of a school clause: never a
-      // single whispered word, and never a repetition (spec 9.7).
+      // single whispered word, and never a repetition (spec 9.7). Every other
+      // row fills every use, and the one row of two words writes continuous
+      // at tier 1, DIS PATER as DISPATER.
       const whispered = latinWords(school, 1, seed);
       assert.strictEqual(whispered.length, 1, `tier 1 is not one word in ${label(school, 1, seed)}`);
       assert.ok(!chants.has(whispered[0] ?? ''), `a chant at ${label(school, 1, seed)}`);
@@ -463,27 +471,51 @@ test('the repetition stands after the last clause and before the closer', () => 
       for (const difficulty of [8, 9]) {
         const where = label(school, difficulty, seed);
         const words = latinWords(school, difficulty, seed);
-        if (difficulty === 8 || school === 'eldritch') {
-          // Three of the same word in a row, and no chant among them.
-          const at = words.findIndex(
-            (word, index) => words[index + 1] === word && words[index + 2] === word,
+        if (difficulty === 8) {
+          // Three copies of one power row back to back, and no chant among
+          // them: the row may be two words, so the run is matched whole.
+          const rows: ReadonlyArray<ReadonlyArray<string>> = [
+            ...Object.values(POWER_WORDS),
+            ...DREAD_WORDS.map((epithet) => [epithet]),
+          ];
+          const at = words.findIndex((_unused, index) =>
+            rows.some((row) =>
+              [...row, ...row, ...row].every((word, offset) => words[index + offset] === word),
+            ),
           );
           assert.ok(at > 0, `no triple in ${where}`);
           assert.ok(!chants.has(words[at] ?? ''), `a chant tripled in ${where}`);
           continue;
         }
-        // At tier 9 the sequence is abracadabra whole, eleven steps down to a
-        // single A, in the clear register of every school (spec 9.9). It is
-        // located on its whole run: an Invocation clause may spend the same
-        // word as its own free power word immediately in front of it.
-        const at = words.findIndex((_unused, index) =>
-          SHRINKING_STEPS.every((step, offset) => words[index + offset] === step),
-        );
+        // At tier 9 the sequence is the school's own triangle word, whole,
+        // losing its final letter down to a single one: the attested amulet
+        // for the bright four, the queen below for Curse, and the epithet the
+        // register's own repetition drew (spec 9.9, three cases and no fourth).
+        const run = (candidate: ReadonlyArray<string>): number =>
+          words.findIndex((_unused, index) =>
+            candidate.every((step, offset) => words[index + offset] === step),
+          );
+        // The register spends whatever epithet its own repetition drew, and
+        // that epithet may also stand as an agent elsewhere in the line, so
+        // the segment is found by its whole run rather than by its head.
+        const steps =
+          school === 'curse'
+            ? [...DARK_SHRINKING_STEPS]
+            : school === 'eldritch'
+              ? truncations(DREAD_WORDS.find((epithet) => run(truncations(epithet)) >= 0) ?? '')
+              : [...SHRINKING_STEPS];
+        assert.ok(steps.length > 1, `no triangle word in ${where}`);
+        const at = run(steps);
         assert.ok(at >= 0, `no shrinking sequence in ${where}`);
-        assert.ok(
-          !SHRINKING_STEPS.includes(words[at + SHRINKING_STEPS.length] ?? ''),
-          `the shrinking sequence runs past its last step in ${where}`,
+        assert.strictEqual(
+          words[at + steps.length - 1],
+          steps[steps.length - 1],
+          `the sequence does not reach a single letter in ${where}`,
         );
+        // A bright fever amulet never enters a nailing (spec 9.9).
+        if (school === 'curse') {
+          assert.ok(!words.includes(SHRINKING_STEPS[0] ?? ''), `abracadabra in ${where}`);
+        }
       }
     }
   }
@@ -613,6 +645,54 @@ test('the glyph line of one formula is the letters of its own transliteration', 
             `${word} is not written in ${label(school, difficulty, seed)}`,
           );
         }
+      }
+    }
+  }
+});
+
+// Conformance bullet 13, the adjacency rule of spec 9.9: at tiers 8 and 9, in
+// every school and register, the repetition word is settled before the clauses
+// draw, and every free POWER-WORD draw of the same formula then excludes it.
+// Before the realignment an Invocation clause could speak abracadabra
+// immediately in front of the triangle that opens on it.
+test('the repetition word never also fills a free power word of its formula', () => {
+  const rows: ReadonlyArray<ReadonlyArray<string>> = [
+    ...Object.values(POWER_WORDS),
+    ...DREAD_WORDS.map((epithet) => [epithet]),
+  ];
+  for (const school of ALL_SCHOOLS) {
+    for (const difficulty of [8, 9]) {
+      for (let seed = 0; seed < 60; seed += 1) {
+        const where = label(school, difficulty, seed);
+        const words = latinWords(school, difficulty, seed);
+        // The head of the segment, found on the whole run so a word standing
+        // elsewhere in the line cannot be mistaken for it.
+        const row =
+          difficulty === 8
+            ? rows.find((candidate) =>
+                words.some((_unused, index) =>
+                  [...candidate, ...candidate, ...candidate].every(
+                    (word, offset) => words[index + offset] === word,
+                  ),
+                ),
+              )
+            : rows.find((candidate) => {
+                const head = candidate[0] ?? '';
+                if (candidate.length !== 1) return false;
+                return words.some((_unused, index) =>
+                  truncations(head).every((step, offset) => words[index + offset] === step),
+                );
+              });
+        assert.ok(row !== undefined, `no repetition segment in ${where}`);
+        const head = row?.[0] ?? '';
+        const steps = difficulty === 8 ? [...(row ?? [])] : truncations(head);
+        const at = words.findIndex((_unused, index) =>
+          steps.every((step, offset) => words[index + offset] === step),
+        );
+        // The last free power word of the formula stands immediately in front
+        // of the segment, so the two must not be the same row.
+        const before = words.slice(Math.max(0, at - (row ?? []).length), at).join(' ');
+        assert.notStrictEqual(before, (row ?? []).join(' '), `adjacent repetition in ${where}`);
       }
     }
   }

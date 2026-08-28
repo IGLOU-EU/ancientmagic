@@ -17,6 +17,7 @@ import {
   SEAL_GLYPHS,
   SEAL_TAIL,
   SEAL_WORDS,
+  DARK_SHRINKING_WORD,
   SHRINKING_WORD,
   WORD_SEP,
 } from '../src/ts/languages/latin-data.js';
@@ -26,6 +27,8 @@ import type { SemanticField } from '../src/ts/generator/types.js';
 import {
   CHANT_IDS,
   CITATION,
+  DARK_SHRINKING_STEPS,
+  DISPATER_TIER1,
   DARK_IDS,
   DIRECTION_WORDS_SPEC,
   DREAD_TABLE,
@@ -252,15 +255,40 @@ test('the attested powers are written letter for letter as the spec lists them',
   }
 });
 
-test('the shrinking sequence is abracadabra, losing its final letter', () => {
+test('the two fixed triangle words shrink to a single letter, final letter first', () => {
+  const steps = (word: string): string[] => {
+    const tokens = tokenizeLatin(word);
+    return tokens.map((_unused, index) => tokens.slice(0, tokens.length - index).join(''));
+  };
+  // The bright four shrink the attested amulet, eleven steps down to a single
+  // A. Curse shrinks the queen below, ten steps down to a single P, so a
+  // fever amulet never enters a nailing (spec 9.9).
   assert.strictEqual(SHRINKING_WORD, 'abracadabra');
-  const tokens = tokenizeLatin(SHRINKING_WORD);
-  assert.deepStrictEqual(
-    tokens.map((_unused, index) => tokens.slice(0, tokens.length - index).join('')),
-    [...SHRINKING_STEPS],
-  );
+  assert.deepStrictEqual(steps(SHRINKING_WORD), [...SHRINKING_STEPS]);
   assert.strictEqual(SHRINKING_STEPS.length, 11, 'eleven steps down to a single A');
   assert.strictEqual(lettersFor(SHRINKING_STEPS[SHRINKING_STEPS.length - 1] ?? ''), 'A');
+
+  assert.strictEqual(DARK_SHRINKING_WORD, 'proserpina');
+  assert.deepStrictEqual(steps(DARK_SHRINKING_WORD), [...DARK_SHRINKING_STEPS]);
+  assert.strictEqual(DARK_SHRINKING_STEPS.length, 10, 'ten steps down to a single P');
+  assert.strictEqual(lettersFor(DARK_SHRINKING_STEPS[DARK_SHRINKING_STEPS.length - 1] ?? ''), 'P');
+
+  // Both are rows of their own school's pool, which is what the assignment of
+  // spec 9.7 means: the triangle word is never borrowed across the split.
+  assert.ok(BRIGHT_POWER.some((p) => p.id === SHRINKING_WORD), 'the bright word left its pool');
+  assert.ok(DARK_POWER.some((p) => p.id === DARK_SHRINKING_WORD), 'the dark word left its pool');
+});
+
+// Tier 1 writes no separator, so the one row of two words is whispered
+// continuous, a form the record itself carries (spec 9.7).
+test('the two-word row has a continuous tier 1 form', () => {
+  const dispater = DARK_POWER.find((p) => p.id === 'dispater');
+  assert.deepStrictEqual([...(dispater?.words ?? [])], ['dis', 'pater']);
+  assert.strictEqual((dispater?.words ?? []).join(''), DISPATER_TIER1);
+  assert.strictEqual(lettersFor(DISPATER_TIER1), 'DISPATER');
+  // It is not a chant, so tier 1 admits it and the smallest curse has two
+  // names to whisper rather than one.
+  assert.notStrictEqual(dispater?.chant, true);
 });
 
 test('the dread pool matches the spec table and fails the phonotactics on sight', () => {

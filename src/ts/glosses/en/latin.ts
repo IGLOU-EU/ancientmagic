@@ -347,8 +347,8 @@ export const latinGlosses: LatinGlosses = {
 
   litanyTriple: (word, eldritch) =>
     `${eldritch ? capitalize(word) : power(powers, word).name}, spoken three times.`,
-  // The register speaks no shrinking word, so this one is never dread.
-  litanyShrink: (word) => `${power(powers, word).name}, shrinking to a single letter.`,
+  litanyShrink: (word, eldritch) =>
+    `${eldritch ? capitalize(word) : power(powers, word).name}, shrinking to a single letter.`,
 
   tierOne: (word, eldritch) =>
     eldritch

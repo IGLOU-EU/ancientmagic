@@ -436,8 +436,10 @@ export const latinGlosses: LatinGlosses = {
 
   litanyTriple: (word, eldritch) =>
     `${eldritch ? capitalize(word) : power(powers, word).name}, prononcé trois fois.`,
-  // The register speaks no shrinking word, so this one is never dread.
-  litanyShrink: (word) => `${power(powers, word).name}, réduit à une seule lettre.`,
+  // An autonymic mention stays masculine, the word being named rather than
+  // the thing it names, so PROSERPINA is « réduit » and not « réduite ».
+  litanyShrink: (word, eldritch) =>
+    `${eldritch ? capitalize(word) : power(powers, word).name}, réduit à une seule lettre.`,
 
   tierOne: (word, eldritch) =>
     eldritch

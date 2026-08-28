@@ -25,6 +25,7 @@ import {
   SEAL_TAIL_SPOKEN,
   SHRINKING_STEPS,
   VERB_ENDINGS,
+  truncations,
 } from './latin-spec.js';
 import { DIFFICULTIES, SEEDS, label, latin, latinWords } from './gen.js';
 
@@ -35,6 +36,10 @@ const SUMMONING = new Set(FIELDS.summoning.map((r) => r.root));
 // emit nothing this section cannot account for.
 function accountedFor(word: string): boolean {
   if (DREAD_WORDS.includes(word)) return true;
+  // A truncation step of the tier 9 triangle, which shrinks the epithet the
+  // repetition drew. Fragments of a word that was never Latin cannot read as
+  // broken Latin, which is what lets the register keep both devices (9.10.4).
+  if (DREAD_WORDS.some((epithet) => truncations(epithet).includes(word))) return true;
   if (ELDRITCH_OPEN_FULL.includes(word)) return true;
   if (ELDRITCH_CLOSE.includes(word)) return true;
   if (word === SEAL_TAIL_SPOKEN || word === NUMERALS[9]?.[1]) return true;
@@ -168,18 +173,28 @@ test('dread epithets appear only in their listed forms, at every tier', () => {
       for (const word of found) {
         assert.ok(DREAD_WORDS.includes(word), `${word} is not a listed epithet in ${where}`);
       }
-      // And no step of the shrinking sequence, which the register never runs:
-      // abracadabra is banned with the rest of 9.7 and no epithet takes its
-      // place, so the top tiers both speak a listed name three times over.
+      // The attested rows stay banned, so no step of the bright triangle can
+      // reach this register (spec 9.7, 9.10).
       for (const step of SHRINKING_STEPS) {
-        assert.ok(!words.includes(step), `a shrinking step in ${where}`);
+        assert.ok(!words.includes(step), `a bright shrinking step in ${where}`);
       }
-      if (difficulty >= 8) {
+      if (difficulty === 8) {
         const at = words.findIndex(
           (word, index) =>
             DREAD_WORDS.includes(word) && words[index + 1] === word && words[index + 2] === word,
         );
         assert.ok(at > 0, `no triple in ${where}`);
+      }
+      if (difficulty === 9) {
+        // The triangle shrinks the epithet the repetition drew, down to a
+        // single letter (spec 9.10.4).
+        const head = DREAD_WORDS.find((epithet) =>
+          words.some((_unused, index) =>
+            truncations(epithet).every((step, offset) => words[index + offset] === step),
+          ),
+        );
+        assert.ok(head !== undefined, `no triangle in ${where}`);
+        assert.ok(words.includes((head ?? '').slice(0, 1)), `the triangle stops short in ${where}`);
       }
     }
   }
@@ -227,5 +242,17 @@ test('the register writes the same capitals as every other school', () => {
     for (const word of words) {
       assert.ok(!DREAD_WORDS.includes(word), `${word} is both attested and dread`);
     }
+  }
+});
+
+// The register's tiers 8 and 9 stay distinct, the triple against the triangle
+// (spec 9.9). Before the realignment they emitted the same bytes, which is the
+// defect this ruling was written to close.
+test('the register writes a different tier 9 from its tier 8', () => {
+  for (let seed = 0; seed < 200; seed += 1) {
+    const eight = latin('eldritch', 8, seed);
+    const nine = latin('eldritch', 9, seed);
+    assert.notStrictEqual(eight.glyphs, nine.glyphs, `d8 and d9 alike at seed ${seed}`);
+    assert.notStrictEqual(eight.gloss, nine.gloss, `d8 and d9 gloss alike at seed ${seed}`);
   }
 });

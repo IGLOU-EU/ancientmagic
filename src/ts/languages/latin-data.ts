@@ -298,10 +298,15 @@ export const DARK_POWER: ReadonlyArray<LatinPower> = [
   { id: 'dispater', words: ['dis', 'pater'] },
 ];
 
-// The shrinking sequence of tier 9 is this word and no other: Sammonicus
-// prescribes the shrinking of it, so the one letter-triangle in this project
-// that is attested rather than borrowed belongs to Latin (spec 9.9).
+// The triangle word of the clear register, fixed per school by the three-case
+// rule of spec 9.9. Sammonicus prescribes the shrinking of the first, so the
+// one letter-triangle in this project that is attested rather than borrowed
+// belongs to Latin. The second is this document's own extension of the device
+// to the chthonic register: a bright fever amulet has no place under a
+// nailing, and a name's fragments are not broken Latin because a name is not a
+// sentence. The register's third case draws its word and is not fixed (9.10).
 export const SHRINKING_WORD = 'abracadabra';
+export const DARK_SHRINKING_WORD = 'proserpina';
 
 // Dread epithets of the Eldritch register (spec 9.10), indeclinable listed
 // forms built to fail the phonotactics of 9.3 on sight. The register
