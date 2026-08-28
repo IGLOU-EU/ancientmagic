@@ -55,7 +55,19 @@ function datasetOf(element: FakeElement): Record<string, string> {
 
 class FakeStyle {
   readonly properties = new Map<string, string>();
-  animation = '';
+
+  // Every value the animation shorthand was written, in order. Re-arming an
+  // animation is a pair of writes and nothing else, so the trail they leave is
+  // the only place an element being struck is visible from.
+  readonly animations: string[] = [];
+
+  get animation(): string {
+    return this.animations.at(-1) ?? '';
+  }
+
+  set animation(value: string) {
+    this.animations.push(value);
+  }
 
   setProperty(name: string, value: string): void {
     this.properties.set(name, value);
@@ -354,6 +366,10 @@ export function installPage(options: PageOptions = {}): Page {
     'output',
   ], [
     element('p', {}, ['glyph-line', 'glyph-line--vapor'], ['served glyphs']),
+    element('p', {}, ['glyph-line', 'glyph-glow', 'glyph-glow--aura'], ['served glyphs']),
+    element('p', {}, ['glyph-line', 'glyph-glow', 'glyph-glow--bloom'], ['served glyphs']),
+    element('p', {}, ['glyph-line', 'glyph-glow', 'glyph-glow--halo'], ['served glyphs']),
+    element('p', {}, ['glyph-line', 'glyph-glow', 'glyph-glow--strike'], ['served glyphs']),
     element('p', { id: 'glyph-line', 'aria-label': 'served label' }, ['glyph-line'], [
       'served glyphs',
     ]),

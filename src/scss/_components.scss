@@ -51,23 +51,19 @@ $spark-fall: (
   dot(96%, 68%, 1.6px, a($gold, 0.6))
 );
 
-// The three temperatures of the manifested glyphs, design 13.6: struck, ember,
-// resting. Shared as lists so the forge keyframes land exactly on the resting
-// state and the sway takes over without a visible jump. Same four layers
-// throughout (core, halo, bloom, aura), and no layer is ever thinner or fainter
-// than its resting value.
-$glow-glyph-rest: (
-  0 0 2px a($gold-bright, 0.85),
-  0 0 12px a($gold, 0.55),
-  0 0 34px a($gold, 0.3),
-  0 0 70px a($violet-fill-hover, 0.5)
-);
-$glow-glyph-ember: (
-  0 0 4px a($gold-bright, 0.95),
-  0 0 19px a($gold, 0.7),
-  0 0 54px a($gold, 0.4),
-  0 0 100px a($violet-fill-hover, 0.58)
-);
+// The two temperatures of the manifested glyphs, design 13.6: struck and
+// resting. Same four layers in both (core, halo, bloom, aura), and no struck
+// layer is ever thinner or fainter than the resting one it replaces.
+//
+// The resting layers are named one by one because each of the three outer ones
+// is carried by a copy of the line rather than by the line itself: they are
+// what drifts, and a drifting shadow costs a repaint of the well on every
+// frame it moves. Only the core stays where the strokes are.
+$glow-glyph-core: 0 0 2px a($gold-bright, 0.85);
+$glow-glyph-halo: 0 0 12px a($gold, 0.55);
+$glow-glyph-bloom: 0 0 34px a($gold, 0.3);
+$glow-glyph-aura: 0 0 70px a($violet-fill-hover, 0.5);
+$glow-glyph-rest: ($glow-glyph-core, $glow-glyph-halo, $glow-glyph-bloom, $glow-glyph-aura);
 $glow-glyph-strike: (
   0 0 8px a($gold-pale, 1),
   0 0 30px a($gold-bright, 0.9),
@@ -102,23 +98,60 @@ $glow-glyph-strike: (
 }
 
 // The formula is struck, not faded in, design 13.6. The letters carry the heat
-// in their own body and the glow cools with them. Emerge front-loads both
-// intervals, which is the shape of cooling metal: two fast drops, then a tail
-// where the glow is still coming down and nothing seems to change.
+// in their own body, and the glow cools with them on its own copies below.
+// Emerge front-loads both intervals, which is the shape of cooling metal: two
+// fast drops, then a tail where the heat is still coming down and nothing
+// seems to change.
 @keyframes am-forge {
   0% {
     color: $gold-pale;
-    text-shadow: $glow-glyph-strike;
   }
 
   18% {
     color: $gold-bright;
-    text-shadow: $glow-glyph-ember;
   }
 
   100% {
     color: $gold;
-    text-shadow: $glow-glyph-rest;
+  }
+}
+
+// The struck glow handed over to the resting one. The two run against each
+// other on the same clock and the same waypoints, so what the well shows at
+// any instant is the strike and the rest weighed against each other rather
+// than a shadow redrawn frame by frame. The struck side lights before it
+// cools, on the ramp the letters themselves come up on, because a glow that
+// arrived whole would flash ahead of the strokes it belongs to.
+@keyframes am-strike-cool {
+  0% {
+    opacity: 0;
+    animation-timing-function: linear;
+  }
+
+  7% {
+    opacity: 0.8;
+  }
+
+  18% {
+    opacity: 0.4;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes am-glow-settle {
+  0% {
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 1;
   }
 }
 
@@ -228,37 +261,66 @@ $glow-glyph-strike: (
   }
 }
 
-// The halo layers orbit the letters like heat shimmer. The core shadow never
-// moves so the strokes stay sharp, and the amplitude grows with the blur
-// radius so the layers read as depths of one drifting vapor.
-@keyframes am-glow-sway {
+// The halo layers orbit the letters like heat shimmer, design 13.2: a
+// flattened ellipse rising above the text, one turn per loop. Each layer is
+// flown rather than redrawn, which is why each one rides a copy of its own and
+// why the ellipses are written as travel and not as shadow offsets. The core
+// shadow never moves so the strokes stay sharp, and the amplitude grows with
+// the blur radius so the layers read as depths of one drifting vapor.
+@keyframes am-sway-halo {
   0%,
   100% {
-    text-shadow: $glow-glyph-rest;
+    transform: translate(0, 0);
   }
 
   25% {
-    text-shadow:
-      0 0 2px a($gold-bright, 0.85),
-      3px -2px 12px a($gold, 0.55),
-      5px -3px 34px a($gold, 0.3),
-      8px -5px 70px a($violet-fill-hover, 0.5);
+    transform: translate(3px, -2px);
   }
 
   50% {
-    text-shadow:
-      0 0 2px a($gold-bright, 0.85),
-      0 -4px 12px a($gold, 0.55),
-      0 -6px 34px a($gold, 0.3),
-      0 -10px 70px a($violet-fill-hover, 0.5);
+    transform: translate(0, -4px);
   }
 
   75% {
-    text-shadow:
-      0 0 2px a($gold-bright, 0.85),
-      -3px -2px 12px a($gold, 0.55),
-      -5px -3px 34px a($gold, 0.3),
-      -8px -5px 70px a($violet-fill-hover, 0.5);
+    transform: translate(-3px, -2px);
+  }
+}
+
+@keyframes am-sway-bloom {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(5px, -3px);
+  }
+
+  50% {
+    transform: translate(0, -6px);
+  }
+
+  75% {
+    transform: translate(-5px, -3px);
+  }
+}
+
+@keyframes am-sway-aura {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(8px, -5px);
+  }
+
+  50% {
+    transform: translate(0, -10px);
+  }
+
+  75% {
+    transform: translate(-8px, -5px);
   }
 }
 
@@ -1046,21 +1108,19 @@ a:focus-visible {
   position: relative;
   z-index: 1;
   color: $gold;
-  // One stack for the three scripts, on the visible line and on its vapor twin
-  // alike. The routing is the family's own business, see _fonts.
+  // One stack for the three scripts, on the visible line and on every copy of
+  // it alike. The routing is the family's own business, see _fonts.
   font-family: $font-glyph;
   font-weight: 400;
   line-height: 1.45;
   letter-spacing: 0.06em;
   overflow-wrap: anywhere;
-  text-shadow: $glow-glyph-rest;
-
-  // The sway is delayed by the forge duration and both meet on the resting
-  // shadow, so the handover between the two is invisible.
+  // What the line keeps of the resting glow is the layer that never moves. The
+  // three that drift are on the copies below.
+  text-shadow: $glow-glyph-core;
   animation:
     am-reveal $dur-reveal $ease-emerge both,
-    am-forge $dur-forge $ease-emerge both,
-    am-glow-sway $dur-glow-sway ease-in-out $dur-forge infinite;
+    am-forge $dur-forge $ease-emerge both;
 }
 
 // The vapor twin, design revision 1. The same text blurred behind the real
@@ -1080,6 +1140,67 @@ a:focus-visible {
   animation:
     am-vapor-breathe $dur-vapor-breathe ease-in-out infinite alternate,
     am-vapor-drift $dur-vapor-drift ease-in-out infinite alternate;
+}
+
+// The glow copies. Each one is the same text again, written in no colour at
+// all, so the only thing it puts on screen is the one shadow layer it carries.
+// They are stacked between the vapor twin and the strokes in the order the
+// four layers are drawn in, widest first, which is the order a single
+// text-shadow list would have drawn them in.
+//
+// The reason they exist is the sway: a shadow that drifts is a shadow redrawn
+// every frame, and the well and the sky behind it are redrawn with it. Carried
+// this way each layer is drawn once and then only moved, which is work the
+// page can hand to the compositor. Same treatment as the vapor twin for
+// everything else: out of the accessibility tree, out of text selection, and
+// out of print, because they duplicate the visible glyphs.
+.glyph-glow {
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+
+// The layers meet the forge on their own side of the handover: the resting
+// glow comes up as the struck one goes out, and the sway is delayed by exactly
+// the forge duration, so it takes over a glow that has already settled.
+//
+// A copy owns no move but its own. The line rises as it arrives, and a glow
+// that rose with it would be a second travel to track, on the layer that costs
+// the most to track: what ties the light to the letters is the ramp it comes
+// up on, not eight pixels of shared rise no eye can follow through it.
+@mixin glow-layer($shadow, $sway) {
+  // The one place on this page a hint is worth its texture. The travel lands
+  // on fractional pixels between its corners, and an engine that has not been
+  // told the layer is about to move redraws it at each of them, which is the
+  // whole of the work these copies exist to avoid.
+  will-change: transform;
+  text-shadow: $shadow;
+  animation:
+    am-glow-settle $dur-forge $ease-emerge both,
+    $sway $dur-glow-sway ease-in-out $dur-forge infinite;
+}
+
+.glyph-glow--aura {
+  @include glow-layer($glow-glyph-aura, am-sway-aura);
+}
+
+.glyph-glow--bloom {
+  @include glow-layer($glow-glyph-bloom, am-sway-bloom);
+}
+
+.glyph-glow--halo {
+  @include glow-layer($glow-glyph-halo, am-sway-halo);
+}
+
+// The heat of the strike, spent by the time the sway starts. Its resting
+// opacity is zero, which is also what print, forced colors and any engine that
+// does not run the animation are left with.
+.glyph-glow--strike {
+  opacity: 0;
+  text-shadow: $glow-glyph-strike;
+  animation: am-strike-cool $dur-forge $ease-emerge both;
 }
 
 .output[data-size='large'] .glyph-line {
@@ -1313,11 +1434,18 @@ a:focus-visible {
   // The rich glow stays, it is static. Only the loops and the overshoot go.
   // The temperature stays with them: color is not motion, and a reader who
   // asked for stillness still gets told this formula was just forged.
+  //
+  // A still glow has nothing to gain from being carried on copies, so the line
+  // takes all four layers back and the copies leave the page entirely.
   .glyph-line {
     text-shadow: $glow-glyph-rest;
     animation:
       am-fade $dur-reveal-reduced $ease-emerge both,
       am-forge-cool $dur-forge-reduced $ease-emerge both;
+  }
+
+  .glyph-glow {
+    display: none;
   }
 
   .glyph-line--vapor {
@@ -1378,9 +1506,10 @@ a:focus-visible {
     background-color: canvastext;
   }
 
-  // One text color for both layers turns the blurred twin into a smear over
-  // the glyphs it sits behind.
-  .glyph-line--vapor {
+  // The forced palette drops every shadow and repaints every color, which
+  // leaves each copy of the line as a second run of solid text over the first.
+  .glyph-line--vapor,
+  .glyph-glow {
     display: none;
   }
 }

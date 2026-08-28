@@ -155,6 +155,32 @@ test('entry: a conjuration reads the page once, whatever it has to replay', asyn
   assert.strictEqual(page.find('.well-stage').getAttribute('data-forge'), 'struck');
 });
 
+// The formula is written once but shown several times over: a vapor twin
+// behind it and a copy per layer of its glow. All of them say the same thing,
+// or they wrap apart and the light stops fitting the letters. The strike comes
+// down on the glow copies with the line, or the second formula keeps the light
+// of the first, and it spares the twin, which breathes on a clock of its own.
+test('entry: a conjuration writes every copy of the line and strikes the glow', async () => {
+  const page = installPage();
+  await loadEntry();
+
+  page.click('generate');
+  await until(() => page.written.length > 0, 'the conjuration');
+  await settle();
+
+  const run = page.byId('glyph-line').textContent;
+  assert.notStrictEqual(run, 'served glyphs', 'nothing was conjured');
+
+  for (const copy of page.findAll('.glyph-glow')) {
+    assert.strictEqual(copy.textContent, run, 'a glow copy fell out of text sync');
+    assert.deepStrictEqual(copy.style.animations, ['none', ''], 'a glow copy was never struck');
+  }
+
+  const vapor = page.find('.glyph-line--vapor');
+  assert.strictEqual(vapor.textContent, run, 'the vapor twin fell out of text sync');
+  assert.deepStrictEqual(vapor.style.animations, [], 'the strike restarted the vapor twin');
+});
+
 // An arrival is the click's flow with the seed already chosen, so everything a
 // click leaves behind has to be there: the altar set to what the link names,
 // the well opened and written, the address rewritten, the share row sealed.

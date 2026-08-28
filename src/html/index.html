@@ -186,8 +186,18 @@ html { color-scheme: dark; background-color: #171029; }
 
         <div class="well">
           <div class="output" id="output" data-script="runic" data-size="medium" aria-live="polite" aria-atomic="true">
+            <!-- The formula, and the copies of it that carry its light. The
+                 twin is the vapor of design 13.2, the four others are the glow
+                 layers: each one holds a single shadow of the run so that
+                 shadow can be flown instead of redrawn. All of them are the
+                 same glyphs, kept in step by the renderer, and all of them are
+                 hidden from anything that reads or selects. -->
             <div class="glyph-stack">
               <p class="glyph-line glyph-line--vapor" aria-hidden="true">{{sample.glyphs}}</p>
+              <p class="glyph-line glyph-glow glyph-glow--aura" aria-hidden="true">{{sample.glyphs}}</p>
+              <p class="glyph-line glyph-glow glyph-glow--bloom" aria-hidden="true">{{sample.glyphs}}</p>
+              <p class="glyph-line glyph-glow glyph-glow--halo" aria-hidden="true">{{sample.glyphs}}</p>
+              <p class="glyph-line glyph-glow glyph-glow--strike" aria-hidden="true">{{sample.glyphs}}</p>
               <p class="glyph-line" id="glyph-line" role="img" aria-label="{{sample.glyphLabel}}">{{sample.glyphs}}</p>
             </div>
             <p class="translit" dir="ltr">{{sample.transliteration}}</p>

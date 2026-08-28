@@ -107,6 +107,10 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
 
   const stage = document.querySelector<HTMLElement>('.well-stage');
   const vapor = well.querySelector<HTMLElement>('.glyph-line--vapor');
+  // The glow layers, which are copies of the line and are struck with it. The
+  // vapor twin is not one of them: it breathes on its own clock and a strike
+  // that restarted it would make it blink.
+  const glows = Array.from(well.querySelectorAll<HTMLElement>('.glyph-glow'));
   const translit = well.querySelector<HTMLElement>('.translit');
   const gloss = well.querySelector<HTMLElement>('.gloss');
   const caption = document.querySelector<HTMLElement>('.print-caption');
@@ -118,9 +122,11 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
   // one atomic live region, and naming it with the transliteration made the
   // region announce that same line twice, once here and once below.
   glyphLine.setAttribute('aria-label', meta.glyphLabel);
-  // The vapor twin must stay in text sync with the visible line (design 13.2),
-  // and that includes where the line may break, or the two wrap apart.
-  if (vapor !== null) writeGlyphs(vapor, segments);
+  // Every copy of the line must stay in text sync with it (design 13.2), and
+  // that includes where the line may break, or a copy wraps apart from it.
+  for (const copy of [vapor, ...glows]) {
+    if (copy !== null) writeGlyphs(copy, segments);
+  }
   if (translit !== null) translit.textContent = output.transliteration;
   if (gloss !== null) gloss.textContent = output.gloss;
 
@@ -129,5 +135,5 @@ export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
 
   if (caption !== null) caption.textContent = meta.printCaption;
 
-  replayStrike([glyphLine, translit, gloss].filter((line) => line !== null), stage);
+  replayStrike([glyphLine, ...glows, translit, gloss].filter((line) => line !== null), stage);
 }
