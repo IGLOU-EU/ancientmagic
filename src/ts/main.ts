@@ -1,16 +1,36 @@
+// The entry: the session on one side, the page's surfaces on the other.
+//
+// This file holds the session. The controls it reads, the listeners it binds,
+// the state that spans them (the conjuration in flight, the settings a reroll
+// replays), the address it writes, and the order of the one flow every formula
+// goes through, arrival or click. It reads as sections, in that order: the
+// altar, the level of power, the copy, the conjuration, the arrival, the
+// wiring.
+//
+// A module under ui/ is the other kind of thing: a region of the page written
+// from what a conjuration produced. It is handed the result, writes its region
+// and reports nothing back, binds no listener and holds no state about the
+// session. The well (ui/manifestation) and the share row (ui/share-links) are
+// both exactly that, and it is the whole of the difference. So a concern that
+// has to know when something happened belongs here, and a concern that only
+// has to know what was conjured belongs there.
+//
+// The frontier is not free: there is no bundler, so a module is a request the
+// page may pay before anything happens (docs/i18n.md counts them). A region of
+// the page earns one, a step of the session does not, which is why the slider,
+// the copy button and the altar are sections of this file rather than modules.
+
 import type { FormulaOutput, LanguageId, School, Settings } from './generator/types.js';
 import type { SharedFormula } from './share.js';
 import { difficultyTier, resolveStrings } from './strings/index.js';
 import { renderFormula } from './ui/manifestation.js';
-
-const COPY_HOLD_MS = 1600;
 
 // One static page per language, so the page itself says which one it is. The
 // same declaration picks the UI strings and the glosses the generator writes.
 const language = document.documentElement.lang;
 const strings = await resolveStrings(language);
 
-type CopyState = 'idle' | 'copied' | 'failed';
+// --- The altar --------------------------------------------------------------
 
 // The page already displays every option name, so reading it back keeps one
 // source per name instead of a second copy in the strings module.
@@ -20,6 +40,46 @@ function optionLabel(selectId: string, value: string): string {
   const option = select.querySelector(`option[value="${value}"]`);
   return option?.textContent?.trim() ?? value;
 }
+
+// What the altar offers is what the page already says it offers: one option
+// per id the site carries, the ones still to come left disabled in the markup.
+// So the selection is read off the option itself rather than checked against a
+// second list here, which nothing would hold to the first. The build holds the
+// options to the sets the generator declares (tests/page-build).
+function chosen<T extends string>(selectId: string, fallback: T): T {
+  const select = document.getElementById(selectId);
+  if (!(select instanceof HTMLSelectElement)) return fallback;
+  const option = select.selectedOptions[0];
+  if (option === undefined || option.disabled) return fallback;
+  return option.value as T;
+}
+
+function readSettings(): Settings {
+  const difficulty = document.getElementById('difficulty');
+  const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
+  return {
+    language: chosen<LanguageId>('language', 'runic'),
+    school: chosen<School>('school', 'protection'),
+    difficulty: level,
+  };
+}
+
+// The altar is set to what a link names before its formula is written, so the
+// dials show what produced what is on screen, and a reroll starts from there.
+function applySettings(settings: Settings, syncSlider: () => void): void {
+  const language = document.getElementById('language');
+  const school = document.getElementById('school');
+  const difficulty = document.getElementById('difficulty');
+
+  if (language instanceof HTMLSelectElement) language.value = settings.language;
+  if (school instanceof HTMLSelectElement) school.value = settings.school;
+  if (difficulty instanceof HTMLInputElement) {
+    difficulty.value = String(settings.difficulty);
+    syncSlider();
+  }
+}
+
+// --- The level of power -----------------------------------------------------
 
 function syncDifficulty(
   slider: HTMLInputElement,
@@ -51,6 +111,29 @@ function syncDifficulty(
   }
 }
 
+// Hands back the readout sync, because the slider is moved from two places:
+// by the reader, and by a link that already names a level of power.
+function wireDifficulty(): () => void {
+  const slider = document.getElementById('difficulty');
+  if (!(slider instanceof HTMLInputElement)) return () => undefined;
+
+  const valueOut = document.getElementById('difficulty-value');
+  const tierOut = document.getElementById('difficulty-tier');
+  const ticks = document.getElementById('difficulty-ticks');
+
+  const update = (): void => syncDifficulty(slider, valueOut, tierOut, ticks);
+
+  update();
+  slider.addEventListener('input', update);
+  return update;
+}
+
+// --- The copy ---------------------------------------------------------------
+
+const COPY_HOLD_MS = 1600;
+
+type CopyState = 'idle' | 'copied' | 'failed';
+
 // Only the visual state moves. "Copied" and "Copy failed" are outcomes, not
 // labels of the control, so they stay out of the accessible name and are
 // spoken once by the status region instead. Swapping the name here would name
@@ -79,23 +162,6 @@ async function writeToClipboard(text: string): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-// Hands back the readout sync, because the slider is moved from two places:
-// by the reader, and by a link that already names a level of power.
-function wireDifficulty(): () => void {
-  const slider = document.getElementById('difficulty');
-  if (!(slider instanceof HTMLInputElement)) return () => undefined;
-
-  const valueOut = document.getElementById('difficulty-value');
-  const tierOut = document.getElementById('difficulty-tier');
-  const ticks = document.getElementById('difficulty-ticks');
-
-  const update = (): void => syncDifficulty(slider, valueOut, tierOut, ticks);
-
-  update();
-  slider.addEventListener('input', update);
-  return update;
 }
 
 function wireCopy(): void {
@@ -128,18 +194,7 @@ function wireCopy(): void {
   });
 }
 
-// What the altar offers is what the page already says it offers: one option
-// per id the site carries, the ones still to come left disabled in the markup.
-// So the selection is read off the option itself rather than checked against a
-// second list here, which nothing would hold to the first. The build holds the
-// options to the sets the generator declares (tests/page-build).
-function chosen<T extends string>(selectId: string, fallback: T): T {
-  const select = document.getElementById(selectId);
-  if (!(select instanceof HTMLSelectElement)) return fallback;
-  const option = select.selectedOptions[0];
-  if (option === undefined || option.disabled) return fallback;
-  return option.value as T;
-}
+// --- The conjuration --------------------------------------------------------
 
 // A seed is an unsigned 32 bit number, which is exactly what this array holds,
 // so the width stays the rng's own and is never a second number to keep in step.
@@ -147,31 +202,6 @@ function freshSeed(): number {
   const draw = new Uint32Array(1);
   crypto.getRandomValues(draw);
   return draw[0];
-}
-
-function readSettings(): Settings {
-  const difficulty = document.getElementById('difficulty');
-  const level = difficulty instanceof HTMLInputElement ? Number(difficulty.value) : 5;
-  return {
-    language: chosen<LanguageId>('language', 'runic'),
-    school: chosen<School>('school', 'protection'),
-    difficulty: level,
-  };
-}
-
-// The altar is set to what a link names before its formula is written, so the
-// dials show what produced what is on screen, and a reroll starts from there.
-function applySettings(settings: Settings, syncSlider: () => void): void {
-  const language = document.getElementById('language');
-  const school = document.getElementById('school');
-  const difficulty = document.getElementById('difficulty');
-
-  if (language instanceof HTMLSelectElement) language.value = settings.language;
-  if (school instanceof HTMLSelectElement) school.value = settings.school;
-  if (difficulty instanceof HTMLInputElement) {
-    difficulty.value = String(settings.difficulty);
-    syncSlider();
-  }
 }
 
 // Writes one formula in one script. Nothing the idle page shows needs the
@@ -201,13 +231,6 @@ async function loadConjurer(id: LanguageId): Promise<Conjurer> {
   };
 }
 
-// The panel the served page keeps hidden. Nothing opens it but a conjuration,
-// and once open it stays: the page holds a formula from then on.
-function revealManifestation(): void {
-  const section = document.querySelector('.manifestation');
-  if (section instanceof HTMLElement) section.hidden = false;
-}
-
 // The seed is the caller's: a click draws a fresh one, a link brings its own,
 // and everything after this point is the same for both.
 async function conjure(settings: Settings, seed: number): Promise<void> {
@@ -225,12 +248,9 @@ async function conjure(settings: Settings, seed: number): Promise<void> {
   const languageLabel = optionLabel('language', settings.language);
   const schoolLabel = optionLabel('school', settings.school);
 
-  // Opened and written in the same breath, so the panel is never on screen
-  // holding the served sample: no frame lays it out, no script face is fetched
-  // for it, and the well is displayed and true in the same frame. A conjuration
-  // that never comes back leaves the page as it was served, which is the only
-  // honest thing to show when there is no formula.
-  revealManifestation();
+  // A conjuration that never comes back leaves the page as it was served,
+  // which is the only honest thing to show when there is no formula: the well
+  // opens itself as it is written, from inside the one call below.
   renderFormula(output, {
     languageId: settings.language,
     separators: conjurer.separators,
@@ -248,6 +268,8 @@ async function conjure(settings: Settings, seed: number): Promise<void> {
   shareLinks.sealShareLinks(fragment);
 }
 
+// --- The arrival ------------------------------------------------------------
+
 // A page can be opened on a formula. The link names the script, the school,
 // the level of power and the seed, which is everything a conjuration takes, so
 // arriving on one is not a flow of its own: it is the click's flow with the
@@ -261,6 +283,8 @@ async function arrivingFormula(): Promise<SharedFormula | null> {
   const share = await import('./share.js');
   return share.decode(location.hash);
 }
+
+// --- The wiring -------------------------------------------------------------
 
 function wireGenerator(syncSlider: () => void): void {
   const generateButton = document.getElementById('generate');

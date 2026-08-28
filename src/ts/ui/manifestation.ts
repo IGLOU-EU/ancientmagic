@@ -1,4 +1,5 @@
-// Renders a generated formula into the manifestation well.
+// Renders a generated formula into the manifestation well, and opens the
+// panel that holds it.
 
 import type { FormulaOutput, LanguageId } from '../generator/types.js';
 
@@ -83,7 +84,19 @@ function replaySparks(stage: HTMLElement): void {
   stage.dataset.forge = 'struck';
 }
 
+// The panel the served page keeps hidden. Nothing opens it but a formula, and
+// once open it stays: the page holds one from then on.
+function revealPanel(): void {
+  const section = document.querySelector('.manifestation');
+  if (section instanceof HTMLElement) section.hidden = false;
+}
+
 export function renderFormula(output: FormulaOutput, meta: FormulaMeta): void {
+  // Opened and written in the same breath, so the panel is never on screen
+  // holding the served sample: no frame lays it out, no script face is fetched
+  // for it, and the well is displayed and true in the same frame.
+  revealPanel();
+
   const well = document.getElementById('output');
   const glyphLine = document.getElementById('glyph-line');
   if (well === null || glyphLine === null) return;
