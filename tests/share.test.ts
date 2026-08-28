@@ -14,6 +14,8 @@ import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import { decode, encode, LANGUAGES, SCHOOLS, sealLink } from '../src/ts/share.js';
 import { GENOME_LOADERS } from '../src/ts/languages/index.js';
+import { shareLinks } from '../tools/share-targets.js';
+import { readLanguages, readShared } from '../tools/sources.js';
 import { ALL_SCHOOLS } from './gen.js';
 import { sorted } from './text.js';
 
@@ -200,6 +202,13 @@ const PAGE = 'https://ancientmagic.iglou.eu/';
 const FORMULA = 'runic.protection.5.66238';
 const SEALED = `${PAGE}#${FORMULA}`;
 
+// A baked href as the runtime receives it. The build writes the parameter
+// separator for the attribute it lands in, and the DOM hands the attribute
+// back with its character references resolved.
+function attribute(href: string): string {
+  return href.replaceAll('&amp;', '&');
+}
+
 test('share: the address a link carries comes back sealed', () => {
   const href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(PAGE)}`;
   assert.strictEqual(
@@ -241,6 +250,32 @@ test('share: a second seal replaces the first, it does not stack behind it', () 
   const second = sealLink(href, PAGE, 'egyptian.eldritch.9.7');
   assert.strictEqual(second.includes(encodeURIComponent(FORMULA)), false, second);
   assert.notStrictEqual(first, second);
+});
+
+// The one convention, read on both sides at once. The build writes the page
+// address into every link and the runtime seals the formula into the link the
+// build wrote, so sealing a baked link has to give the link the build would
+// have baked for the sealed address. Both sides of the assertion are the
+// build's own output, and every network the site carries is swept, so a
+// network whose address shape the seal cannot reach fails here rather than in
+// somebody's timeline.
+test('share: sealing a baked link gives the link of the sealed address', async () => {
+  const url = readShared()['site.url'];
+  const sealed = `${url}#${FORMULA}`;
+
+  for (const language of await readLanguages()) {
+    const message = language.strings['share.message'];
+    const baked = shareLinks(message, url);
+    const expected = shareLinks(message, sealed);
+
+    for (const key of Object.keys(baked)) {
+      assert.strictEqual(
+        sealLink(attribute(baked[key]), url, FORMULA),
+        attribute(expected[key]),
+        `${language.name} ${key}`,
+      );
+    }
+  }
 });
 
 test('share: the seal is spelled inside the link the way the address is', () => {

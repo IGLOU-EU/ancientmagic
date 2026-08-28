@@ -44,14 +44,11 @@
   "school.chronomancy": "Chronomancie",
 
   "difficulty.initialValue": "5",
-  "difficulty.initialTier": "Rite",
-  "difficulty.initialValueText": "5, Rite",
 
   "action.conjure": "Invoquer",
   "action.reroll": "Relancer",
 
   "manifestation.title": "L’Émanation",
-  "sample.glyphLabel": "Incantation en Runes",
   "sample.gloss": "Alu ! Moi, le gardien, je lie contre l’esprit hostile. J’ai peint ces runes.",
 
   "copy.idle": "Copier les glyphes",
@@ -66,8 +63,6 @@
   "share.linkedin.label": "Partager sur LinkedIn",
   "share.facebook.label": "Partager sur Facebook",
   "share.x.label": "Partager sur X",
-
-  "print.caption": "Runes · Protection · Puissance 5",
 
   "footer.license": "Domaine public (Unlicense)",
   "footer.separator": "·",

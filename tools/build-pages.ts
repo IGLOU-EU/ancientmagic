@@ -12,10 +12,10 @@ const DEFAULT_LANGUAGE = 'en';
 const templateFile = join(REPO_ROOT, 'src', 'html', 'index.html');
 const outDir = join(REPO_ROOT, 'pub');
 
-function buildPages(): void {
+async function buildPages(): Promise<void> {
   const template = readFileSync(templateFile, 'utf8');
   const shared = readShared();
-  const languages = readLanguages();
+  const languages = await readLanguages();
 
   for (const [file, page] of renderSite(template, shared, languages, DEFAULT_LANGUAGE)) {
     writeFileSync(join(outDir, file), page);
@@ -26,4 +26,4 @@ function buildPages(): void {
   writeFileSync(join(outDir, 'sitemap.xml'), sitemap(languages, DEFAULT_LANGUAGE, siteUrl));
 }
 
-buildPages();
+await buildPages();

@@ -7,6 +7,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '../src/ts/generator/pipeline.js';
 import { LANGUAGES, SCHOOLS } from '../src/ts/generator/types.js';
+import { en } from '../src/ts/strings/en.js';
+import { fr } from '../src/ts/strings/fr.js';
+import { difficultyTier } from '../src/ts/strings/index.js';
 import {
   assertTypographicQuotes,
   mergeStrings,
@@ -34,6 +37,10 @@ const MINI = [
   '<meta property="og:image" content="{{page.ogImage}}">',
   '<p>{{lang.code}} {{lang.name}}</p>',
   '<ul>{{lang.links}}</ul>',
+  '<select><option>{{language.runic}}</option><option>{{school.protection}}</option></select>',
+  '<p>{{difficulty.initialValue}} {{difficulty.initialTier}}</p>',
+  '<input aria-valuetext="{{difficulty.initialValueText}}">',
+  '<p aria-label="{{sample.glyphLabel}}">{{print.caption}}</p>',
   MINI_SHARE,
 ].join('\n');
 
@@ -51,9 +58,21 @@ function shareStrings(): Record<string, string> {
   return strings;
 }
 
+// What the composed readouts are made of: the level the altar opens on, and the
+// names of the genome and the school the served sample was written in.
+const SAMPLE_STRINGS: Readonly<Record<string, string>> = {
+  'difficulty.initialValue': '5',
+  'language.runic': 'Runic',
+  'school.protection': 'Protection',
+};
+
 const MINI_LANGUAGES: ReadonlyArray<LanguagePage> = [
-  { name: 'en', strings: { 'lang.name': 'English', ...shareStrings() } },
-  { name: 'fr', strings: { 'lang.name': 'Français', ...shareStrings() } },
+  { name: 'en', strings: { 'lang.name': 'English', ...SAMPLE_STRINGS, ...shareStrings() }, ui: en },
+  {
+    name: 'fr',
+    strings: { 'lang.name': 'Français', ...SAMPLE_STRINGS, ...shareStrings() },
+    ui: fr,
+  },
 ];
 
 function miniSite(): Map<string, string> {
@@ -195,6 +214,64 @@ test('page build: the power slider spans the tiers the pipeline reads, one tick 
   );
 });
 
+// -------------------------------------------------- the first-paint skeleton
+// The head restates a few stylesheet values so a cold load opens on the dark
+// page instead of the white canvas, before the stylesheet has landed. A
+// restatement drifting from what it restates is a flash of the wrong colour on
+// every first visit, so each one is read here against the token it copies.
+
+// A value written in a Sass partial, read where it is declared rather than
+// transcribed, so moving the token moves what the head is held to.
+function token(file: string, pattern: RegExp): string {
+  const match = pattern.exec(read('src', 'scss', file));
+  assert.ok(match !== null, `no match for ${pattern} in ${file}`);
+  return (match?.[1] ?? '').toLowerCase();
+}
+
+function head(): string {
+  const template = read('src', 'html', 'index.html');
+  return template.slice(0, template.indexOf('</head>'));
+}
+
+function skeleton(): string {
+  return /<style>(.*?)<\/style>/s.exec(head())?.[1] ?? '';
+}
+
+// The value the head restates, read out of the markup that restates it.
+function restated(source: string, pattern: RegExp): string {
+  return (pattern.exec(source)?.[1] ?? '').toLowerCase();
+}
+
+test('first paint: the skeleton paints the surface the stylesheet paints', () => {
+  assert.strictEqual(
+    restated(skeleton(), /background-color:\s*(#[0-9A-Fa-f]{6})/),
+    token('_tokens.scss', /^\$surface:\s*(#[0-9A-Fa-f]{6});/m),
+  );
+});
+
+test('first paint: the skeleton caps the column where the stylesheet caps it', () => {
+  assert.strictEqual(
+    restated(skeleton(), /max-width:\s*(\d+px)/),
+    token('_base.scss', /\.page \{[^}]*?max-width:\s*(\d+px);/s),
+  );
+});
+
+// The browser paints the theme colour around the page before the page exists,
+// so it answers to the darkest token rather than to the surface one.
+test('first paint: the theme colour is the void the page sits in', () => {
+  assert.strictEqual(
+    restated(head(), /<meta name="theme-color" content="(#[0-9A-Fa-f]{6})">/),
+    token('_tokens.scss', /^\$void:\s*(#[0-9A-Fa-f]{6});/m),
+  );
+});
+
+// A media query adds no specificity, so from below the stylesheet the skeleton
+// would outrank the print rule that drops the column cap.
+test('first paint: the skeleton is served above the stylesheet it precedes', () => {
+  const above = head();
+  assert.ok(above.indexOf('<style>') < above.indexOf('<link rel="stylesheet"'), above);
+});
+
 // ------------------------------------------------------- typographic quotes
 // Values are inserted verbatim, so a straight double quote in one of them cuts
 // an HTML attribute short in plain sight and breaks the JSON-LD in silence.
@@ -243,7 +320,9 @@ test('page build: accepts the markup a value is allowed to carry', () => {
 });
 
 test('page build: the site render rejects a straight double quote in a language file', () => {
-  const languages = [{ name: 'en', strings: { 'lang.name': 'the "old" tongue', ...shareStrings() } }];
+  const languages = [
+    { name: 'en', strings: { 'lang.name': 'the "old" tongue', ...shareStrings() }, ui: en },
+  ];
   assert.throws(() => renderSite(MINI, MINI_SHARED, languages, 'en'), /^Error: en: /);
 });
 
@@ -306,14 +385,75 @@ test('page build: the collapsed code comes from the language name', () => {
 });
 
 test('page build: fails when a language file declares no language name', () => {
-  assert.throws(
-    () => renderSite(MINI, MINI_SHARED, [{ name: 'en', strings: shareStrings() }], 'en'),
-    /lang\.name/,
-  );
+  const languages = [{ name: 'en', strings: { ...SAMPLE_STRINGS, ...shareStrings() }, ui: en }];
+  assert.throws(() => renderSite(MINI, MINI_SHARED, languages, 'en'), /lang\.name/);
 });
 
 test('page build: fails when the shared file declares no site url', () => {
   assert.throws(() => renderSite(MINI, {}, MINI_LANGUAGES, 'en'), /site\.url/);
+});
+
+// -------------------------------------------------- the pre-rendered readouts
+// The page is served with its power readout, its glyph label and its print
+// caption already written, so a cold load reads before any script runs. The
+// script then writes those same lines again. They are composed here from the
+// module that will recompute them, which is what makes the wording one wording
+// rather than two copies of it.
+
+test('page build: the served readouts are the ones the script recomputes', () => {
+  const page = miniSite().get('fr.html') ?? '';
+  const value = Number(SAMPLE_STRINGS['difficulty.initialValue']);
+  const genome = SAMPLE_STRINGS['language.runic'];
+  const school = SAMPLE_STRINGS['school.protection'];
+  const tier = difficultyTier(fr, value);
+
+  assert.ok(page.includes(`<p>${value} ${tier}</p>`), page);
+  assert.ok(page.includes(`aria-valuetext="${fr.difficultyValueText(value, tier)}"`), page);
+  assert.ok(page.includes(`aria-label="${fr.glyphLineLabel(genome)}"`), page);
+  assert.ok(page.includes(fr.printCaption(genome, school, value)), page);
+});
+
+// Each page reads the tier of its own level of power, so a language shipping a
+// different opening level is served the tier that level names.
+test('page build: the served tier follows the level of power the page opens on', () => {
+  const strings = { ...SAMPLE_STRINGS, 'difficulty.initialValue': '9' };
+  const languages = [
+    { name: 'en', strings: { 'lang.name': 'English', ...strings, ...shareStrings() }, ui: en },
+  ];
+  const page = renderSite(MINI, MINI_SHARED, languages, 'en').get('index.html') ?? '';
+  assert.ok(page.includes(`<p>9 ${en.difficultyTiers.peak}</p>`), page);
+});
+
+test('page build: fails when a language file states no level of power', () => {
+  const strings = { 'lang.name': 'English', ...shareStrings() };
+  const languages = [{ name: 'en', strings, ui: en }];
+  assert.throws(
+    () => renderSite(MINI, MINI_SHARED, languages, 'en'),
+    /difficulty\.initialValue/,
+  );
+});
+
+test('page build: fails when a language file states a level of power that is not one', () => {
+  const strings = { ...SAMPLE_STRINGS, 'difficulty.initialValue': 'five' };
+  const languages = [
+    { name: 'en', strings: { 'lang.name': 'English', ...strings, ...shareStrings() }, ui: en },
+  ];
+  assert.throws(() => renderSite(MINI, MINI_SHARED, languages, 'en'), /whole level of power/);
+});
+
+// The composed readouts have one home, and it is not the strings file. A
+// language writing one of them back is the duplication returning, so it fails
+// the build rather than quietly outranking what the script will say.
+test('page build: fails when a language file writes a readout the build composes', () => {
+  for (const key of ['difficulty.initialTier', 'sample.glyphLabel', 'print.caption']) {
+    const strings = { 'lang.name': 'English', ...SAMPLE_STRINGS, ...shareStrings(), [key]: 'x' };
+    const languages = [{ name: 'en', strings, ui: en }];
+    assert.throws(
+      () => renderSite(MINI, MINI_SHARED, languages, 'en'),
+      new RegExp(key.replace('.', '\\.')),
+      key,
+    );
+  }
 });
 
 // -------------------------------------------------------------- share links
@@ -375,7 +515,7 @@ test('page build: the share message reaches the page inside the links, never as 
 });
 
 test('page build: fails when a language writes no share message', () => {
-  const languages = [{ name: 'en', strings: { 'lang.name': 'English' } }];
+  const languages = [{ name: 'en', strings: { 'lang.name': 'English', ...SAMPLE_STRINGS }, ui: en }];
   assert.throws(() => renderSite(MINI, MINI_SHARED, languages, 'en'), /share\.message/);
 });
 
@@ -406,25 +546,25 @@ test('sitemap: one url per language and nothing volatile', () => {
 
 // --------------------------------------------------------- the real pages
 
-function site(): Map<string, string> {
-  return renderSite(read('src', 'html', 'index.html'), readShared(), readLanguages(), 'en');
+async function site(): Promise<Map<string, string>> {
+  return renderSite(read('src', 'html', 'index.html'), readShared(), await readLanguages(), 'en');
 }
 
-test('page build: every published page is what the template and its strings render', () => {
-  const rendered = site();
+test('page build: every published page is what the template and its strings render', async () => {
+  const rendered = await site();
   assert.ok(rendered.size >= 2, 'the site is down to a single language');
   for (const [file, page] of rendered) assert.strictEqual(page, read('pub', file), file);
 });
 
-test('page build: the published sitemap is what the language set derives', () => {
+test('page build: the published sitemap is what the language set derives', async () => {
   assert.strictEqual(
     read('pub', 'sitemap.xml'),
-    sitemap(readLanguages(), 'en', readShared()['site.url'] ?? ''),
+    sitemap(await readLanguages(), 'en', readShared()['site.url'] ?? ''),
   );
 });
 
-test('page build: every language ships the social preview its page points at', () => {
-  for (const page of site().values()) {
+test('page build: every language ships the social preview its page points at', async () => {
+  for (const page of (await site()).values()) {
     const match = /<meta property="og:image" content="[^"]*\/media\/([^"/]+)">/.exec(page);
     assert.ok(match !== null, 'no og:image on a page');
     const image = match?.[1] ?? '';
@@ -438,10 +578,10 @@ test('page build: every language ships the social preview its page points at', (
 // carries, and the conjuration flow is the only thing that lifts it. The text
 // underneath is untouched: it is still what a crawler reads and what the
 // pre-rendered equality tests hold to the replay of its own link.
-test('page build: every page serves the Emanation hidden, sample and all', () => {
+test('page build: every page serves the Emanation hidden, sample and all', async () => {
   const glyphs = readShared()['sample.glyphs'];
 
-  for (const page of site().values()) {
+  for (const page of (await site()).values()) {
     const tag = /<section class="manifestation"[^>]*>/.exec(page)?.[0] ?? '';
     assert.match(tag, /\bhidden\b/, tag);
     assert.ok(page.includes(glyphs), 'the served sample left the document');
@@ -451,8 +591,8 @@ test('page build: every page serves the Emanation hidden, sample and all', () =>
 // An icon carries no name, so each link states its own, and the drawing is
 // hidden from anything that reads. Both are what makes the row usable without
 // the icons ever being recognized, and neither is visible on screen.
-test('page build: every share link names itself and hides its icon', () => {
-  for (const page of site().values()) {
+test('page build: every share link names itself and hides its icon', async () => {
+  for (const page of (await site()).values()) {
     const row = /<div class="share-row">(.*?)<\/div>/s.exec(page)?.[1] ?? '';
     const links = Array.from(row.matchAll(/<a\b[^>]*>/g));
     assert.strictEqual(links.length, SHARE_NETWORKS.length, 'the share row lost a link');
@@ -469,22 +609,22 @@ test('page build: every share link names itself and hides its icon', () => {
 // The social preview bakes the promise line in, so it is a translation surface
 // like the page, and it fails the same way when a language falls behind.
 
-test('og composition: renders for every language', () => {
+test('og composition: renders for every language', async () => {
   const template = read('src', 'html', 'og-image.html');
   const shared = readShared();
 
-  for (const { name, strings } of readLanguages()) {
+  for (const { name, strings } of await readLanguages()) {
     const image = renderComposition(template, shared, strings, name);
     assert.ok(image.includes(`<html lang="${name}">`), name);
     assert.ok(!image.includes('{{'), `unresolved placeholder for ${name}`);
   }
 });
 
-test('og composition: the promise line is the one its page shows', () => {
+test('og composition: the promise line is the one its page shows', async () => {
   const template = read('src', 'html', 'og-image.html');
   const shared = readShared();
 
-  for (const { name, strings } of readLanguages()) {
+  for (const { name, strings } of await readLanguages()) {
     const image = renderComposition(template, shared, strings, name);
     assert.ok(image.includes(strings['header.promise']), name);
   }

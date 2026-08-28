@@ -1,9 +1,11 @@
 // The runtime strings, and the seam between them and the page.
 //
 // The page ships a pre-rendered difficulty readout, glyph label and print
-// caption so a cold load reads correctly before any script runs. The runtime
-// then recomputes the same text. These tests hold the two sides equal, so the
-// duplication the pre-rendering forces cannot drift in silence.
+// caption so a cold load reads correctly before any script runs, and the
+// runtime writes those same lines again. The two are one wording: the build
+// composes the served ones from this very module (tools/render-site.ts), so
+// what is left to hold here is what the page states on its own, the sample
+// formula it is served with.
 //
 // The sweep runs every registered language against its own page strings,
 // awaiting its loader, so a translation is checked the moment it is
@@ -18,7 +20,8 @@ import { runicGenome } from '../src/ts/languages/runic.js';
 import { decode } from '../src/ts/share.js';
 import { en } from '../src/ts/strings/en.js';
 import { fr } from '../src/ts/strings/fr.js';
-import { difficultyTier, resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
+import { resolveStrings, UI_STRINGS } from '../src/ts/strings/index.js';
+import { breakSegments } from '../src/ts/ui/manifestation.js';
 import { readShared, readStrings } from '../tools/sources.js';
 
 // The seed behind the sample formula the page ships, pinned in tests/fixture.
@@ -27,6 +30,12 @@ const SAMPLE_SEED = 66238;
 // The link that names that same formula. A visitor arriving on it is served
 // the pre-rendered page and then replays it, so the two renderings meet.
 const SAMPLE_LINK = '#runic.protection.5.66238';
+
+// A glyph run written the way the page carries it: the renderer's own cut,
+// with the break hint the renderer puts between two segments.
+function hinted(glyphs: string, separators: ReadonlyArray<string>): string {
+  return breakSegments(glyphs, separators).join('<wbr>');
+}
 
 test('strings: a language tag resolves to its strings', async () => {
   assert.strictEqual(await resolveStrings('en'), en);
@@ -81,26 +90,6 @@ for (const [language, loadStrings] of UI_STRINGS) {
     for (const tier of tiers) assert.ok(tier.length > 0);
   });
 
-  // Read through the tier table rather than against a chosen tier, so moving a
-  // tier boundary is caught here instead of leaving the served page naming one
-  // tier and the first slider move naming another.
-  test(`strings (${language}): the runtime tier matches the one the page ships`, async () => {
-    const strings = await loadStrings();
-    assert.strictEqual(
-      difficultyTier(strings, Number(page['difficulty.initialValue'])),
-      page['difficulty.initialTier'],
-    );
-  });
-
-  test(`strings (${language}): the runtime slider text matches the one the page ships`, async () => {
-    const strings = await loadStrings();
-    const value = Number(page['difficulty.initialValue']);
-    assert.strictEqual(
-      strings.difficultyValueText(value, difficultyTier(strings, value)),
-      page['difficulty.initialValueText'],
-    );
-  });
-
   test(`strings (${language}): the sample gloss is this language’s own pack`, async () => {
     const glosses = await (await resolveGlosses(language)).runic();
     assert.strictEqual(
@@ -115,37 +104,22 @@ for (const [language, loadStrings] of UI_STRINGS) {
 
   // The strongest statement the arrival can make about itself: a page opened
   // on the sample's own link replays it into the very lines the page was
-  // served with, glyph for glyph, and in this language's own gloss. Held here
-  // rather than in a browser, so it is checked on every run.
+  // served with, glyph for glyph, hint for hint, and in this language's own
+  // gloss. Held here rather than in a browser, so it is checked on every run.
   test(`strings (${language}): the sample link replays the formula the page ships`, async () => {
     const formula = decode(SAMPLE_LINK);
     if (formula === null) assert.fail('the sample link is not a formula');
 
     const glosses = await (await resolveGlosses(language)).runic();
-    const out = generate(bindGenome(runicGenome, glosses), formula.settings, formula.seed);
+    const genome = bindGenome(runicGenome, glosses);
+    const out = generate(genome, formula.settings, formula.seed);
     const shared = readShared();
 
-    // The page marks the glyph run with soft break hints, which are markup
-    // around the text rather than part of it.
-    assert.strictEqual(out.glyphs, shared['sample.glyphs'].replaceAll('<wbr>', ''));
+    // The served run carries the break hints the renderer writes, so it is
+    // compared with them in place: where the line may break is a rule the
+    // genome's separators decide, never a placement written by hand.
+    assert.strictEqual(hinted(out.glyphs, genome.separators), shared['sample.glyphs']);
     assert.strictEqual(out.transliteration, shared['sample.transliteration']);
     assert.strictEqual(out.gloss, page['sample.gloss']);
-  });
-
-  test(`strings (${language}): the runtime glyph label matches the one the page ships`, async () => {
-    const strings = await loadStrings();
-    assert.strictEqual(strings.glyphLineLabel(page['language.runic']), page['sample.glyphLabel']);
-  });
-
-  test(`strings (${language}): the runtime print caption matches the one the page ships`, async () => {
-    const strings = await loadStrings();
-    assert.strictEqual(
-      strings.printCaption(
-        page['language.runic'],
-        page['school.protection'],
-        Number(page['difficulty.initialValue']),
-      ),
-      page['print.caption'],
-    );
   });
 }

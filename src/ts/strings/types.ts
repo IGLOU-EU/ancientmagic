@@ -1,9 +1,12 @@
-// The strings the runtime needs and the page never shows.
+// The words the script writes, on both sides of the build.
 //
 // Anything the page already displays (option labels, the copy outcome words) is
 // read back from the DOM instead of being repeated here, so every visible word
-// has exactly one source. What is left are the templates and the words that only
-// appear once JavaScript has run.
+// has exactly one source. What is left are the tier words and the templates.
+// The page ships them pre-rendered, so a cold load reads before any script
+// runs, and the build composes that pre-rendering from this very module
+// (tools/render-site.ts): the served line and the recomputed one are one
+// wording, written once.
 //
 // Every language implements this interface, so tsc rejects a missing key and a
 // key that no longer exists.

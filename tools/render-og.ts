@@ -10,13 +10,13 @@ import { readLanguages, readShared, REPO_ROOT } from './sources.js';
 const templateFile = join(REPO_ROOT, 'src', 'html', 'og-image.html');
 const outDir = join(REPO_ROOT, '.og-build');
 
-function renderCompositions(): void {
+async function renderCompositions(): Promise<void> {
   const template = readFileSync(templateFile, 'utf8');
   const shared = readShared();
 
   mkdirSync(outDir, { recursive: true });
 
-  for (const { name, strings } of readLanguages()) {
+  for (const { name, strings } of await readLanguages()) {
     writeFileSync(
       join(outDir, `${name}.html`),
       renderComposition(template, shared, strings, name),
@@ -24,4 +24,4 @@ function renderCompositions(): void {
   }
 }
 
-renderCompositions();
+await renderCompositions();

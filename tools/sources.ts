@@ -8,6 +8,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { UI_STRINGS } from '../src/ts/strings/index.js';
+import type { UiStrings } from '../src/ts/strings/types.js';
 import type { PageStrings } from './render-page.js';
 import type { LanguagePage } from './render-site.js';
 
@@ -37,6 +39,24 @@ export function languageNames(): string[] {
     .map((file) => file.slice(0, -SUFFIX.length));
 }
 
-export function readLanguages(): LanguagePage[] {
-  return languageNames().map((name) => ({ name, strings: readStrings(name) }));
+// The words the script of a page speaks. A page and its script are one
+// language, and the build composes the served readouts from these very words,
+// so a page whose language the runtime does not carry is a page that would be
+// served one language and read another. The build stops instead of shipping it.
+function readUi(name: string): Promise<UiStrings> {
+  const load = UI_STRINGS.get(name);
+  if (load === undefined) {
+    throw new Error(`${name}: no runtime strings, its script would speak another language`);
+  }
+  return load();
+}
+
+export async function readLanguages(): Promise<LanguagePage[]> {
+  return Promise.all(
+    languageNames().map(async (name) => ({
+      name,
+      strings: readStrings(name),
+      ui: await readUi(name),
+    })),
+  );
 }

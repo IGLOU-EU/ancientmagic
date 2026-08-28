@@ -44,14 +44,11 @@
   "school.chronomancy": "Chronomancy",
 
   "difficulty.initialValue": "5",
-  "difficulty.initialTier": "Rite",
-  "difficulty.initialValueText": "5, Rite",
 
   "action.conjure": "Conjure",
   "action.reroll": "Reroll",
 
   "manifestation.title": "The Emanation",
-  "sample.glyphLabel": "Incantation in Runic",
   "sample.gloss": "Alu! I, the warder, bind against the hostile wight. I painted these runes.",
 
   "copy.idle": "Copy glyphs",
@@ -66,8 +63,6 @@
   "share.linkedin.label": "Share on LinkedIn",
   "share.facebook.label": "Share on Facebook",
   "share.x.label": "Share on X",
-
-  "print.caption": "Runic · Protection · Power 5",
 
   "footer.license": "Public domain (Unlicense)",
   "footer.separator": "·",
