@@ -1,6 +1,7 @@
 // The drawn backgrounds, design section 6.
 @use 'sass:list';
 @use 'tokens' as *;
+@use 'toolkit' as *;
 
 // Dot positions inside one tile, design table 6.1.
 $star-near-pos: (33% 37%, 88% 79%);
@@ -218,6 +219,29 @@ html::after {
   background-repeat: no-repeat, repeat, repeat;
 
   @include mask(linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%));
+}
+
+// The turns and the breath the circle below is drawn with.
+@keyframes am-spin-cw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes am-spin-ccw {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes am-bloom {
+  from {
+    opacity: 0.1;
+  }
+
+  to {
+    opacity: 0.16;
+  }
 }
 
 // Design 6.4. Centred with negative margins rather than a transform, because a
