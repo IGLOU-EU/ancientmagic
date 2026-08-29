@@ -8,18 +8,10 @@ import { generate } from '../src/ts/generator/pipeline.js';
 import { DIRECTIONS } from '../src/ts/generator/plan.js';
 import {
   LANGUAGES,
-  type BoundGenome,
   type LanguageId,
   type SemanticField,
 } from '../src/ts/generator/types.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
-import { bindGenome } from '../src/ts/languages/index.js';
-import { egyptianGenome } from '../src/ts/languages/egyptian.js';
-import { greekGenome } from '../src/ts/languages/greek.js';
-import { latinGenome } from '../src/ts/languages/latin.js';
-import { oghamGenome } from '../src/ts/languages/ogham.js';
-import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
-import { runicGenome } from '../src/ts/languages/runic.js';
 import { LEXICON as PHOENICIAN_LEXICON } from './phoenician-spec.js';
 import {
   DIRECTION_WORDS_SPEC,
@@ -28,6 +20,7 @@ import {
 } from './runic-spec.js';
 import {
   ALL_SCHOOLS,
+  boundPack,
   DIFFICULTIES,
   DREAD,
   SEEDS,
@@ -268,14 +261,7 @@ test('the chronomantic seal is glossed as a depth in time, never as a count', ()
 test('no chronomantic gloss carries a question mark, in either language', async () => {
   const packs = [await resolveGlosses('en'), await resolveGlosses('fr')];
   for (const pack of packs) {
-    const bound: ReadonlyArray<readonly [LanguageId, BoundGenome]> = [
-      ['runic', bindGenome(runicGenome, await pack.runic())],
-      ['egyptian', bindGenome(egyptianGenome, await pack.egyptian())],
-      ['phoenician', bindGenome(phoenicianGenome, await pack.phoenician())],
-      ['greek', bindGenome(greekGenome, await pack.greek())],
-    ['latin', bindGenome(latinGenome, await pack.latin())],
-      ['ogham', bindGenome(oghamGenome, await pack.ogham())],
-    ];
+    const bound = await boundPack(pack);
     for (const [id, genome] of bound) {
       for (const difficulty of DIFFICULTIES) {
         for (let seed = 0; seed < 12; seed += 1) {

@@ -27,6 +27,7 @@ import { oghamGenome } from '../src/ts/languages/ogham.js';
 import { oghamGlosses } from '../src/ts/glosses/en/ogham.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import {
+  LANGUAGES,
   SCHOOLS,
   type BoundGenome,
   type FormulaOutput,
@@ -34,6 +35,7 @@ import {
   type LanguageId,
   type School,
 } from '../src/ts/generator/types.js';
+import { type GlossPack } from '../src/ts/glosses/types.js';
 import { DREAD_SPOKEN as EGYPTIAN_DREAD } from './egyptian-spec.js';
 import { DREAD_WORDS as GREEK_DREAD } from './greek-spec.js';
 import { DREAD_WORDS as LATIN_DREAD } from './latin-spec.js';
@@ -96,6 +98,31 @@ export const GENOMES: Readonly<Record<LanguageId, BoundGenome>> = {
   latin: bindGenome(latinGenome, latinGlosses),
   ogham: bindGenome(oghamGenome, oghamGlosses),
 };
+
+// GENOMES pairs each script with its English wordings, which is all a contract
+// test about structure needs. A test that reads a gloss has to say which page
+// language it means, so it resolves a pack at runtime and pairs against that
+// instead. This builds the same six pairs from whichever pack it is handed.
+//
+// The Record is the point. A hand-kept array of pairs is what these tests used
+// to carry, and an array cannot notice that a genome is missing from it: the
+// sweep simply ran five scripts and passed, saying nothing about the sixth.
+// Keyed by LanguageId, a genome added without a line here fails to compile.
+export async function boundPack(
+  pack: GlossPack,
+): Promise<ReadonlyArray<readonly [LanguageId, BoundGenome]>> {
+  const bound: Readonly<Record<LanguageId, BoundGenome>> = {
+    runic: bindGenome(runicGenome, await pack.runic()),
+    egyptian: bindGenome(egyptianGenome, await pack.egyptian()),
+    phoenician: bindGenome(phoenicianGenome, await pack.phoenician()),
+    greek: bindGenome(greekGenome, await pack.greek()),
+    latin: bindGenome(latinGenome, await pack.latin()),
+    ogham: bindGenome(oghamGenome, await pack.ogham()),
+  };
+  // LANGUAGES fixes the order, so a sweep reports its genomes the way the
+  // altar lists them rather than the way an object literal happens to.
+  return LANGUAGES.map((id) => [id, bound[id]] as const);
+}
 
 export function runic(school: School, difficulty: number, seed: number): FormulaOutput {
   return generate(GENOMES.runic, { language: 'runic', school, difficulty }, seed);

@@ -3,7 +3,7 @@
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '../src/ts/generator/pipeline.js';
 import { LANGUAGES, SCHOOLS } from '../src/ts/generator/types.js';
@@ -190,6 +190,40 @@ test('page build: a genome still to come is offered disabled, never selectable',
   for (const option of options(read('src', 'html', 'index.html'), 'language')) {
     const shipped = [...LANGUAGES].some((id) => id === option.value);
     assert.strictEqual(option.live, shipped, `${option.value} is offered against its state`);
+  }
+});
+
+// The two tests above hold whether an option can be chosen. They say nothing
+// about what it is called, and the two are edited in different files: the
+// template disables the option, a strings file names it "(soon)". Shipping a
+// genome means undoing both, and forgetting the second offers a playable
+// option that still calls itself unfinished. Nothing caught that until here.
+//
+// The rule reads the mark rather than the word, so it holds in every page
+// language without knowing what any of them writes for "soon". No script in
+// the inventory is named with a parenthesis, so a trailing one can only be
+// that mark.
+test('page build: a shipped genome is named without the mark of one still to come', () => {
+  const files = readdirSync(join(REPO_ROOT, 'src', 'strings')).filter(
+    (name) => name.endsWith('.json') && name !== 'common.json',
+  );
+  assert.ok(files.length > 0, 'no page strings to check');
+
+  for (const file of files) {
+    const strings: Record<string, string> = JSON.parse(read('src', 'strings', file));
+    for (const [key, label] of Object.entries(strings)) {
+      if (!key.startsWith('language.')) continue;
+      const id = key.slice('language.'.length);
+      const shipped = [...LANGUAGES].some((language) => language === id);
+      const marked = label.trimEnd().endsWith(')');
+      assert.strictEqual(
+        marked,
+        !shipped,
+        shipped
+          ? `${file} still calls the shipped ${id} "${label}"`
+          : `${file} offers ${id} as ready when no genome ships it`,
+      );
+    }
   }
 });
 

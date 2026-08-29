@@ -7,24 +7,16 @@ import * as assert from 'node:assert/strict';
 import { generate } from '../src/ts/generator/pipeline.js';
 import {
   LANGUAGES,
-  type BoundGenome,
-  type LanguageId,
   type School,
   type SemanticField,
 } from '../src/ts/generator/types.js';
 import { resolveGlosses } from '../src/ts/glosses/index.js';
-import { bindGenome } from '../src/ts/languages/index.js';
-import { egyptianGenome } from '../src/ts/languages/egyptian.js';
-import { greekGenome } from '../src/ts/languages/greek.js';
-import { latinGenome } from '../src/ts/languages/latin.js';
-import { oghamGenome } from '../src/ts/languages/ogham.js';
-import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
-import { runicGenome } from '../src/ts/languages/runic.js';
 import { LEXICON as PHOENICIAN_LEXICON } from './phoenician-spec.js';
 import {
   ALL_SCHOOLS,
   DIFFICULTIES,
   DREAD,
+  boundPack,
   SEEDS,
   WRITERS,
   egyptianWords,
@@ -191,14 +183,7 @@ test('the question mark lives in an asking clause gloss and nowhere else', () =>
 // mark is supported. The question mark is the second mark to need it.
 test('a french question mark carries the narrow no-break space before it', async () => {
   const pack = await resolveGlosses('fr');
-  const bound: ReadonlyArray<readonly [LanguageId, BoundGenome]> = [
-    ['runic', bindGenome(runicGenome, await pack.runic())],
-    ['egyptian', bindGenome(egyptianGenome, await pack.egyptian())],
-    ['phoenician', bindGenome(phoenicianGenome, await pack.phoenician())],
-    ['greek', bindGenome(greekGenome, await pack.greek())],
-    ['latin', bindGenome(latinGenome, await pack.latin())],
-    ['ogham', bindGenome(oghamGenome, await pack.ogham())],
-  ];
+  const bound = await boundPack(pack);
   for (const [id, genome] of bound) {
     for (const difficulty of DIFFICULTIES) {
       for (let seed = 0; seed < 12; seed += 1) {
