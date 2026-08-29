@@ -220,10 +220,13 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<LatinRoot>>> =
     { root: 'revel', forms: ['verb'] },
     { root: 'lustr', forms: ['verb'] },
     { root: 'explor', forms: ['verb'] },
-    { root: 'divin', forms: ['noun'], nounClass: 'us' },
+    { root: 'divin', forms: ['noun', 'verb'], nounClass: 'us' },
     { root: 'sortileg', forms: ['noun'], nounClass: 'us' },
     { root: 'ocul', forms: ['noun'], nounClass: 'us' },
+    { root: 'hariol', forms: ['noun'], nounClass: 'us' },
     { root: 'clar', forms: ['adj', 'adv'] },
+    { root: 'laev', forms: ['adj'] },
+    { root: 'faust', forms: ['adj', 'adv'] },
   ],
   fate: [
     { root: 'fat', forms: ['noun'], nounClass: 'um' },
@@ -247,7 +250,10 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<LatinRoot>>> =
     { root: 'aquil', forms: ['noun'], nounClass: 'a' },
     { root: 'corv', forms: ['noun'], nounClass: 'us' },
     { root: 'fibr', forms: ['noun'], nounClass: 'a' },
+    { root: 'fiss', forms: ['noun'], nounClass: 'um' },
+    { root: 'hosti', forms: ['noun'], nounClass: 'a' },
     { root: 'astr', forms: ['noun'], nounClass: 'um' },
+    { root: 'cael', forms: ['noun'], nounClass: 'um' },
   ],
   course: [
     { root: 'super', forms: ['verb'] },
@@ -352,6 +358,7 @@ export type LatinIdiomId =
   | 'LO4'
   | 'LO5'
   | 'LO6'
+  | 'LO7'
   | 'LC1'
   | 'LC2'
   | 'LC3'
@@ -371,6 +378,7 @@ export const IDIOM_WORDS: Readonly<Record<LatinIdiomId, ReadonlyArray<string>>> 
   LO4: ['defigo'],
   LO5: ['sortem', 'duco'],
   LO6: ['iane', 'pater'],
+  LO7: ['exta', 'inspicio'],
   LC1: ['iam', 'iam', 'cito', 'cito'],
   LC2: ['esto'],
   LC3: ['votum', 'solvi'],

@@ -443,17 +443,54 @@ test('latin fixture: the prayer of section 9.13', () => {
 });
 
 // Difficulty 3: the lot of spec 9.11. The enclitic hangs on the verb, which is
-// what makes the verb the first word of its clause.
-const LATIN_DIVINATION_SEED = 77;
+// what makes the verb the first word of its clause. Re-pinned when the
+// Etruscan pour widened the signs field: the smallest divination formula of
+// this genome now reads the sky, which is the fulgural half of the discipline
+// asking its own question.
+const LATIN_DIVINATION_SEED = 1999;
 
 test('latin fixture: the sortes of section 9.11', () => {
   const out = latin('divination', 3, LATIN_DIVINATION_SEED);
   assert.strictEqual(
     out.glyphs,
-    ['SORTEM', 'DVCO', 'MONSTRATNE', 'AQVILA', 'FATVM'].join(SEP),
+    ['SORTEM', 'DVCO', 'MONSTRATNE', 'CAELVM', 'FATVM'].join(SEP),
   );
-  assert.strictEqual(out.transliteration, 'sortem duco monstratne aquila fatum');
-  assert.strictEqual(out.gloss, 'I draw the lot. Does the eagle show the fate?');
+  assert.strictEqual(out.transliteration, 'sortem duco monstratne caelum fatum');
+  assert.strictEqual(out.gloss, 'I draw the lot. Does the sky show the fate?');
+});
+
+// Difficulty 8: the consultation of spec 9.11, and the second fixture this
+// school carries. Divination is the one school pinned twice, because it is the
+// one the Etruscan material was poured into and a fixture is what holds a pour
+// still: the haruspex's opener, the cleft of the liver asking, the augural
+// left and the augural verdict agreeing in two different classes, and the
+// soothsayer speaking last.
+const LATIN_HARUSPEX_SEED = 289;
+
+test('latin fixture: the consultation of section 9.11', () => {
+  const out = latin('divination', 8, LATIN_HARUSPEX_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    [
+      'SATOR', 'AREPO', 'TENET', 'OPERA', 'ROTAS', 'EXTA', 'INSPICIO',
+      'LVSTRATNE', 'FISSVM', 'LAEVVM', 'AEVVM', 'ET', 'DIVINVS', 'FAVSTAM',
+      'FORTVNAM', 'EVOCO', 'ET', 'HARIOLVS', 'ANNVM', 'MONSTRO', 'ANGITIA',
+      'ANGITIA', 'ANGITIA', 'ITA', 'EST', 'VOTVM', 'SOLVI', 'VIIII', 'DICITO',
+    ].join(SEP),
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'sator arepo tenet opera rotas exta inspicio lustratne fissum laevum aevum ' +
+      'et divinus faustam fortunam evoco et hariolus annum monstro angitia ' +
+      'angitia angitia ita est votum solvi novies dicito',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'The five words of the square! I inspect the entrails. Does the cleft ' +
+      'survey the left-hand unending age? And I, the diviner, call forth the ' +
+      'auspicious fortune. And I, the soothsayer, show the year. Angitia, ' +
+      'spoken three times. So it is. I have paid the vow. Say it nine times.',
+  );
 });
 
 // Difficulty 3: the crossing of spec 9.12, opened by the attested first-named

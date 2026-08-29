@@ -417,15 +417,25 @@ const SCHOOL_OPENER: Readonly<Record<string, LatinIdiomId>> = {
   protection: 'LO1',
   curse: 'LO4',
   invocation: 'LO2',
-  divination: 'LO5',
   chronomancy: 'LO6',
 };
 
-function pickOpenings(plan: FormulaPlan): LatinIdiomId[] {
+// The Divination opener is the one this genome draws for, because that school
+// consults by two instruments and not one: the lot below difficulty 6, the lot
+// or the haruspex's own act from 6 up, where the formula first asks and then
+// answers and there is a report to give (spec 9.11).
+function divinationOpener(plan: FormulaPlan, rng: Rng): LatinIdiomId {
+  return plan.difficulty >= 6 && chance(rng, 0.5) ? 'LO7' : 'LO5';
+}
+
+function pickOpenings(plan: FormulaPlan, rng: Rng): LatinIdiomId[] {
   if (plan.eldritch) {
     return [plan.difficulty < 6 ? 'ELDRITCH_OPEN_SHORT' : 'ELDRITCH_OPEN_FULL'];
   }
-  const own = SCHOOL_OPENER[plan.school] ?? 'LO1';
+  const own =
+    plan.school === 'divination'
+      ? divinationOpener(plan, rng)
+      : SCHOOL_OPENER[plan.school] ?? 'LO1';
   // The square stands in front of the school's own opener at the top tiers,
   // short at seven and entire above it (spec 9.9).
   if (plan.difficulty === 7) return ['LO3_SHORT', own];
@@ -573,7 +583,7 @@ function realizeFormula(plan: FormulaPlan, rng: Rng, glosses: LatinGlosses): For
   const repeated = settleRepetition(plan, rng, glosses);
   const settled = repeated?.word ?? null;
 
-  for (const id of pickOpenings(plan)) {
+  for (const id of pickOpenings(plan, rng)) {
     words.push(...IDIOM_WORDS[id]);
     glossParts.push(glosses.idiom(id));
   }

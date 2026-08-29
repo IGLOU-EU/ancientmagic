@@ -107,7 +107,10 @@ test('the selected lexicon matches the spec table, root and gloss', () => {
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 140, 'fourteen fields of ten roots');
+  // Twelve fields of ten, and the two the Etruscan pour widened to thirteen:
+  // the sky and the liver entered signs, the entrail-reader and the augural
+  // pair entered sight (spec 9.3, 9.11).
+  assert.strictEqual(total, 146, 'twelve fields of ten roots and two of thirteen');
 });
 
 // This genome selects rather than coins, so the class is not a choice: it is

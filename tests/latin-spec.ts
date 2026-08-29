@@ -181,7 +181,10 @@ export const LEXICON: Readonly<
     ['divin', 'divinus', 'diviner'],
     ['sortileg', 'sortilegus', 'lot-reader'],
     ['ocul', 'oculus', 'eye'],
+    ['hariol', 'hariolus', 'soothsayer'],
     ['clar', 'clarus', 'clear'],
+    ['laev', 'laevus', 'left-hand'],
+    ['faust', 'faustus', 'auspicious'],
   ],
   fate: [
     ['fat', 'fatum', 'fate'],
@@ -205,7 +208,10 @@ export const LEXICON: Readonly<
     ['aquil', 'aquila', 'eagle'],
     ['corv', 'corvus', 'raven'],
     ['fibr', 'fibra', 'entrail-sign'],
+    ['fiss', 'fissum', 'cleft'],
+    ['hosti', 'hostia', 'sacrificial victim'],
     ['astr', 'astrum', 'star-sign'],
+    ['cael', 'caelum', 'sky'],
   ],
   course: [
     ['super', 'superare', 'overpass'],
@@ -330,6 +336,7 @@ export const LO3_FULL: ReadonlyArray<string> = ['sator', 'arepo', 'tenet', 'oper
 export const LO4: ReadonlyArray<string> = ['defigo'];
 export const LO5: ReadonlyArray<string> = ['sortem', 'duco'];
 export const LO6: ReadonlyArray<string> = ['iane', 'pater'];
+export const LO7: ReadonlyArray<string> = ['exta', 'inspicio'];
 export const LC1: ReadonlyArray<string> = ['iam', 'iam', 'cito', 'cito'];
 export const LC2: ReadonlyArray<string> = ['esto'];
 export const LC3: ReadonlyArray<string> = ['votum', 'solvi'];
@@ -348,7 +355,7 @@ export const ELDRITCH_CLOSE: ReadonlyArray<string> = ['ruina', 'aeterna'];
 // Every frozen string of 9.6, 9.8 and 9.10, which render letter for letter as
 // listed and never inflect.
 export const FROZEN_WORDS: ReadonlyArray<string> = [
-  ...LO1, ...LO2, ...LO3_FULL, ...LO4, ...LO5, ...LO6,
+  ...LO1, ...LO2, ...LO3_FULL, ...LO4, ...LO5, ...LO6, ...LO7,
   ...LC1, ...LC2, ...LC3, ...LC4, LC5_TAIL_SPEC,
   ...ELDRITCH_CLOSE, 'dicito', 'ad',
 ];

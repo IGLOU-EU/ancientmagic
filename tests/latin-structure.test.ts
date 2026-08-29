@@ -24,6 +24,7 @@ import {
   LO4,
   LO5,
   LO6,
+  LO7,
   NUMERALS,
   POWER_WORDS,
   SEAL_TAIL_SPOKEN,
@@ -44,14 +45,20 @@ import {
 
 const TIERS: ReadonlyArray<number> = [3, 4, 5, 6, 7, 8, 9];
 
-// The school's own opener, which the square may stand in front of.
-const OPENER: Readonly<Record<string, ReadonlyArray<string>>> = {
-  protection: LO1,
-  curse: LO4,
-  invocation: LO2,
-  divination: LO5,
-  chronomancy: LO6,
+// The school's own opener, which the square may stand in front of. Divination
+// is the one school with two, the lot and the haruspex's act, so it is listed
+// as the pair a formula may open on (spec 9.11).
+const OPENER: Readonly<Record<string, ReadonlyArray<ReadonlyArray<string>>>> = {
+  protection: [LO1],
+  curse: [LO4],
+  invocation: [LO2],
+  divination: [LO5, LO7],
+  chronomancy: [LO6],
 };
+
+// The tier the second Divination opener becomes reachable at: below it the
+// formula is one clause and the lot answers in a breath (spec 9.11).
+const HARUSPEX_TIER = 6;
 
 // How many words the square spends at a tier, which is what a clause reader
 // has to skip before the school's own opener.
@@ -158,10 +165,18 @@ test('the frozen strings never inflect and never enter a gene slot', () => {
           school === 'curse' && difficulty >= 3 ? 1 : 0,
           `defigo in ${where}`,
         );
+        // A Divination formula opens on exactly one of its two openers, so
+        // the two frozen verbs are counted together against the same one.
         assert.strictEqual(
-          words.filter((word) => word === 'duco').length,
+          words.filter((word) => word === 'duco' || word === 'inspicio').length,
           school === 'divination' && difficulty >= 3 ? 1 : 0,
-          `duco in ${where}`,
+          `duco or inspicio in ${where}`,
+        );
+        assert.strictEqual(
+          words.filter((word) => word === 'duco').length +
+            words.filter((word) => word === 'inspicio').length,
+          words.filter((word) => word === 'duco' || word === 'inspicio').length,
+          `the two openers overlap in ${where}`,
         );
         // A perfect in the line is either a drawn stem plus AVI, or the frozen
         // VENI and SOLVI inside their own idioms.
@@ -190,12 +205,45 @@ test('the school opener heads the formula, behind the square at the top tiers', 
       for (const seed of SEEDS) {
         const where = label(school, difficulty, seed);
         const words = latinWords(school, difficulty, seed);
-        const own = [...(OPENER[school] ?? [])];
         const row =
           difficulty === 7 ? [...LO3_SHORT] : difficulty >= 8 ? [...LO3_FULL] : [];
-        assert.deepStrictEqual(words.slice(0, row.length + own.length), [...row, ...own], where);
+        assert.deepStrictEqual(words.slice(0, row.length), row, `the square in ${where}`);
+        const rest = words.slice(row.length);
+        const own = (OPENER[school] ?? []).find((opener) =>
+          opener.every((word, index) => rest[index] === word),
+        );
+        assert.ok(own !== undefined, `no school opener heads ${where}`);
+        // The haruspex's act is out of reach below the tier that first gives
+        // the formula a report to make (spec 9.11).
+        if (own === LO7) {
+          assert.ok(difficulty >= HARUSPEX_TIER, `LO7 below its tier in ${where}`);
+        }
       }
     }
+  }
+});
+
+// The tier ruling of 9.11 read from both sides: never below six, and both
+// openers reachable above it, so neither branch of the draw is dead.
+test('the second divination opener enters at difficulty six and not before', () => {
+  const seen = new Map<number, Set<string>>();
+  for (let seed = 0; seed < 60; seed += 1) {
+    for (const difficulty of TIERS) {
+      const words = latinWords('divination', difficulty, seed);
+      const opener = words.includes('inspicio') ? 'LO7' : 'LO5';
+      if (difficulty < HARUSPEX_TIER) {
+        assert.strictEqual(opener, 'LO5', `LO7 at difficulty ${difficulty} seed ${seed}`);
+      }
+      (seen.get(difficulty) ?? seen.set(difficulty, new Set()).get(difficulty))?.add(opener);
+    }
+  }
+  for (const difficulty of TIERS) {
+    if (difficulty < HARUSPEX_TIER) continue;
+    assert.deepStrictEqual(
+      [...(seen.get(difficulty) ?? [])].sort(),
+      ['LO5', 'LO7'],
+      `only one opener reachable at difficulty ${difficulty}`,
+    );
   }
 });
 
