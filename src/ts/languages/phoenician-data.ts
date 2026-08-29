@@ -251,6 +251,18 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<PhoenicianRoot
     { root: 'ghwp', forms: ['noun', 'plural'] },
     { root: 'smn', forms: ['noun', 'plural'] },
   ],
+  beings: [
+    { root: 'mlk', forms: ['noun', 'plural'] },
+    { root: 'rbt', forms: ['noun', 'plural'] },
+    { root: 'qdsh', forms: ['noun', 'plural'] },
+    { root: 'ghbd', forms: ['noun', 'plural'] },
+    { root: 'l\'k', forms: ['noun', 'plural'] },
+    { root: 'zkr', forms: ['noun', 'plural'] },
+    { root: 'tsb\'', forms: ['noun', 'plural'] },
+    { root: 'gbr', forms: ['noun', 'plural'] },
+    { root: 'kmr', forms: ['noun', 'plural'] },
+    { root: 'ghtq', forms: ['noun', 'plural'] },
+  ],
 };
 
 export interface DivineName {

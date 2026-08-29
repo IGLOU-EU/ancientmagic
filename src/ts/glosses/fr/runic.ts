@@ -334,6 +334,41 @@ const roots: RootGlossTable = {
     forms: { verb: 'renouvelle', adj: 'neuf' },
     feminine: { adj: 'neuve' },
   },
+  // beings
+  dis: { gloss: 'déesse du lignage', forms: { noun: 'déesse du lignage' }, gender: 'f' },
+  walkur: {
+    gloss: 'celle qui choisit les morts',
+    forms: { noun: 'guerrière qui choisit les tombés' },
+    gender: 'f',
+  },
+  haugsit: {
+    gloss: 'habitant du tertre',
+    forms: { noun: 'habitant du tertre' },
+    gender: 'm',
+  },
+  drohtin: {
+    gloss: 'seigneur de la troupe armée',
+    forms: { noun: 'seigneur de la troupe' },
+    gender: 'm',
+  },
+  helith: { gloss: 'champion', forms: { noun: 'preux' }, gender: 'm' },
+  thul: {
+    gloss: 'diseur du savoir ancien',
+    forms: { noun: 'diseur du savoir ancien' },
+    gender: 'm',
+  },
+  nith: { gloss: 'parent par le sang', forms: { noun: 'parent par le sang' }, gender: 'm' },
+  landwiht: {
+    gloss: 'esprit de la terre',
+    forms: { noun: 'esprit de la terre' },
+    gender: 'm',
+  },
+  etun: {
+    gloss: 'géant des premiers âges',
+    forms: { noun: 'géant des premiers âges' },
+    gender: 'm',
+  },
+  alba: { gloss: 'elfe', forms: { noun: 'elfe' }, gender: 'm' },
 };
 
 const powers: GlossTable = {

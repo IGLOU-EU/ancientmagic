@@ -424,7 +424,7 @@ test('latin fixture: the defixio of section 9.13', () => {
 // Difficulty 5: the prayer of spec 9.13, Cato's opening word for word. The
 // -um class vocative stands identical to its nominative, which is what real
 // Latin neuters do, and the intransitive proper is legal here and nowhere else.
-const LATIN_INVOCATION_SEED = 883;
+const LATIN_INVOCATION_SEED = 3858;
 
 test('latin fixture: the prayer of section 9.13', () => {
   const out = latin('invocation', 5, LATIN_INVOCATION_SEED);
@@ -601,26 +601,25 @@ test('ogham fixture: the two rods of section 10.13', () => {
 // bare command and a name. The intransitive tic is legal here and nowhere
 // else, the exemption 10.3 states.
 //
-// This is the one fixture of the six that does not reproduce its worked
-// example. The example addresses cur, a warding root, and the Invocation
-// AGENT is drawn from night, fire, time and death (spec 1.3), so no seed can
-// reach it. The draw below is the same shape with a reachable agent: opener
-// OO2, one vocative, tic, the same name, closer OC1.
-const OGHAM_INVOCATION_SEED = 26;
+// Re-pinned by the Invocation widening of spec 1.3: the example addresses the
+// hero of the beings field, which no seed could reach while the AGENT drew
+// from night, fire, time and death alone. It reproduces its worked example
+// now, so the six fixtures of this genome are six for six.
+const OGHAM_INVOCATION_SEED = 315;
 
 test('ogham fixture: the prayer of section 10.13', () => {
   const out = ogham('invocation', 5, OGHAM_INVOCATION_SEED);
   assert.strictEqual(
     out.glyphs,
-    '\u{169B}\u{1689}\u{1693}\u{1682}\u{1694}\u{1680}\u{1690}\u{168B}\u{1684}\u{1693}\u{168F}\u{1693}\u{1680}\u{1688}\u{1694}\u{1689}\u{1680}\u{168B}\u{1690}\u{1685}\u{1690}\u{1685}\u{1685}\u{1690}\u{1685}\u{1680}\u{1689}\u{1691}\u{1694}\u{169C}',
+    '\u{169B}\u{1689}\u{1693}\u{1682}\u{1694}\u{1680}\u{1688}\u{168F}\u{1693}\u{1685}\u{1693}\u{1680}\u{1688}\u{1694}\u{1689}\u{1680}\u{168B}\u{1690}\u{1685}\u{1690}\u{1685}\u{1685}\u{1690}\u{1685}\u{1680}\u{1689}\u{1691}\u{1694}\u{169C}',
   );
   assert.strictEqual(
     out.transliteration,
-    'celi amsere tic manannan coi',
+    'celi trene tic manannan coi',
   );
   assert.strictEqual(
     out.gloss,
-    'Your follower calls! O season, come! Manannán! Here it stands.',
+    'Your follower calls! O hero, come! Manannán! Here it stands.',
   );
 });
 
@@ -742,29 +741,32 @@ test('norse fixture: the count of the worlds and the axis that holds them', () =
 // Difficulty 8: full-row RO3 then RO5, three clauses of three agents, the last
 // carrying an adverb, the triple laukaz, stacked closings, seal seven. The
 // three released words descend the cosmology: the axis, the world under the
-// mist, the covered place at the bottom of it.
+// mist, the covered place at the bottom of it. The agent nouns were re-read
+// off this same seed after the Invocation widening of spec 1.3, which moves
+// every draw of the school. The three released words did not move, so what
+// the example was written to show is what it still shows.
 const NORSE_RUNIC_D8_SEED = 47;
 
 test('norse fixture: three clauses descend the layer', () => {
   const out = runic('invocation', 8, NORSE_RUNIC_D8_SEED);
   assert.strictEqual(
     out.transliteration,
-    'futharkgwhnijeipzstbemlngdo niun haimoz morganaz menaz baelaz wek ' +
-      'erminasul abandaz fornaz stundaz kum nibulahaimaz hrimaz abandaz rokaz ' +
+    'futharkgwhnijeipzstbemlngdo niun haimoz moldaz menaz fornaz wek ' +
+      'erminasul abandaz thursaz walaz kum nibulahaimaz hrimaz abandaz rokaz ' +
       'dimo wek halja laukaz laukaz laukaz runoz faihido alu sebun',
   );
   assert.strictEqual(
     out.gloss,
-    'The full row of the futhark! The nine worlds! O morrow, O moon, O pyre, ' +
-      'wake! Erminasul, the pillar that holds all up! O evening of days, O ' +
-      'ancient time, O hour, come! Nibulahaimaz, the world under the mist! O ' +
-      'hoarfrost, O evening of days, O twilight, wake dimly! Halja, the ' +
-      'covered place of the hidden dead! Laukaz, spoken three times. I painted ' +
-      'these runes. Alu! Sealed seven times.',
+    'The full row of the futhark! The nine worlds! O grave-earth, O moon, O ' +
+      'ancient time, wake! Erminasul, the pillar that holds all up! O evening ' +
+      'of days, O hostile wight, O slain, come! Nibulahaimaz, the world under ' +
+      'the mist! O hoarfrost, O evening of days, O twilight, wake dimly! ' +
+      'Halja, the covered place of the hidden dead! Laukaz, spoken three ' +
+      'times. I painted these runes. Alu! Sealed seven times.',
   );
   assert.strictEqual(
     out.glyphs,
-    '\u{16A0}\u{16A2}\u{16A6}\u{16A8}\u{16B1}\u{16B2}\u{16B7}\u{16B9}\u{16BA}\u{16BE}\u{16C1}\u{16C3}\u{16C7}\u{16C8}\u{16C9}\u{16CA}\u{16CF}\u{16D2}\u{16D6}\u{16D7}\u{16DA}\u{16DC}\u{16DE}\u{16DF}\u{16EB}\u{16BE}\u{16C1}\u{16A2}\u{16BE}\u{16EB}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16DF}\u{16C9}\u{16EB}\u{16D7}\u{16DF}\u{16B1}\u{16B7}\u{16A8}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16D7}\u{16D6}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16D2}\u{16A8}\u{16D6}\u{16DA}\u{16A8}\u{16C9}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16D6}\u{16B1}\u{16D7}\u{16C1}\u{16BE}\u{16A8}\u{16CA}\u{16A2}\u{16DA}\u{16EC}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16A0}\u{16DF}\u{16B1}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16CA}\u{16CF}\u{16A2}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16B2}\u{16A2}\u{16D7}\u{16EB}\u{16BE}\u{16C1}\u{16D2}\u{16A2}\u{16DA}\u{16A8}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EC}\u{16BA}\u{16B1}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EB}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16B1}\u{16DF}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DE}\u{16C1}\u{16D7}\u{16DF}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16BA}\u{16A8}\u{16DA}\u{16C3}\u{16A8}\u{16EC}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EC}\u{16B1}\u{16A2}\u{16BE}\u{16DF}\u{16C9}\u{16EB}\u{16A0}\u{16A8}\u{16C1}\u{16BA}\u{16C1}\u{16DE}\u{16DF}\u{16EC}\u{16A8}\u{16DA}\u{16A2}\u{16ED}\u{1010D}\u{16ED}',
+    '\u{16A0}\u{16A2}\u{16A6}\u{16A8}\u{16B1}\u{16B2}\u{16B7}\u{16B9}\u{16BA}\u{16BE}\u{16C1}\u{16C3}\u{16C7}\u{16C8}\u{16C9}\u{16CA}\u{16CF}\u{16D2}\u{16D6}\u{16D7}\u{16DA}\u{16DC}\u{16DE}\u{16DF}\u{16EB}\u{16BE}\u{16C1}\u{16A2}\u{16BE}\u{16EB}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16DF}\u{16C9}\u{16EB}\u{16D7}\u{16DF}\u{16DA}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16D7}\u{16D6}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16A0}\u{16DF}\u{16B1}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16D6}\u{16B1}\u{16D7}\u{16C1}\u{16BE}\u{16A8}\u{16CA}\u{16A2}\u{16DA}\u{16EC}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16A6}\u{16A2}\u{16B1}\u{16CA}\u{16A8}\u{16C9}\u{16EB}\u{16B9}\u{16A8}\u{16DA}\u{16A8}\u{16C9}\u{16EB}\u{16B2}\u{16A2}\u{16D7}\u{16EB}\u{16BE}\u{16C1}\u{16D2}\u{16A2}\u{16DA}\u{16A8}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EC}\u{16BA}\u{16B1}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EB}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16B1}\u{16DF}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DE}\u{16C1}\u{16D7}\u{16DF}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16BA}\u{16A8}\u{16DA}\u{16C3}\u{16A8}\u{16EC}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EC}\u{16B1}\u{16A2}\u{16BE}\u{16DF}\u{16C9}\u{16EB}\u{16A0}\u{16A8}\u{16C1}\u{16BA}\u{16C1}\u{16DE}\u{16DF}\u{16EC}\u{16A8}\u{16DA}\u{16A2}\u{16ED}\u{1010D}\u{16ED}',
   );
 });
 

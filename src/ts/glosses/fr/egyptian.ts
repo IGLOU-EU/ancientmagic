@@ -539,6 +539,17 @@ const roots: RootGlossTable = {
     forms: { verb: 'renouvelle', adj: 'neuf' },
     feminine: { adj: 'neuve' },
   },
+  // beings
+  nTr: { gloss: 'dieu', forms: { noun: 'dieu' }, gender: 'm' },
+  kA: { gloss: 'le double qui survit au corps', forms: { noun: 'double' }, gender: 'm' },
+  bA: { gloss: 'l’âme qui voyage', forms: { noun: 'âme voyageuse' }, gender: 'f' },
+  Ax: { gloss: 'le mort transfiguré', forms: { noun: 'esprit transfiguré' }, gender: 'm' },
+  Hm: { gloss: 'majesté', forms: { noun: 'majesté' }, gender: 'f' },
+  Sms: { gloss: 'suivant d’un dieu', forms: { noun: 'suivant' }, gender: 'm' },
+  wr: { gloss: 'le grand', forms: { noun: 'grand' }, gender: 'm' },
+  Hnwt: { gloss: 'maîtresse', forms: { noun: 'maîtresse' }, gender: 'f' },
+  sAw: { gloss: 'gardien', forms: { noun: 'gardien' }, gender: 'm' },
+  tpy: { gloss: 'celui qui fut avant', forms: { noun: 'ancêtre' }, gender: 'm' },
 };
 
 // A gender rides every name because the interrogative inversion of a

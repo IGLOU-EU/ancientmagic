@@ -225,6 +225,18 @@ export const LEXICON: Readonly<
     ['vestigi', 'vestigium', 'footstep'],
     ['orbit', 'orbita', 'wheel-track'],
   ],
+  beings: [
+    ['div', 'divus', 'god'],
+    ['domin', 'dominus', 'lord'],
+    ['regin', 'regina', 'queen'],
+    ['patron', 'patronus', 'protector'],
+    ['atav', 'atavus', 'forefather'],
+    ['anim', 'anima', 'soul'],
+    ['antistit', 'antistita', 'priestess'],
+    ['mag', 'magus', 'magician'],
+    ['famul', 'famulus', 'servant'],
+    ['soci', 'socius', 'companion'],
+  ],
 };
 
 // Spec 9.3: the three roots that never fill a slot taking an object.

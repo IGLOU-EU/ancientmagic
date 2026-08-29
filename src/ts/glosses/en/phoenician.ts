@@ -175,6 +175,20 @@ const roots: RootGlossTable = {
   hlk: { gloss: 'course', forms: { noun: 'course' } },
   khpz: { gloss: 'swift', forms: { adj: 'swift' } },
   shny: { gloss: 'repeat', forms: { verb: 'repeat' } },
+  // beings
+  mlk: { gloss: 'king', forms: { noun: 'king', plural: 'kings' } },
+  rbt: { gloss: 'lady', forms: { noun: 'lady', plural: 'ladies' } },
+  qdsh: { gloss: 'holy one', forms: { noun: 'holy one', plural: 'holy ones' } },
+  ghbd: { gloss: 'servant of a god', forms: { noun: 'servant', plural: 'servants' } },
+  "l'k": { gloss: 'messenger', forms: { noun: 'messenger', plural: 'messengers' } },
+  zkr: {
+    gloss: 'remembered dead',
+    forms: { noun: 'remembered one', plural: 'remembered ones' },
+  },
+  "tsb'": { gloss: 'host of heaven', forms: { noun: 'heavenly host', plural: 'heavenly hosts' } },
+  gbr: { gloss: 'champion', forms: { noun: 'champion', plural: 'champions' } },
+  kmr: { gloss: 'priest', forms: { noun: 'priest', plural: 'priests' } },
+  ghtq: { gloss: 'forefather', forms: { noun: 'forefather', plural: 'forefathers' } },
 };
 
 // A gender rides every name because a Divination question that does not write

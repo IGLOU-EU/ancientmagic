@@ -59,7 +59,7 @@ const ALL_ROOTS: ReadonlyArray<OghamRoot> = Object.values(FIELDS).flat();
 // below are read off the forms rather than pasted beside them.
 const NOUN_CASES = ['nominative', 'accusative', 'genitive', 'vocative'] as const;
 
-test('the fourteen fields carry the roots of 10.3, in the order it lists them', () => {
+test('the fifteen fields carry the roots of 10.3, in the order it lists them', () => {
   assert.deepStrictEqual(Object.keys(FIELDS).sort(), Object.keys(LEXICON).sort());
   for (const [field, rows] of Object.entries(LEXICON)) {
     assert.deepStrictEqual(
@@ -68,7 +68,7 @@ test('the fourteen fields carry the roots of 10.3, in the order it lists them', 
       `the ${field} field drifted from the spec`,
     );
   }
-  assert.strictEqual(ALL_ROOTS.length, 140, 'fourteen fields of ten roots');
+  assert.strictEqual(ALL_ROOTS.length, 150, 'fifteen fields of ten roots');
 });
 
 test('exactly three roots are intransitive and exactly six are scholastic', () => {

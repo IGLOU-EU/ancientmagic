@@ -220,6 +220,18 @@ export const LEXICON: Readonly<
     ['ghwp', 'bird in flight'],
     ['smn', 'set mark'],
   ],
+  beings: [
+    ['mlk', 'king'],
+    ['rbt', 'lady'],
+    ['qdsh', 'holy one'],
+    ['ghbd', 'servant of a god'],
+    ["l'k", 'messenger'],
+    ['zkr', 'remembered dead'],
+    ["tsb'", 'host of heaven'],
+    ['gbr', 'champion'],
+    ['kmr', 'priest'],
+    ['ghtq', 'forefather'],
+  ],
 };
 
 // Spec 4.3: the five roots that never fill a slot taking a direct object.

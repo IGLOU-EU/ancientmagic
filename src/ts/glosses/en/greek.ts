@@ -178,6 +178,17 @@ const roots: RootGlossTable = {
   beem: { gloss: 'step', forms: { noun: 'step' } },
   takh: { gloss: 'swift', forms: { adj: 'swift', adv: 'swiftly' } },
   kain: { gloss: 'renew', forms: { verb: 'renew', adj: 'new' } },
+  // beings
+  daimon: { gloss: 'daimon', forms: { noun: 'daimon' } },
+  anakt: { gloss: 'lord', forms: { noun: 'lord' } },
+  koiran: { gloss: 'ruler', forms: { noun: 'ruler' } },
+  promakh: { gloss: 'champion', forms: { noun: 'champion' } },
+  progon: { gloss: 'ancestor', forms: { noun: 'ancestor' } },
+  paredr: { gloss: 'assistant spirit', forms: { noun: 'assistant spirit' } },
+  alastor: { gloss: 'avenger', forms: { noun: 'avenger' } },
+  troph: { gloss: 'nurse', forms: { noun: 'nurse' } },
+  paid: { gloss: 'divine child', forms: { noun: 'divine child' } },
+  makar: { gloss: 'blessed one', forms: { noun: 'blessed one' } },
 };
 
 // The voces magicae of spec 8.7. The name is how a sentence spells the word,

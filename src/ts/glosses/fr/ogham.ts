@@ -242,6 +242,17 @@ const roots: RootGlossTable = {
   gen: { gloss: 'renouveler', forms: { verb: 'renouvelle' } },
   rit: { gloss: 'course', forms: { noun: 'course' }, gender: 'f' },
   lorg: { gloss: 'trace', forms: { noun: 'trace' }, gender: 'f' },
+  // beings
+  dev: { gloss: 'dieu', forms: { noun: 'dieu' }, gender: 'm' },
+  rig: { gloss: 'roi', forms: { noun: 'roi' }, gender: 'm' },
+  tigern: { gloss: 'seigneur', forms: { noun: 'seigneur' }, gender: 'm' },
+  tren: { gloss: 'preux', forms: { noun: 'preux' }, gender: 'm' },
+  sinser: { gloss: 'ancêtre', forms: { noun: 'ancêtre' }, gender: 'm' },
+  bard: { gloss: 'barde', forms: { noun: 'barde' }, gender: 'm' },
+  goban: { gloss: 'forgeron', forms: { noun: 'forgeron' }, gender: 'm' },
+  bansid: { gloss: 'femme du tertre', forms: { noun: 'femme du tertre' }, gender: 'f' },
+  luct: { gloss: 'peuple du tertre', forms: { noun: 'peuple du tertre' }, gender: 'm' },
+  mordev: { gloss: 'dieu de la mer', forms: { noun: 'dieu de la mer' }, gender: 'm' },
 };
 
 // The attested names keep their own tongue, in the French orthography the

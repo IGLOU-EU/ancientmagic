@@ -89,7 +89,7 @@ export interface LatinRoot {
 }
 
 // Selected roots by semantic field (spec 9.3). This genome populates all
-// fourteen fields, because it arrives with all six schools. Past participles
+// fifteen fields, because it arrives with all six schools. Past participles
 // are declared in the harm field alone, because the Curse gloss is the only
 // clause template here that reaches for one.
 export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<LatinRoot>>> = {
@@ -266,6 +266,18 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<LatinRoot>>> =
     { root: 'curricul', forms: ['noun'], nounClass: 'um' },
     { root: 'vestigi', forms: ['noun'], nounClass: 'um' },
     { root: 'orbit', forms: ['noun'], nounClass: 'a' },
+  ],
+  beings: [
+    { root: 'div', forms: ['noun'], nounClass: 'us' },
+    { root: 'domin', forms: ['noun'], nounClass: 'us' },
+    { root: 'regin', forms: ['noun'], nounClass: 'a' },
+    { root: 'patron', forms: ['noun'], nounClass: 'us' },
+    { root: 'atav', forms: ['noun'], nounClass: 'us' },
+    { root: 'anim', forms: ['noun'], nounClass: 'a' },
+    { root: 'antistit', forms: ['noun'], nounClass: 'a' },
+    { root: 'mag', forms: ['noun'], nounClass: 'us' },
+    { root: 'famul', forms: ['noun'], nounClass: 'us' },
+    { root: 'soci', forms: ['noun'], nounClass: 'us' },
   ],
 };
 

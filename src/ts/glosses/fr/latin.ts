@@ -250,6 +250,17 @@ const roots: RootGlossTable = {
   curricul: { gloss: 'course', forms: { noun: 'course' }, gender: 'f' },
   vestigi: { gloss: 'empreinte', forms: { noun: 'empreinte' }, gender: 'f' },
   orbit: { gloss: 'ornière', forms: { noun: 'ornière' }, gender: 'f' },
+  // beings
+  div: { gloss: 'dieu', forms: { noun: 'dieu' }, gender: 'm' },
+  domin: { gloss: 'seigneur', forms: { noun: 'seigneur' }, gender: 'm' },
+  regin: { gloss: 'reine', forms: { noun: 'reine' }, gender: 'f' },
+  patron: { gloss: 'protecteur', forms: { noun: 'protecteur' }, gender: 'm' },
+  atav: { gloss: 'aïeul', forms: { noun: 'aïeul' }, gender: 'm' },
+  anim: { gloss: 'âme', forms: { noun: 'âme' }, gender: 'f' },
+  antistit: { gloss: 'prêtresse', forms: { noun: 'prêtresse' }, gender: 'f' },
+  mag: { gloss: 'mage', forms: { noun: 'mage' }, gender: 'm' },
+  famul: { gloss: 'serviteur', forms: { noun: 'serviteur' }, gender: 'm' },
+  soci: { gloss: 'compagnon', forms: { noun: 'compagnon' }, gender: 'm' },
 };
 
 // The attested powers keep their own tongue, in the French orthography the

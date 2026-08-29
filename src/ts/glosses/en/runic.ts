@@ -199,6 +199,17 @@ const roots: RootGlossTable = {
   stap: { gloss: 'step', forms: { noun: 'step' } },
   rath: { gloss: 'swift', forms: { adj: 'swift', adv: 'swiftly' } },
   niw: { gloss: 'renew', forms: { verb: 'renew', adj: 'new' } },
+  // beings
+  dis: { gloss: 'kin-goddess', forms: { noun: 'kin-goddess' } },
+  walkur: { gloss: 'chooser of the slain', forms: { noun: 'chooser of the slain' } },
+  haugsit: { gloss: 'mound-dweller', forms: { noun: 'mound-dweller' } },
+  drohtin: { gloss: 'lord of the war-band', forms: { noun: 'lord of the war-band' } },
+  helith: { gloss: 'champion', forms: { noun: 'champion' } },
+  thul: { gloss: 'lore-speaker', forms: { noun: 'lore-speaker' } },
+  nith: { gloss: 'kinsman', forms: { noun: 'kinsman' } },
+  landwiht: { gloss: 'land-wight', forms: { noun: 'land-wight' } },
+  etun: { gloss: 'elder giant', forms: { noun: 'elder giant' } },
+  alba: { gloss: 'elf', forms: { noun: 'elf' } },
 };
 
 const powers: GlossTable = {

@@ -79,7 +79,7 @@ export interface GreekRoot {
 }
 
 // Coined roots by semantic field (spec 8.3). This genome populates all
-// fourteen fields, because it arrives with all six schools. Past participles
+// fifteen fields, because it arrives with all six schools. Past participles
 // are declared in the harm field alone, because the Curse gloss is the only
 // clause template here that reaches for one.
 export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<GreekRoot>>> = {
@@ -250,6 +250,18 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<GreekRoot>>> =
     { root: 'beem', forms: ['noun'] },
     { root: 'takh', forms: ['adj', 'adv'] },
     { root: 'kain', forms: ['verb', 'adj'] },
+  ],
+  beings: [
+    { root: 'daimon', forms: ['noun'] },
+    { root: 'anakt', forms: ['noun'] },
+    { root: 'koiran', forms: ['noun'] },
+    { root: 'promakh', forms: ['noun'] },
+    { root: 'progon', forms: ['noun'] },
+    { root: 'paredr', forms: ['noun'] },
+    { root: 'alastor', forms: ['noun'] },
+    { root: 'troph', forms: ['noun'] },
+    { root: 'paid', forms: ['noun'] },
+    { root: 'makar', forms: ['noun'] },
   ],
 };
 

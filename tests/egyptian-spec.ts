@@ -85,6 +85,7 @@ export const FIELD_DET: Readonly<Record<string, string>> = {
   fate: '\u{1335D}',
   signs: '\u{133DE}',
   course: '\u{130BB}',
+  beings: '\u{132B9}',
 };
 
 // The coined roots of spec 3.3: skeleton, spoken form, gloss, in table order.
@@ -258,6 +259,18 @@ export const LEXICON: Readonly<
     ['psS', 'pesesh', 'divided lot'],
     ['xAy', 'khay', 'measuring out'],
     ['hn', 'hen', 'assent'],
+  ],
+  beings: [
+    ['nTr', 'netjer', 'god'],
+    ['kA', 'ka', 'the double that outlives the body'],
+    ['bA', 'ba', 'the soul that travels'],
+    ['Ax', 'akh', 'the transfigured dead'],
+    ['Hm', 'hem', 'majesty'],
+    ['Sms', 'shemes', 'follower of a god'],
+    ['wr', 'wer', 'the great one'],
+    ['Hnwt', 'henut', 'mistress'],
+    ['sAw', 'sau', 'guardian'],
+    ['tpy', 'tepy', 'the one who came before'],
   ],
 };
 

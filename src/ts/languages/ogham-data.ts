@@ -138,7 +138,7 @@ export interface OghamRoot {
 }
 
 // Coined roots by semantic field (spec 10.3). This genome populates all
-// fourteen fields, because it arrives with all six schools. Past participles
+// fifteen fields, because it arrives with all six schools. Past participles
 // are declared in the harm field alone, because the Curse gloss is the only
 // clause template here that reaches for one.
 export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<OghamRoot>>> = {
@@ -309,6 +309,18 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<OghamRoot>>> =
     { root: 'gen', forms: ['verb'] },
     { root: 'rit', forms: ['noun'] },
     { root: 'lorg', forms: ['noun'] },
+  ],
+  beings: [
+    { root: 'dev', forms: ['noun'] },
+    { root: 'rig', forms: ['noun'] },
+    { root: 'tigern', forms: ['noun'] },
+    { root: 'tren', forms: ['noun'] },
+    { root: 'sinser', forms: ['noun'] },
+    { root: 'bard', forms: ['noun'] },
+    { root: 'goban', forms: ['noun'] },
+    { root: 'bansid', forms: ['noun'] },
+    { root: 'luct', forms: ['noun'] },
+    { root: 'mordev', forms: ['noun'] },
   ],
 };
 

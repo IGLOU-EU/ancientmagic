@@ -121,6 +121,11 @@ export const FIELD_DET: Readonly<Record<SemanticField, string>> = {
   // claimed them, which is exactly the sign a school of moving through time
   // wants (spec 3.1).
   course: D54_LEGS,
+  // The netjer flag was declared with the first sign table, listed among the
+  // determinatives, cut into the shipped font subset, and written by nothing
+  // for five genomes: it was waiting for the field the Invocation widening
+  // finally opened (spec 1.3, 3.3).
+  beings: R8_GOD,
 };
 
 export interface EgyptianRoot {
@@ -306,6 +311,18 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<EgyptianRoot>>
     { skeleton: 'psS', spoken: 'pesesh', forms: ['noun'] },
     { skeleton: 'xAy', spoken: 'khay', forms: ['noun'] },
     { skeleton: 'hn', spoken: 'hen', forms: ['noun'] },
+  ],
+  beings: [
+    { skeleton: 'nTr', spoken: 'netjer', forms: ['noun'] },
+    { skeleton: 'kA', spoken: 'ka', forms: ['noun'] },
+    { skeleton: 'bA', spoken: 'ba', forms: ['noun'] },
+    { skeleton: 'Ax', spoken: 'akh', forms: ['noun'] },
+    { skeleton: 'Hm', spoken: 'hem', forms: ['noun'] },
+    { skeleton: 'Sms', spoken: 'shemes', forms: ['noun'] },
+    { skeleton: 'wr', spoken: 'wer', forms: ['noun'] },
+    { skeleton: 'Hnwt', spoken: 'henut', forms: ['noun'] },
+    { skeleton: 'sAw', spoken: 'sau', forms: ['noun'] },
+    { skeleton: 'tpy', spoken: 'tepy', forms: ['noun'] },
   ],
 };
 

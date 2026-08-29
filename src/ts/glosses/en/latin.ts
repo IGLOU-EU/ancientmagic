@@ -182,6 +182,17 @@ const roots: RootGlossTable = {
   curricul: { gloss: 'course', forms: { noun: 'course' } },
   vestigi: { gloss: 'footstep', forms: { noun: 'footstep' } },
   orbit: { gloss: 'wheel-track', forms: { noun: 'wheel-track' } },
+  // beings
+  div: { gloss: 'god', forms: { noun: 'god' } },
+  domin: { gloss: 'lord', forms: { noun: 'lord' } },
+  regin: { gloss: 'queen', forms: { noun: 'queen' } },
+  patron: { gloss: 'protector', forms: { noun: 'protector' } },
+  atav: { gloss: 'forefather', forms: { noun: 'forefather' } },
+  anim: { gloss: 'soul', forms: { noun: 'soul' } },
+  antistit: { gloss: 'priestess', forms: { noun: 'priestess' } },
+  mag: { gloss: 'magician', forms: { noun: 'magician' } },
+  famul: { gloss: 'servant', forms: { noun: 'servant' } },
+  soci: { gloss: 'companion', forms: { noun: 'companion' } },
 };
 
 // The attested powers of spec 9.7. The name is how a sentence spells the word,

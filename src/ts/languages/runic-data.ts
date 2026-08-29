@@ -69,7 +69,9 @@ export const SEAL_WORDS: Readonly<Record<SealCount, string>> = {
 };
 
 // Coined roots by semantic field (spec 2.3), each field followed by its
-// rune-name roots per the normative assignment table. Rune names are noun
+// rune-name roots per the normative assignment table. The beings field is the
+// one the Invocation widening added (spec 1.3), and it carries no rune name:
+// the row already spent its gods on the fields they guard. Rune names are noun
 // roots only. Verb forms exist on every root a school can draw as a verb,
 // kum and swelt carry the spec's intransitive flag.
 export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> = {
@@ -271,6 +273,18 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'frag', forms: ['noun'] },
     { root: 'andswar', forms: ['noun'] },
     { root: 'rist', forms: ['noun'] },
+  ],
+  beings: [
+    { root: 'dis', forms: ['noun'] },
+    { root: 'walkur', forms: ['noun'] },
+    { root: 'haugsit', forms: ['noun'] },
+    { root: 'drohtin', forms: ['noun'] },
+    { root: 'helith', forms: ['noun'] },
+    { root: 'thul', forms: ['noun'] },
+    { root: 'nith', forms: ['noun'] },
+    { root: 'landwiht', forms: ['noun'] },
+    { root: 'etun', forms: ['noun'] },
+    { root: 'alba', forms: ['noun'] },
   ],
 };
 

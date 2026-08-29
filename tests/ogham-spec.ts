@@ -238,6 +238,18 @@ export const LEXICON: Readonly<
     ['rit', 'course'],
     ['lorg', 'track'],
   ],
+  beings: [
+    ['dev', 'god'],
+    ['rig', 'king'],
+    ['tigern', 'lord'],
+    ['tren', 'hero'],
+    ['sinser', 'ancestor'],
+    ['bard', 'poet'],
+    ['goban', 'smith'],
+    ['bansid', 'woman of the mound'],
+    ['luct', 'folk of the mound'],
+    ['mordev', 'sea-god'],
+  ],
 };
 
 // Spec 10.3: the three roots that never fill a slot taking an object.

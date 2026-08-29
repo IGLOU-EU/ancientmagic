@@ -213,6 +213,18 @@ export const LEXICON: Readonly<
     ['takh', 'swift'],
     ['kain', 'renew'],
   ],
+  beings: [
+    ['daimon', 'daimon'],
+    ['anakt', 'lord'],
+    ['koiran', 'ruler'],
+    ['promakh', 'champion'],
+    ['progon', 'ancestor'],
+    ['paredr', 'assistant spirit'],
+    ['alastor', 'avenger'],
+    ['troph', 'nurse'],
+    ['paid', 'divine child'],
+    ['makar', 'blessed one'],
+  ],
 };
 
 // Spec 8.3: the three roots that never fill a slot taking an object.

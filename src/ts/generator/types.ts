@@ -50,7 +50,12 @@ export type SemanticField =
   // Course arrived with Chronomancy and is likewise its own: the verbs and
   // nouns of moving through time (genomes.md 1.6). Fate is the one field the
   // two schools share.
-  | 'course';
+  | 'course'
+  // Beings arrived last and belongs to the school that was there first. The
+  // other fourteen hold forces and things, so an Invocation could call a
+  // night and never a person, which three genomes ran into from three
+  // different cultures (genomes.md 1.3).
+  | 'beings';
 
 export type ModifierKind = 'adjective' | 'adverb';
 

@@ -177,6 +177,17 @@ const roots: RootGlossTable = {
   Smt: { gloss: 'course', forms: { noun: 'course' } },
   xAx: { gloss: 'swift', forms: { adj: 'swift' } },
   mAwy: { gloss: 'renew', forms: { verb: 'renew', adj: 'new' } },
+  // beings
+  nTr: { gloss: 'god', forms: { noun: 'god' } },
+  kA: { gloss: 'the double that outlives the body', forms: { noun: 'spirit double' } },
+  bA: { gloss: 'the soul that travels', forms: { noun: 'travelling soul' } },
+  Ax: { gloss: 'the transfigured dead', forms: { noun: 'transfigured spirit' } },
+  Hm: { gloss: 'majesty', forms: { noun: 'majesty' } },
+  Sms: { gloss: 'follower of a god', forms: { noun: 'follower' } },
+  wr: { gloss: 'the great one', forms: { noun: 'great one' } },
+  Hnwt: { gloss: 'mistress', forms: { noun: 'mistress' } },
+  sAw: { gloss: 'guardian', forms: { noun: 'guardian' } },
+  tpy: { gloss: 'the one who came before', forms: { noun: 'forebear' } },
 };
 
 const powers: NamedPowerTable = {

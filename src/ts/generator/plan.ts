@@ -19,7 +19,19 @@ import type {
 const PROTECTION_INTENT: ReadonlyArray<SemanticField> = ['warding', 'binding'];
 const PROTECTION_TARGET: ReadonlyArray<SemanticField> = ['harm', 'death', 'night', 'fire'];
 const CURSE_TARGET: ReadonlyArray<SemanticField> = ['death', 'night', 'hidden', 'gates'];
-const INVOCATION_AGENT: ReadonlyArray<SemanticField> = ['night', 'fire', 'time', 'death'];
+// Four cosmic powers and the beings field the school gained in the widening of
+// genomes.md 1.3, so an Invocation can address somebody as well as something.
+// The Eldritch register draws from the same pool and reads none of it: it
+// fills every AGENT with an indeclinable epithet (spec 1.4), and a draw costs
+// one number whatever the pool's length, so widening here left every Eldritch
+// formula in every genome byte for byte what it was.
+const INVOCATION_AGENT: ReadonlyArray<SemanticField> = [
+  'night',
+  'fire',
+  'time',
+  'death',
+  'beings',
+];
 const ELDRITCH_TARGET: ReadonlyArray<SemanticField> = ['night', 'death', 'gates'];
 
 // Divination asks the sign that answers and speaks as the seer, so its AGENT

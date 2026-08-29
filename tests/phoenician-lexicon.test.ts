@@ -105,7 +105,7 @@ test('the coined lexicon matches the spec table, skeleton and gloss', () => {
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 140, 'fourteen fields of ten roots');
+  assert.strictEqual(total, 150, 'fifteen fields of ten roots');
 });
 
 test('root shape follows the phonotactics of the spec', () => {

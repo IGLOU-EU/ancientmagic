@@ -183,6 +183,17 @@ const roots: RootGlossTable = {
   gen: { gloss: 'renew', forms: { verb: 'renew' } },
   rit: { gloss: 'course', forms: { noun: 'course' } },
   lorg: { gloss: 'track', forms: { noun: 'track' } },
+  // beings
+  dev: { gloss: 'god', forms: { noun: 'god' } },
+  rig: { gloss: 'king', forms: { noun: 'king' } },
+  tigern: { gloss: 'lord', forms: { noun: 'lord' } },
+  tren: { gloss: 'hero', forms: { noun: 'hero' } },
+  sinser: { gloss: 'ancestor', forms: { noun: 'ancestor' } },
+  bard: { gloss: 'poet', forms: { noun: 'poet' } },
+  goban: { gloss: 'smith', forms: { noun: 'smith' } },
+  bansid: { gloss: 'woman of the mound', forms: { noun: 'woman of the mound' } },
+  luct: { gloss: 'folk of the mound', forms: { noun: 'folk of the mound' } },
+  mordev: { gloss: 'sea-god', forms: { noun: 'sea-god' } },
 };
 
 // The attested names of spec 10.7. The name is how a sentence spells the word,

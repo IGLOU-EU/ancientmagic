@@ -271,6 +271,17 @@ const roots: RootGlossTable = {
     forms: { verb: 'renouvelle', adj: 'neuf' },
     feminine: { adj: 'neuve' },
   },
+  // beings
+  daimon: { gloss: 'daimôn', forms: { noun: 'daimôn' }, gender: 'm' },
+  anakt: { gloss: 'seigneur', forms: { noun: 'seigneur' }, gender: 'm' },
+  koiran: { gloss: 'souverain', forms: { noun: 'souverain' }, gender: 'm' },
+  promakh: { gloss: 'champion', forms: { noun: 'champion' }, gender: 'm' },
+  progon: { gloss: 'ancêtre', forms: { noun: 'ancêtre' }, gender: 'm' },
+  paredr: { gloss: 'esprit auxiliaire', forms: { noun: 'esprit auxiliaire' }, gender: 'm' },
+  alastor: { gloss: 'vengeur', forms: { noun: 'vengeur' }, gender: 'm' },
+  troph: { gloss: 'nourrice', forms: { noun: 'nourrice' }, gender: 'f' },
+  paid: { gloss: 'enfant divin', forms: { noun: 'enfant divin' }, gender: 'm' },
+  makar: { gloss: 'bienheureux', forms: { noun: 'bienheureux' }, gender: 'm' },
 };
 
 // The voces magicae keep their own tongue, in the French orthography of the

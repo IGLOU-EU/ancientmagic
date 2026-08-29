@@ -562,6 +562,33 @@ const roots: RootGlossTable = {
   hlk: { gloss: 'cours', forms: { noun: 'cours' }, gender: 'm' },
   khpz: { gloss: 'rapide', forms: { adj: 'prompt' }, feminine: { adj: 'prompte' } },
   shny: { gloss: 'répéter', forms: { verb: 'répète' } },
+  // beings
+  mlk: { gloss: 'roi', forms: { noun: 'roi', plural: 'rois' }, gender: 'm' },
+  rbt: { gloss: 'dame', forms: { noun: 'dame', plural: 'dames' }, gender: 'f' },
+  qdsh: { gloss: 'saint', forms: { noun: 'saint', plural: 'saints' }, gender: 'm' },
+  ghbd: {
+    gloss: 'serviteur du dieu',
+    forms: { noun: 'serviteur', plural: 'serviteurs' },
+    gender: 'm',
+  },
+  "l'k": {
+    gloss: 'messager',
+    forms: { noun: 'messager', plural: 'messagers' },
+    gender: 'm',
+  },
+  zkr: {
+    gloss: 'défunt que l’on nomme',
+    forms: { noun: 'défunt nommé', plural: 'défunts nommés' },
+    gender: 'm',
+  },
+  "tsb'": {
+    gloss: 'armée céleste',
+    forms: { noun: 'armée céleste', plural: 'armées célestes' },
+    gender: 'f',
+  },
+  gbr: { gloss: 'champion', forms: { noun: 'champion', plural: 'champions' }, gender: 'm' },
+  kmr: { gloss: 'prêtre', forms: { noun: 'prêtre', plural: 'prêtres' }, gender: 'm' },
+  ghtq: { gloss: 'aïeul', forms: { noun: 'aïeul', plural: 'aïeux' }, gender: 'm' },
 };
 
 const powers: NamedPowerTable = {

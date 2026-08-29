@@ -74,7 +74,7 @@ test('field determinatives follow the normative table', () => {
   for (const [field, glyph] of Object.entries(SPEC_FIELD_DET)) {
     assert.strictEqual(FIELD_DET[field as SemanticField], glyph, `field ${field}`);
   }
-  assert.strictEqual(new Set(Object.values(FIELD_DET)).size, 14, 'fourteen distinct field signs');
+  assert.strictEqual(new Set(Object.values(FIELD_DET)).size, 15, 'fifteen distinct field signs');
 });
 
 test('the coined lexicon matches the spec table, skeleton, spoken form and gloss', () => {
@@ -93,7 +93,7 @@ test('the coined lexicon matches the spec table, skeleton, spoken form and gloss
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 140, 'fourteen fields of ten roots');
+  assert.strictEqual(total, 150, 'fifteen fields of ten roots');
 });
 
 test('coined skeletons respect the phonotactics of the spec', () => {
