@@ -337,9 +337,27 @@ export const IMEN: PowerWord = {
   spoken: 'imen',
 };
 
-// Every attested name the packs must gloss, the eight of the shipped schools
-// plus the one Divination questions.
-export const ALL_POWER: ReadonlyArray<PowerWord> = [...BRIGHT_POWER, IMEN];
+// Horus, the falcon child of the healing spells (spec 3.7). He arrived with
+// the Coptic ruling and is reached through the EO5 declaration alone, so the
+// pools every shipped school draws are the pools they drew before.
+export const HOR: PowerWord = {
+  skeleton: 'Hr',
+  glyphs: '\u{1339B}\u{1308B}\u{132B9}',
+  spoken: 'hor',
+};
+
+// Every attested name the packs must gloss, the eight of the shipped schools,
+// the one Divination questions and the one only a declaration reaches.
+export const ALL_POWER: ReadonlyArray<PowerWord> = [...BRIGHT_POWER, IMEN, HOR];
+
+// The four powers a caster may declare himself to be (spec 3.7): the ones the
+// corpus speaks as, never the ones it sends or coerces.
+export const ASSUMED_POWER: ReadonlyArray<PowerWord> = [
+  ...BRIGHT_POWER.filter(
+    (p) => p.skeleton === 'HkA' || p.skeleton === 'DHwty' || p.skeleton === 'Ast',
+  ),
+  HOR,
+];
 
 // The god who writes and reckons, and the god whose oracle answered: the two
 // powers a divination formula puts its question to (spec 3.7).
@@ -390,6 +408,10 @@ export const FN_IN: FixedWord = { glyphs: '\u{131CB}\u{13216}', spoken: 'in' };
 export const FN_INIW: FixedWord = { glyphs: '\u{131CB}\u{13216}\u{131CB}\u{13171}', spoken: 'iniu' };
 export const FN_IR: FixedWord = { glyphs: '\u{131CB}\u{1308B}', spoken: 'ir' };
 export const FN_I: FixedWord = { glyphs: '\u{131CB}\u{13001}', spoken: 'i' };
+// The independent pronoun jnk, "I am" (spec 3.4). It opens the EO5 self
+// declaration and takes no determinative, as no function word does. Coptic
+// kept it as anok, which is why 3.7 lets the device be written at all.
+export const FN_INK: FixedWord = { glyphs: '\u{131CB}\u{13216}\u{133A1}', spoken: 'inek' };
 export const FN_MY: FixedWord = { glyphs: '\u{13153}\u{131CC}', spoken: 'mi' };
 
 export const RX_I: FixedWord = { glyphs: '\u{1308B}\u{1340D}\u{133DB}\u{13000}', spoken: 'rekhi' };

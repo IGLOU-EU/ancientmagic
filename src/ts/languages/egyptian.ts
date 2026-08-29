@@ -33,6 +33,7 @@ import {
 import {
   A14_ENEMY,
   AGENT_POWER,
+  ASSUMED_POWER,
   BRIGHT_POWER,
   DIRECTION_WORDS,
   DIVINATION_POWER,
@@ -44,6 +45,7 @@ import {
   FN_I,
   FN_IN,
   FN_INIW,
+  FN_INK,
   FN_IR,
   FN_M,
   FN_MY,
@@ -748,6 +750,21 @@ function realizeInvocationClause(
   };
 }
 
+// EO5, the self declaration of spec 3.6: the independent pronoun and the name
+// the caster takes for the length of the formula. The name is spent as it is
+// drawn, so no clause can invoke the god the caster has just said he is.
+function selfDeclaration(
+  rng: Rng,
+  used: Set<string>,
+  glosses: EgyptianGlosses,
+): Realization {
+  const name = drawUnused(rng, ASSUMED_POWER, used, (p) => p.skeleton);
+  return {
+    words: [fixed(FN_INK), powerWord(name)],
+    gloss: glosses.selfDeclaration(name.skeleton),
+  };
+}
+
 // The opening titles and addresses the spell by what it is about, and what it
 // is about is the first clause's own subject matter. So it reads that clause's
 // gene without spending it: the clause draws its own root from the same field
@@ -874,7 +891,9 @@ function singleAddress(
     );
   }
   if (plan.school === 'protection') {
-    const god = pick(rng, AGENT_POWER);
+    // A caster who has just declared himself a god does not then tell that god
+    // he knows his name, so a declared name is out of this draw (spec 3.7).
+    const god = pick(rng, AGENT_POWER.filter((p) => !used.has(p.skeleton)));
     return nameKnowledgeLine(plan, [powerWord(god)], { kind: 'power', id: god.skeleton }, glosses);
   }
   const field = requireField(firstClauseGene(plan, 'AGENT')?.field ?? null);
@@ -1055,6 +1074,15 @@ function composeEgyptian(plan: FormulaPlan, rng: Rng, glosses: EgyptianGlosses):
   const opening = openingWords(plan, rng, used, glosses);
   words.push(...opening.words);
   glossParts.push(opening.gloss);
+
+  // The declaration enters at tier 6 and is drawn at even odds, in Protection
+  // alone: it needs a clause that speaks in the first person, and 3.7 rules
+  // that Protection is this genome's only school that has one.
+  if (plan.school === 'protection' && plan.difficulty >= 6 && pick(rng, [true, false])) {
+    const declared = selfDeclaration(rng, used, glosses);
+    words.push(...declared.words);
+    glossParts.push(declared.gloss);
+  }
 
   if (plan.difficulty >= 8) {
     // The chronomantic litany grows to four hour-gates at tier 9, where the

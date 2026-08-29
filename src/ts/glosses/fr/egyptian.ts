@@ -553,6 +553,7 @@ const powers: NamedPowerTable = {
   sxmt: { name: 'Sekhmet', gloss: 'Sekhmet, la peste et le bouclier.', gender: 'f' },
   aApp: { name: 'Apep', gloss: 'Apep, le serpent adversaire.', gender: 'm' },
   imn: { name: 'Imen', gloss: 'Imen, le caché qui répond.', gender: 'm' },
+  Hr: { name: 'Hor', gloss: 'Hor, l’enfant faucon guéri de la piqûre.', gender: 'm' },
 };
 
 // Each epithet keeps the article a title needs and a vocative drops.
@@ -710,6 +711,8 @@ export const egyptianGlosses: EgyptianGlosses = {
   returnAnchor: (anchorRoot, genitiveRoot) =>
     `Sortie dans ${theNoun(anchorRoot)}` +
     `${genitiveRoot === null ? '' : ` ${ofDefinite(noun(genitiveRoot), genderOf(roots, genitiveRoot))}`}.`,
+
+  selfDeclaration: (nameId) => `Je suis ${power(powers, nameId).name}.`,
 
   // The title keeps the epithet's own article, unlike a vocative.
   spellTitle: (subject) =>

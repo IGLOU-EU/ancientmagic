@@ -285,8 +285,20 @@ export const IMEN_ROW: readonly [skeleton: string, glyphs: string, spoken: strin
   'imen',
 ];
 
+// Horus, the tenth name of spec 3.7. He arrived with the Coptic ruling and is
+// reached through the EO5 declaration alone, so he stands outside POWER_TABLE
+// beside Amun.
+export const HOR_ROW: readonly [skeleton: string, glyphs: string, spoken: string] = [
+  'Hr',
+  '\u{1339B}\u{1308B}\u{132B9}',
+  'hor',
+];
+
 // The two powers a divination formula questions (spec 3.7).
 export const DIVINATION_SPOKEN: ReadonlyArray<string> = ['djehuty', 'imen'];
+
+// The four powers a caster may declare himself to be (spec 3.7).
+export const ASSUMED_SPOKEN: ReadonlyArray<string> = ['heka', 'djehuty', 'aset', 'hor'];
 
 // Dread epithet pool of spec 3.10: skeleton, spoken form, gloss.
 export const DREAD_TABLE: ReadonlyArray<
@@ -327,6 +339,9 @@ export const EO1_SPOKEN: ReadonlyArray<string> = ['djed', 'medu'];
 export const EO4_SPOKEN: ReadonlyArray<string> = ['ir', 'maa', 'em', 'resut'];
 export const EC4_SPOKEN: ReadonlyArray<string> = ['iuef', 'pu'];
 export const INIW_SPOKEN = 'iniu';
+// The independent pronoun that opens EO5 (spec 3.4 and 3.6).
+export const INK_GLYPHS = '\u{131CB}\u{13216}\u{133A1}';
+export const INK_SPOKEN = 'inek';
 // The return anchor and the four direction words of spec 3.6 and 3.4.
 export const EC5_HEAD_SPOKEN: ReadonlyArray<string> = ['peret', 'em'];
 export const DIRECTION_SPOKEN: Readonly<Record<string, string>> = {

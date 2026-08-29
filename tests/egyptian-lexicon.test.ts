@@ -3,6 +3,7 @@ import * as assert from 'node:assert/strict';
 import {
   AGENT_POWER,
   ALL_POWER,
+  ASSUMED_POWER,
   BRIGHT_POWER,
   DIVINATION_POWER,
   DIRECTION_WORDS,
@@ -11,6 +12,8 @@ import {
   FIELD_DET,
   FIELDS,
   FN_INIW,
+  FN_INK,
+  HOR,
   IDIOM_WORDS,
   IMEN,
   NUMERAL_WORDS,
@@ -20,6 +23,7 @@ import { glyphsFor } from '../src/ts/languages/egyptian.js';
 import { egyptianGlosses } from '../src/ts/glosses/en/egyptian.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
 import {
+  ASSUMED_SPOKEN,
   DETERMINATIVE_TABLE,
   DIRECTION_GLYPHS,
   DIRECTION_SPOKEN,
@@ -40,9 +44,12 @@ import {
   EO1_SPOKEN,
   EO4_GLYPHS,
   EO4_SPOKEN,
+  HOR_ROW,
   IMEN_ROW,
   INIW_GLYPHS,
   INIW_SPOKEN,
+  INK_GLYPHS,
+  INK_SPOKEN,
   FIELD_DET as SPEC_FIELD_DET,
   IDIOM_SIGN_TABLE,
   LEXICON,
@@ -192,6 +199,7 @@ test('amun is written as the spec lists him and stays out of the other pools', (
   assert.deepStrictEqual(ALL_POWER.map((p) => p.skeleton), [
     ...POWER_TABLE.map(([id]) => id),
     skeleton,
+    HOR_ROW[0],
   ]);
   assert.deepStrictEqual(
     DIVINATION_POWER.map((p) => p.spoken),
@@ -201,6 +209,31 @@ test('amun is written as the spec lists him and stays out of the other pools', (
   // The god and the hidden-things root share a spelling and a spoken form,
   // and stay two strings: one ends on the god flag, the other on its field.
   assert.notStrictEqual(IMEN.glyphs, glyphsFor('imn') + FIELD_DET.hidden);
+});
+
+// The tenth name of spec 3.7 ships with the Coptic ruling, which reaches it
+// through the declaration alone: every pool the shipped schools draw is the
+// pool they drew before, which is what keeps their output where it was.
+test('horus is written as the spec lists him and only the declaration reaches him', () => {
+  const [skeleton, glyphs, spoken] = HOR_ROW;
+  assert.strictEqual(HOR.skeleton, skeleton);
+  assert.strictEqual(HOR.glyphs, glyphs);
+  assert.strictEqual(HOR.spoken, spoken);
+  assert.ok(!BRIGHT_POWER.some((p) => p.skeleton === skeleton), 'horus reached the bright pool');
+  assert.ok(!AGENT_POWER.some((p) => p.skeleton === skeleton), 'horus reached the agent pool');
+  assert.ok(
+    !DIVINATION_POWER.some((p) => p.skeleton === skeleton),
+    'horus reached the questioned pool',
+  );
+  assert.deepStrictEqual(
+    ASSUMED_POWER.map((p) => p.spoken),
+    [...ASSUMED_SPOKEN],
+    'the assumed pool is the four the corpus speaks as',
+  );
+  // The pronoun that opens the declaration is a function word: no
+  // determinative of its own, and the spelling the spec lists.
+  assert.strictEqual(FN_INK.glyphs, INK_GLYPHS);
+  assert.strictEqual(FN_INK.spoken, INK_SPOKEN);
 });
 
 test('the dread pool matches the spec table and every skeleton already ends in x', () => {

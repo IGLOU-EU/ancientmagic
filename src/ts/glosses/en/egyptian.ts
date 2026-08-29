@@ -189,6 +189,7 @@ const powers: NamedPowerTable = {
   sxmt: { name: 'Sekhmet', gloss: 'Sekhmet, plague and shield.' },
   aApp: { name: 'Aapep', gloss: 'Aapep, the serpent adversary.' },
   imn: { name: 'Imen', gloss: 'Imen, the hidden one who answers.' },
+  Hr: { name: 'Hor', gloss: 'Hor, the falcon child healed of the sting.' },
 };
 
 const epithets: GlossTable = {
@@ -313,6 +314,8 @@ export const egyptianGlosses: EgyptianGlosses = {
   returnAnchor: (anchorRoot, genitiveRoot) =>
     `Coming forth in the ${noun(anchorRoot)}` +
     `${genitiveRoot === null ? '' : ` of the ${noun(genitiveRoot)}`}.`,
+
+  selfDeclaration: (nameId) => `I am ${power(powers, nameId).name}.`,
 
   // The title keeps the epithet's own article, unlike a vocative.
   spellTitle: (subject) =>

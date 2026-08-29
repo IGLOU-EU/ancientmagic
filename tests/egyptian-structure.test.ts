@@ -2,6 +2,7 @@ import test from 'node:test';
 import * as assert from 'node:assert/strict';
 import {
   A1_MAN,
+  ASSUMED_SPOKEN,
   BRIGHT_SPOKEN,
   DIRECTION_SPOKEN,
   DIVINATION_SPOKEN,
@@ -328,6 +329,50 @@ test('the name knowledge line enters at tier 6 for protection and invocation onl
       assert.ok(!curse.includes('rekhi'), `curse took a gate address at d${difficulty}`);
     }
   }
+});
+
+// EO5 is the whole of the Coptic pour on the writing side, so its draw rules
+// are asserted from both ends: where it may never stand, and that it does
+// stand where 3.7 says it may.
+test('the self declaration stands in protection from tier 6, and spends its name', () => {
+  const wide = Array.from({ length: 200 }, (_unused, index) => index);
+  const declared = new Set<string>();
+  const tiers = new Set<number>();
+  for (const seed of wide) {
+    for (const school of ALL_SCHOOLS) {
+      for (const difficulty of DIFFICULTIES) {
+        const where = label(school, difficulty, seed);
+        const line = words(school, difficulty, seed);
+        const at = line.indexOf('inek');
+        if (school !== 'protection' || difficulty < 6) {
+          assert.strictEqual(at, -1, `declaration outside its slot in ${where}`);
+          continue;
+        }
+        if (at === -1) continue;
+        // It stands at the foot of the opening block: behind EO1 alone at
+        // tiers 6 and 7, behind EO1 and the EO2 title line at tiers 8 and 9.
+        assert.strictEqual(at, difficulty <= 7 ? 2 : 5, `declaration misplaced in ${where}`);
+        assert.strictEqual(
+          line.filter((word) => word === 'inek').length,
+          1,
+          `two declarations in ${where}`,
+        );
+        const name = line[at + 1] ?? '';
+        assert.ok(ASSUMED_SPOKEN.includes(name), `declared name off the pool in ${where}`);
+        // The name is spent: it cannot come back as an address, as an
+        // in-agent or as a free power word in the same formula.
+        assert.strictEqual(
+          line.filter((word) => word === name).length,
+          1,
+          `the declared name is spoken twice in ${where}`,
+        );
+        declared.add(name);
+        tiers.add(difficulty);
+      }
+    }
+  }
+  assert.deepStrictEqual([...declared].sort(), [...ASSUMED_SPOKEN].sort(), 'a name never declared');
+  assert.deepStrictEqual([...tiers].sort(), [6, 7, 8, 9], 'a tier never declared at');
 });
 
 test('tiers 8 and 9 open a litany of three gate addresses with distinct head nouns', () => {

@@ -767,3 +767,28 @@ test('norse fixture: three clauses descend the layer', () => {
     '\u{16A0}\u{16A2}\u{16A6}\u{16A8}\u{16B1}\u{16B2}\u{16B7}\u{16B9}\u{16BA}\u{16BE}\u{16C1}\u{16C3}\u{16C7}\u{16C8}\u{16C9}\u{16CA}\u{16CF}\u{16D2}\u{16D6}\u{16D7}\u{16DA}\u{16DC}\u{16DE}\u{16DF}\u{16EB}\u{16BE}\u{16C1}\u{16A2}\u{16BE}\u{16EB}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16DF}\u{16C9}\u{16EB}\u{16D7}\u{16DF}\u{16B1}\u{16B7}\u{16A8}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16D7}\u{16D6}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16D2}\u{16A8}\u{16D6}\u{16DA}\u{16A8}\u{16C9}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16D6}\u{16B1}\u{16D7}\u{16C1}\u{16BE}\u{16A8}\u{16CA}\u{16A2}\u{16DA}\u{16EC}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16A0}\u{16DF}\u{16B1}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16CA}\u{16CF}\u{16A2}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16B2}\u{16A2}\u{16D7}\u{16EB}\u{16BE}\u{16C1}\u{16D2}\u{16A2}\u{16DA}\u{16A8}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EC}\u{16BA}\u{16B1}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EB}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16B1}\u{16DF}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DE}\u{16C1}\u{16D7}\u{16DF}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16BA}\u{16A8}\u{16DA}\u{16C3}\u{16A8}\u{16EC}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EC}\u{16B1}\u{16A2}\u{16BE}\u{16DF}\u{16C9}\u{16EB}\u{16A0}\u{16A8}\u{16C1}\u{16BA}\u{16C1}\u{16DE}\u{16DF}\u{16EC}\u{16A8}\u{16DA}\u{16A2}\u{16ED}\u{1010D}\u{16ED}',
   );
 });
+
+// The worked example of genomes.md 3.7, byte for byte. The Coptic ruling
+// poured one line and one name, and this is the smallest formula that shows
+// both: the declaration at the head, Horus in it, and the address and the two
+// in-agents drawn from what the declaration left behind.
+const COPTIC_EGYPTIAN_D6_SEED = 1;
+
+test('coptic fixture: the caster declares himself and the name is spent', () => {
+  const out = egyptian('protection', 6, COPTIC_EGYPTIAN_D6_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{13193}\u{130A7}\u{13303}\u{131CB}\u{13216}\u{133A1}\u{1339B}\u{1308B}\u{132B9}\u{131CB}\u{13001}\u{1313F}\u{132F4}\u{133CF}\u{132B9}\u{1308B}\u{1340D}\u{133DB}\u{13000}\u{1308B}\u{13216}\u{133E4}\u{133A1}\u{1340D}\u{133CF}\u{13153}\u{132BD}\u{13000}\u{1308B}\u{132F4}\u{1320E}\u{1308B}\u{130A1}\u{131CB}\u{13216}\u{13193}\u{1339B}\u{13171}\u{133CF}\u{131CC}\u{132B9}\u{1308B}\u{1309D}\u{131F3}\u{132F4}\u{13216}\u{1339B}\u{132BD}\u{13000}\u{1308B}\u{1308B}\u{133A1}\u{1339B}\u{132AE}\u{131CB}\u{13216}\u{13193}\u{1339B}\u{13171}\u{133CF}\u{131CC}\u{132B9}\u{132F4}\u{1340D}\u{13153}\u{133CF}\u{132B9}\u{13153}\u{132F4}\u{1320E}\u{1308B}\u{130A1}\u{13419}\u{132A4}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'djed medu inek hor i aset rekhi renek khetemi er seqer in djehuty ra ' +
+      'senehi er rekeh in djehuty sekhmet em seqer maa kheru',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'Recitation. I am Hor. O Aset, I know your name. I seal against the blow, ' +
+      'by Djehuty. Ra! I fetter against the burning in the blow, by Djehuty. ' +
+      'Sekhmet! True of voice.',
+  );
+});

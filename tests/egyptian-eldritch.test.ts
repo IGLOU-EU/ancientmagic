@@ -12,6 +12,8 @@ import {
   EO2_HEAD_SPOKEN,
   G37_EVIL,
   NUMERALS,
+  HOR_ROW,
+  IMEN_ROW,
   POWER_TABLE,
   SEAL_SIGN,
   X_SIEVE,
@@ -36,7 +38,11 @@ test('the register degrades the spoken line per the spec example', () => {
 test('eldritch never writes a bright power word', () => {
   // Compared on the glyph line: the EO2 opener word rA and the sun god ra are
   // homophones in transliteration but different sign groups.
-  const banned = new Set(POWER_TABLE.map(([, glyphs]) => glyphs));
+  const banned = new Set([
+    ...POWER_TABLE.map(([, glyphs]) => glyphs),
+    IMEN_ROW[1],
+    HOR_ROW[1],
+  ]);
   for (const difficulty of DIFFICULTIES) {
     for (const seed of SEEDS) {
       for (const word of egyptianWords('eldritch', difficulty, seed)) {

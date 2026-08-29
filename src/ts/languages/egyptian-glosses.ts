@@ -85,6 +85,9 @@ export interface EgyptianGlosses extends GenomeGlosses {
   returnAnchor(anchorRoot: string, genitiveRoot: string | null): string;
   // The EO2 title line, over a dread epithet or a coined root.
   spellTitle(subject: GlossRef): string;
+  // The EO5 self declaration. Its subject is always an attested name, so the
+  // pack is handed a skeleton rather than a reference of several kinds.
+  selfDeclaration(nameId: string): string;
   // The EO3 line. The register inverts who knows whose name.
   nameKnowledge(address: EgyptianAddress, eldritch: boolean): string;
   tierOne(subject: GlossRef): string;
