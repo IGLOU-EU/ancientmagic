@@ -6,10 +6,10 @@
 #   tools/subset-fonts.sh
 #
 # The site writes its incantations as real Unicode text in Runic, Egyptian
-# Hieroglyphs, Phoenician and Greek. The middle two live in the SMP and render
-# as tofu on most systems, so the scripts ship with the site instead of being
-# borrowed from the reader's machine. Runic numeric seals additionally use
-# Aegean Numbers, which Noto covers in Noto Sans Linear B.
+# Hieroglyphs, Phoenician, Greek and Ogham. The middle two live in the SMP and
+# render as tofu on most systems, so the scripts ship with the site instead of
+# being borrowed from the reader's machine. Runic numeric seals additionally
+# use Aegean Numbers, which Noto covers in Noto Sans Linear B.
 #
 # Sources are the notofonts.github.io releases, all SIL Open Font License 1.1
 # with no Reserved Font Name. Archives are pinned by SHA-256, so a rerun either
@@ -20,13 +20,14 @@
 #   Noto Sans Phoenician          v2.001  https://github.com/notofonts/phoenician
 #   Noto Sans Linear B            v2.002  https://github.com/notofonts/linear-b
 #   Noto Sans                     v2.015  https://github.com/notofonts/latin-greek-cyrillic
+#   Noto Sans Ogham               v2.001  https://github.com/notofonts/ogham
 #
 # Greek has no per-script Noto of its own: the block lives in plain Noto Sans,
 # whose release covers Latin, Greek and Cyrillic in every weight and format and
 # weighs 112 MB. That download is the price of one 2.4 KB subset, paid only when
 # the pipeline is rerun.
 #
-# The stylesheet registers all five under a single CSS family and routes each
+# The stylesheet registers all six under a single CSS family and routes each
 # codepoint to the right file by unicode-range, then calibrates every face onto
 # the height of the runic stave with size-adjust. The file names and the routing
 # are a contract with src/scss/_fonts.scss and tests/font-subsets holds them to
@@ -61,6 +62,9 @@ linearb_sha=16fe739f22242372a0a79189ac9692d59720db21f830523e6bc31b0e51709d24
 greek_url=$base/latin-greek-cyrillic/releases/download/NotoSans-v2.015/NotoSans-v2.015.zip
 greek_sha=0c34df072a3fa7efbb7cbf34950e1f971a4447cffe365d3a359e2d4089b958f5
 
+ogham_url=$base/ogham/releases/download/NotoSansOgham-v2.001/NotoSansOgham-v2.001.zip
+ogham_sha=586381aae106429f03e9e1184bf70f1762d6205f9365b69330ec0244b97824c0
+
 # Codepoint sets, held to src/ts/languages/*-data.ts by tests/font-subsets: a
 # sign that reaches a lexicon and not this file fails there, instead of
 # shipping a font with a hole in it and tofu on the page.
@@ -88,6 +92,13 @@ aegean_unicodes='U+10108,U+10109,U+1010D,U+1010F,U+10110'
 # stays out. A count reaching 6 or 900 would add digamma and sampi here.
 greek_unicodes='U+0374,U+0387,U+0391-03A1,U+03A3-03A9,U+03DE'
 
+# The whole assigned ogham block, which genomes.md 10.1 declares as the font
+# contract for that genome: twenty-six letters, the space mark and the two
+# feathers, twenty-nine codepoints in 1280 bytes. U+169D to U+169F are
+# unassigned and nothing reaches for them. The floor is the block itself,
+# because every row of 10.1 is reachable.
+ogham_unicodes='U+1680-169C'
+
 fetch() {
   local name=$1 url=$2 want=$3
   local zip=$work/$name.zip
@@ -109,6 +120,7 @@ fetch egyptian "$egyptian_url" "$egyptian_sha"
 fetch phoenician "$phoenician_url" "$phoenician_sha"
 fetch linearb "$linearb_url" "$linearb_sha"
 fetch greek "$greek_url" "$greek_sha"
+fetch ogham "$ogham_url" "$ogham_sha"
 
 if command -v pyftsubset >/dev/null 2>&1; then
   pyftsubset=pyftsubset
@@ -155,15 +167,20 @@ subset noto-sans-greek-subset \
   "$work/greek/NotoSans/unhinted/ttf/NotoSans-Regular.ttf" \
   "$greek_unicodes"
 
-# The OFL asks that the license travel with the fonts. The five releases carry
-# the same license body under five copyright lines, so they collapse into one
-# notice that names all five.
+subset noto-sans-ogham-subset \
+  "$work/ogham/NotoSansOgham/unhinted/ttf/NotoSansOgham-Regular.ttf" \
+  "$ogham_unicodes"
+
+# The OFL asks that the license travel with the fonts. The six releases carry
+# the same license body under six copyright lines, so they collapse into one
+# notice that names all six.
 {
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/runic)'
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/egyptian-hieroglyphs)'
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/phoenician)'
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/linear-b)'
   echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)'
+  echo 'Copyright 2022 The Noto Project Authors (https://github.com/notofonts/ogham)'
   echo
   echo 'The woff2 files beside this notice are subsets of those fonts, produced'
   echo 'by tools/subset-fonts.sh. They are Modified Versions in the sense of the'

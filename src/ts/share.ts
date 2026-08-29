@@ -24,6 +24,7 @@ export const LANGUAGES: ReadonlyArray<LanguageId> = [
   'phoenician',
   'greek',
   'latin',
+  'ogham',
 ];
 export const SCHOOLS: ReadonlyArray<School> = [
   'protection',

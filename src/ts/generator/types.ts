@@ -8,7 +8,7 @@ import type { Rng } from './rng.js';
 // can gain a member the other one lacks. Everywhere else either derives from
 // here or is held to it by a test: the altar cannot offer a school no genome
 // realizes, and a link cannot name a script that never shipped.
-export const LANGUAGES = ['runic', 'egyptian', 'phoenician', 'greek', 'latin'] as const;
+export const LANGUAGES = ['runic', 'egyptian', 'phoenician', 'greek', 'latin', 'ogham'] as const;
 
 export type LanguageId = (typeof LANGUAGES)[number];
 

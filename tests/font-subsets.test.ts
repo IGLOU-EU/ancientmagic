@@ -19,6 +19,7 @@ import { LANGUAGES, type LanguageId } from '../src/ts/generator/types.js';
 import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as greekData from '../src/ts/languages/greek-data.js';
 import * as latinData from '../src/ts/languages/latin-data.js';
+import * as oghamData from '../src/ts/languages/ogham-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
 import * as runicData from '../src/ts/languages/runic-data.js';
 import { REPO_ROOT } from '../tools/sources.js';
@@ -35,6 +36,7 @@ const DATA: Readonly<Record<LanguageId, object>> = {
   phoenician: phoenicianData,
   greek: greekData,
   latin: latinData,
+  ogham: oghamData,
 };
 
 // The one genome that ships no font, by the ruling of genomes.md 9.1: every
@@ -109,10 +111,10 @@ const FACES = new Map(
   ),
 );
 
-test('font subsets: the pipeline reads as the five faces the site registers', () => {
-  assert.strictEqual(SETS.size, 5, 'the codepoint sets of the pipeline no longer read');
-  assert.strictEqual(SUBSETS.size, 5, 'the subset calls of the pipeline no longer read');
-  assert.strictEqual(FACES.size, 5, 'the faces of the stylesheet no longer read');
+test('font subsets: the pipeline reads as the six faces the site registers', () => {
+  assert.strictEqual(SETS.size, 6, 'the codepoint sets of the pipeline no longer read');
+  assert.strictEqual(SUBSETS.size, 6, 'the subset calls of the pipeline no longer read');
+  assert.strictEqual(FACES.size, 6, 'the faces of the stylesheet no longer read');
   for (const [file, set] of SUBSETS) {
     assert.ok(set !== undefined, `${file} is cut with a set the pipeline never names`);
   }

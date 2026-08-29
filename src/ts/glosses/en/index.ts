@@ -14,4 +14,5 @@ export const enGlosses: GlossPack = {
   phoenician: () => import('./phoenician.js').then((m) => m.phoenicianGlosses),
   greek: () => import('./greek.js').then((m) => m.greekGlosses),
   latin: () => import('./latin.js').then((m) => m.latinGlosses),
+  ogham: () => import('./ogham.js').then((m) => m.oghamGlosses),
 };

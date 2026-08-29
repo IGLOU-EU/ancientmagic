@@ -4,10 +4,10 @@
 //
 // Egyptian Hieroglyphs and Phoenician live in the Supplementary Multilingual
 // Plane and are absent from almost every system, so an incantation would read
-// as a row of tofu without these. Runic and Greek are better supported but
-// travel with the site too, so every script renders the same everywhere.
+// as a row of tofu without these. Runic, Greek and Ogham are better supported
+// but travel with the site too, so every script renders the same everywhere.
 //
-// The five files register under one family name. Each face claims its own block
+// The six files register under one family name. Each face claims its own block
 // through unicode-range, so the browser routes every codepoint to the file that
 // covers it and the page never has to name a script to get its glyphs. A file
 // that fails to load takes down its own block alone: the others keep drawing,
@@ -75,3 +75,10 @@ $glyph-descent: 0.29;
 // The subset is majuscule and carries the separator, the numeral sign and
 // koppa, which is why the range names four islands and not the block.
 @include glyph-face('noto-sans-greek-subset', 'u+0374, u+0387, u+0391-03a9, u+03de', 0.72);
+
+// Ogham draws a fine engraved line rather than a heavy one, and that is the
+// owner's ruling: the full ink of the block stands at 0.795em, from 0.100em
+// under the baseline to 0.695em over it, so the face scales onto the stave by
+// 0.72/0.795 and nothing is enlarged to suit the eye. Unequal optical weight
+// between scripts is wanted, not corrected.
+@include glyph-face('noto-sans-ogham-subset', 'u+1680-169c', 0.795);

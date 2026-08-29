@@ -23,6 +23,8 @@ import { greekGenome } from '../src/ts/languages/greek.js';
 import { greekGlosses } from '../src/ts/glosses/en/greek.js';
 import { latinGenome } from '../src/ts/languages/latin.js';
 import { latinGlosses } from '../src/ts/glosses/en/latin.js';
+import { oghamGenome } from '../src/ts/languages/ogham.js';
+import { oghamGlosses } from '../src/ts/glosses/en/ogham.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import {
   SCHOOLS,
@@ -35,6 +37,7 @@ import {
 import { DREAD_SPOKEN as EGYPTIAN_DREAD } from './egyptian-spec.js';
 import { DREAD_WORDS as GREEK_DREAD } from './greek-spec.js';
 import { DREAD_WORDS as LATIN_DREAD } from './latin-spec.js';
+import { DREAD_EPITHETS as OGHAM_DREAD } from './ogham-spec.js';
 import { DREAD_SPOKEN as PHOENICIAN_DREAD } from './phoenician-spec.js';
 import { DREAD_EPITHETS as RUNIC_DREAD, parseGlyphs } from './runic-spec.js';
 
@@ -74,6 +77,7 @@ export const DREAD: Readonly<Record<LanguageId, ReadonlyArray<string>>> = {
   phoenician: PHOENICIAN_DREAD,
   greek: GREEK_DREAD,
   latin: LATIN_DREAD,
+  ogham: OGHAM_DREAD,
 };
 
 // The contract tests read the English gloss, so each genome is bound to the
@@ -90,6 +94,7 @@ export const GENOMES: Readonly<Record<LanguageId, BoundGenome>> = {
   phoenician: bindGenome(phoenicianGenome, phoenicianGlosses),
   greek: bindGenome(greekGenome, greekGlosses),
   latin: bindGenome(latinGenome, latinGlosses),
+  ogham: bindGenome(oghamGenome, oghamGlosses),
 };
 
 export function runic(school: School, difficulty: number, seed: number): FormulaOutput {
@@ -112,6 +117,10 @@ export function latin(school: School, difficulty: number, seed: number): Formula
   return generate(GENOMES.latin, { language: 'latin', school, difficulty }, seed);
 }
 
+export function ogham(school: School, difficulty: number, seed: number): FormulaOutput {
+  return generate(GENOMES.ogham, { language: 'ogham', school, difficulty }, seed);
+}
+
 export type Writer = (school: School, difficulty: number, seed: number) => FormulaOutput;
 
 // Every shipped genome behind the writer this bench uses for it, keyed by the
@@ -124,6 +133,7 @@ export const WRITERS: Readonly<Record<LanguageId, Writer>> = {
   phoenician,
   greek,
   latin,
+  ogham,
 };
 
 // Greek writes one flat word list, joined by the ano teleia from tier 3 up, so
@@ -137,6 +147,14 @@ export function greekWords(school: School, difficulty: number, seed: number): st
 // letter, so reading the words off it costs nothing.
 export function latinWords(school: School, difficulty: number, seed: number): string[] {
   return latin(school, difficulty, seed).transliteration.split(' ');
+}
+
+// Ogham writes its words as rods rather than as one line, and its separator is
+// Unicode whitespace, so the reading line is the only safe place to count
+// words: it joins with a plain ASCII space and nothing here ever splits the
+// glyph line on \s (spec 10.13).
+export function oghamWords(school: School, difficulty: number, seed: number): string[] {
+  return ogham(school, difficulty, seed).transliteration.split(' ');
 }
 
 export type Sweep = (
@@ -164,6 +182,7 @@ export const sweepEgyptian: Sweep = sweeper(egyptian);
 export const sweepPhoenician: Sweep = sweeper(phoenician);
 export const sweepGreek: Sweep = sweeper(greek);
 export const sweepLatin: Sweep = sweeper(latin);
+export const sweepOgham: Sweep = sweeper(ogham);
 
 // The clause plan a seed and a school produce, for the assertions that read a
 // formula's structure before any script has written it. The pipeline's own

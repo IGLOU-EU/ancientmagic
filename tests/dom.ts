@@ -345,7 +345,9 @@ export function installPage(options: PageOptions = {}): Page {
       option('egyptian', 'Egyptian'),
       option('phoenician', 'Phoenician'),
       option('greek', 'Greek'),
-      option('ogham', 'Ogham', false),
+      option('latin', 'Latin'),
+      option('ogham', 'Ogham'),
+      option('gothic', 'Gothic', false),
     ]),
     select('school', [
       option('protection', 'Protection'),

@@ -1,1 +1,1 @@
-export const LANGUAGES=["runic","egyptian","phoenician","greek","latin"];export const SCHOOLS=["protection","curse","invocation","eldritch","divination","chronomancy"];
+export const LANGUAGES=["runic","egyptian","phoenician","greek","latin","ogham"];export const SCHOOLS=["protection","curse","invocation","eldritch","divination","chronomancy"];

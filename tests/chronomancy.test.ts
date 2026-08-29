@@ -17,6 +17,7 @@ import { bindGenome } from '../src/ts/languages/index.js';
 import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { latinGenome } from '../src/ts/languages/latin.js';
+import { oghamGenome } from '../src/ts/languages/ogham.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import { LEXICON as PHOENICIAN_LEXICON } from './phoenician-spec.js';
@@ -219,13 +220,27 @@ test('the return anchor is drawn from the time field in every genome', () => {
 });
 
 // Spec 1.6: nothing new is emitted at the seal, only glossed differently.
+// What each genome measures the crossing in. Every pack words the seal as a
+// depth rather than as a count (spec 1.6), and the unit is the genome's own:
+// five of them count hours, and the sixth makes the crossing a voyage, so it
+// counts waves and nine is where the otherworld begins (spec 10.8). Keyed by
+// the shipped set, so a genome arriving without a unit is a compile error.
+const DEPTH_UNIT: Readonly<Record<LanguageId, string>> = {
+  runic: 'hours deep',
+  egyptian: 'hours deep',
+  phoenician: 'hours deep',
+  greek: 'hours deep',
+  latin: 'hours deep',
+  ogham: 'waves deep',
+};
+
 test('the chronomantic seal is glossed as a depth in time, never as a count', () => {
   for (const id of LANGUAGES) {
     for (const difficulty of [7, 8, 9]) {
       for (const seed of SEEDS) {
         const where = `${id} ${label('chronomancy', difficulty, seed)}`;
         const gloss = WRITERS[id]('chronomancy', difficulty, seed).gloss;
-        assert.match(gloss, /hours deep\.$/u, `seal not a depth in ${where}`);
+        assert.ok(gloss.endsWith(`${DEPTH_UNIT[id]}.`), `seal not a depth in ${where}`);
         for (const wording of ['Sealed', 'Recited', 'times over']) {
           assert.ok(!gloss.includes(wording), `${wording} in ${where}`);
         }
@@ -240,7 +255,7 @@ test('the chronomantic seal is glossed as a depth in time, never as a count', ()
         for (const seed of SEEDS) {
           const gloss = WRITERS[id](school, difficulty, seed).gloss;
           assert.ok(
-            !gloss.includes('hours deep'),
+            !gloss.includes(DEPTH_UNIT[id]),
             `a depth in ${id} ${label(school, difficulty, seed)}`,
           );
         }
@@ -259,6 +274,7 @@ test('no chronomantic gloss carries a question mark, in either language', async 
       ['phoenician', bindGenome(phoenicianGenome, await pack.phoenician())],
       ['greek', bindGenome(greekGenome, await pack.greek())],
     ['latin', bindGenome(latinGenome, await pack.latin())],
+      ['ogham', bindGenome(oghamGenome, await pack.ogham())],
     ];
     for (const [id, genome] of bound) {
       for (const difficulty of DIFFICULTIES) {

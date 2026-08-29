@@ -1,6 +1,6 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { egyptian, greek, latin, phoenician, runic } from './gen.js';
+import { egyptian, greek, latin, ogham, phoenician, runic } from './gen.js';
 
 // A seed whose difficulty 5 Protection draws reproduce the shared plan of
 // genomes.md section 5 exactly: opener RO1, agent ward, intent bind, target
@@ -505,4 +505,171 @@ test('latin fixture: the fifth genome renders the section 5 plan its own way', (
     'the two latin lines came apart',
   );
   assert.notStrictEqual(a.glyphs, c.glyphs);
+});
+
+// --- Ogham ------------------------------------------------------------------
+// The sixth genome, and the first whose glyph line carries Unicode whitespace:
+// U+1680 OGHAM SPACE MARK parts the words from difficulty 3 up, and it is a
+// bare length of stem rather than a blank. Every glyph below is written as an
+// escape, and not for the reason the first three genomes escape theirs. Here
+// the block renders, and that is the danger: neighbouring letters of an aicme
+// differ by one stroke in five, the two feather marks are mirror twins, and
+// the separator looks like nothing at all. A fixture copied off a rendered
+// page would pass every proof by eye and be wrong (spec 10.1).
+
+// Difficulty 5: the section 5 plan (spec 10.13). Opener OO1, the agent in the
+// nominative, the threat behind vrit in the accusative, the verb last as the
+// votive order asks, the free power word, closer OC1.
+const OGHAM_PROTECTION_SEED = 61879;
+
+test('ogham fixture: the section 5 plan rendered a sixth time', () => {
+  const out = ogham('protection', 5, OGHAM_PROTECTION_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{169B}\u{1681}\u{1681}\u{1681}\u{1681}\u{1681}\u{1681}\u{1681}\u{1680}\u{1689}\u{1692}\u{168F}\u{1690}\u{1684}\u{1680}\u{1683}\u{168F}\u{1694}\u{1688}\u{1680}\u{1684}\u{1689}\u{1690}\u{1682}\u{1690}\u{1685}\u{1680}\u{1685}\u{1690}\u{1684}\u{1689}\u{1692}\u{1680}\u{1682}\u{1692}\u{168C}\u{1692}\u{1684}\u{1680}\u{1689}\u{1691}\u{1694}\u{169C}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'bbbbbbb curas vrit scalan nascu lugus coi',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'The birch cut seven times, a warning that guards. I, the champion, bind against the phantom. Lugus! Here it stands.',
+  );
+});
+
+// Difficulty 6: two clauses as two rods, which is this genome's joint. Where
+// Greek writes KAI and Latin ET, an ogham formula is a bundle of rods and the
+// reader sees how many. The adverb trails the second clause, per the school
+// override of 10.5.
+const OGHAM_CURSE_SEED = 2805986;
+
+test('ogham fixture: the two rods of section 10.13', () => {
+  const out = ogham('curse', 6, OGHAM_CURSE_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{169B}\u{1690}\u{1685}\u{168B}\u{1680}\u{1689}\u{168F}\u{1690}\u{1687}\u{1693}\u{1688}\u{1692}\u{1680}\u{1684}\u{1689}\u{1690}\u{1682}\u{1690}\u{1685}\u{169C}\u{169B}\u{168C}\u{1691}\u{1685}\u{1693}\u{1688}\u{1692}\u{1680}\u{1689}\u{1685}\u{1690}\u{168B}\u{1690}\u{1685}\u{1680}\u{1689}\u{1691}\u{1684}\u{1693}\u{168F}\u{1681}\u{1680}\u{1689}\u{1691}\u{1694}\u{169C}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'anm cradetu scalan gonetu cnaman coserb coi',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'The name of the accursed! May the phantom be tormented. May the bone be pierced bitterly. Here it stands.',
+  );
+});
+
+// Difficulty 5: the shortest full sentence this genome writes, a vocative, a
+// bare command and a name. The intransitive tic is legal here and nowhere
+// else, the exemption 10.3 states.
+//
+// This is the one fixture of the six that does not reproduce its worked
+// example. The example addresses cur, a warding root, and the Invocation
+// AGENT is drawn from night, fire, time and death (spec 1.3), so no seed can
+// reach it. The draw below is the same shape with a reachable agent: opener
+// OO2, one vocative, tic, the same name, closer OC1.
+const OGHAM_INVOCATION_SEED = 26;
+
+test('ogham fixture: the prayer of section 10.13', () => {
+  const out = ogham('invocation', 5, OGHAM_INVOCATION_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{169B}\u{1689}\u{1693}\u{1682}\u{1694}\u{1680}\u{1690}\u{168B}\u{1684}\u{1693}\u{168F}\u{1693}\u{1680}\u{1688}\u{1694}\u{1689}\u{1680}\u{168B}\u{1690}\u{1685}\u{1690}\u{1685}\u{1685}\u{1690}\u{1685}\u{1680}\u{1689}\u{1691}\u{1694}\u{169C}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'celi amsere tic manannan coi',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'Your follower calls! O season, come! Manannán! Here it stands.',
+  );
+});
+
+// Difficulty 3: opener OO5, the four rods of yew, then the asking clause behind
+// the particle in, with the verb in -it as its second word.
+const OGHAM_DIVINATION_SEED = 3965;
+
+test('ogham fixture: the four rods of yew of section 10.11', () => {
+  const out = ogham('divination', 3, OGHAM_DIVINATION_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{169B}\u{1689}\u{1693}\u{1688}\u{168F}\u{1694}\u{1680}\u{1683}\u{1682}\u{1693}\u{1684}\u{1689}\u{1690}\u{1680}\u{1694}\u{1681}\u{1690}\u{168F}\u{1694}\u{1680}\u{1694}\u{1685}\u{1680}\u{1690}\u{1687}\u{1681}\u{1690}\u{1688}\u{1694}\u{1688}\u{1680}\u{1681}\u{168F}\u{1690}\u{1685}\u{1690}\u{1684}\u{1680}\u{1687}\u{1690}\u{1685}\u{1690}\u{1685}\u{169C}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'cetri vlesca ibari in adbatit branas danan',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'Four rods of yew are cut. Does the raven show the destiny?',
+  );
+});
+
+// Difficulty 3: opener OO6 addressing the door of the hollow hill, then the
+// bare imperative with its direction word immediately behind it.
+const OGHAM_CHRONOMANCY_SEED = 1152;
+
+test('ogham fixture: the crossing of section 10.12', () => {
+  const out = ogham('chronomancy', 3, OGHAM_CHRONOMANCY_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{169B}\u{1687}\u{1691}\u{168F}\u{1693}\u{1680}\u{1684}\u{1694}\u{1687}\u{1694}\u{1680}\u{1688}\u{1693}\u{1689}\u{1688}\u{1680}\u{1689}\u{1692}\u{1682}\u{1680}\u{1688}\u{168F}\u{1690}\u{1688}\u{1690}\u{1685}\u{169C}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'dore sidi tect cul tratan',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'O door of the hollow hill! Traverse backward the hour!',
+  );
+});
+
+// Difficulty 5: the register, whose brand is the letter the language lost. The
+// row runs backward, the epithets arrive whole, and the one drawn word shows
+// both rules at once: tic drowns its bright vowel and stutters its final cut,
+// coming out tucc.
+const OGHAM_ELDRITCH_SEED = 629;
+
+test('ogham fixture: the register of section 10.10', () => {
+  const out = ogham('eldritch', 5, OGHAM_ELDRITCH_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{169B}\u{1694}\u{1680}\u{1693}\u{1680}\u{1692}\u{1680}\u{1691}\u{1680}\u{1690}\u{1680}\u{1688}\u{1686}\u{1692}\u{1682}\u{169A}\u{1680}\u{1688}\u{1692}\u{1689}\u{1689}\u{1680}\u{168C}\u{1691}\u{1682}\u{169A}\u{1680}\u{1689}\u{1691}\u{1682}\u{1682}\u{1680}\u{1688}\u{1693}\u{168B}\u{1693}\u{1682}\u{1682}\u{169C}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'idad edad ur onn ailm thulp tucc golp coll temell',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'The vowels, recited against their order! O sleeper below the ninth wave, come! Golp! Ruin in the dark.',
+  );
+});
+
+test('ogham fixture: the sixth genome writes an object rather than a line', () => {
+  const a = runic('protection', 5, SECTION5_SEED);
+  const f = ogham('protection', 5, OGHAM_PROTECTION_SEED);
+  // Five genomes write a line of text and this one writes a thing with two
+  // ends: framed feather to feather, its words standing on one welded stem
+  // (spec 10.13).
+  assert.ok(f.glyphs.startsWith('\u{169B}'), 'ogham lost its opening feather');
+  assert.ok(f.glyphs.endsWith('\u{169C}'), 'ogham lost its closing feather');
+  // Its separator is Unicode whitespace, which no other genome writes, and its
+  // presence is asserted by codepoint because nothing else would catch its
+  // loss: a line missing it still reads plausibly.
+  assert.ok(f.glyphs.includes('\u{1680}'), 'ogham lost its space mark');
+  assert.strictEqual(
+    Array.from(f.glyphs).filter((character) => character === '\u{1680}').length,
+    f.transliteration.split(' ').length - 1,
+    'a space mark went missing between two words',
+  );
+  // And the brand of its register is an absence here: no p stands anywhere in
+  // a bright ogham formula, because the letter the language lost belongs to
+  // the Eldritch school alone (spec 10.13).
+  assert.ok(!f.glyphs.includes('\u{169A}'), 'peith reached a bright formula');
+  assert.ok(!/[\u{16A0}-\u{16F8}]/u.test(f.glyphs), 'ogham leaked a runic codepoint');
+  assert.notStrictEqual(a.glyphs, f.glyphs);
 });

@@ -17,11 +17,13 @@ import * as egyptianData from '../src/ts/languages/egyptian-data.js';
 import * as phoenicianData from '../src/ts/languages/phoenician-data.js';
 import * as greekData from '../src/ts/languages/greek-data.js';
 import * as latinData from '../src/ts/languages/latin-data.js';
+import * as oghamData from '../src/ts/languages/ogham-data.js';
 import { bindGenome } from '../src/ts/languages/index.js';
 import { egyptianGenome } from '../src/ts/languages/egyptian.js';
 import { phoenicianGenome } from '../src/ts/languages/phoenician.js';
 import { greekGenome } from '../src/ts/languages/greek.js';
 import { latinGenome } from '../src/ts/languages/latin.js';
+import { oghamGenome } from '../src/ts/languages/ogham.js';
 import { runicGenome } from '../src/ts/languages/runic.js';
 import { sorted } from './text.js';
 
@@ -119,6 +121,17 @@ const INVENTORIES: ReadonlyArray<Inventory> = [
     idioms: Object.keys(latinData.IDIOM_WORDS),
     seals: [...latinData.SEAL_COUNTS],
     directions: Object.keys(latinData.DIRECTION_WORDS),
+  },
+  {
+    genome: 'ogham',
+    slice: (pack) => pack.ogham(),
+    bind: async (pack) => bindGenome(oghamGenome, await pack.ogham()),
+    roots: rootsOf(oghamData.FIELDS, (r: { root: string }) => r.root),
+    powers: [...oghamData.BRIGHT_POWER, ...oghamData.DARK_POWER].map((p) => p.id),
+    epithets: oghamData.DREAD_POWER.map((p) => p.id),
+    idioms: Object.keys(oghamData.IDIOM_WORDS),
+    seals: [...oghamData.SEAL_COUNTS],
+    directions: Object.keys(oghamData.DIRECTION_WORDS),
   },
 ];
 

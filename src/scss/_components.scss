@@ -1230,6 +1230,12 @@ a:focus-visible {
   unicode-bidi: isolate;
 }
 
+// Every ogham glyph overdraws its advance to weld the stem to the next letter,
+// so any tracking at all cuts the one continuous rule into pieces.
+.output[data-script='ogham'] .glyph-line {
+  letter-spacing: 0;
+}
+
 .translit {
   margin-top: var(--sp-glyph-gap);
   color: $text-secondary;
