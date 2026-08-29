@@ -1,9 +1,11 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
-import { eldritchRoot } from '../src/ts/languages/runic.js';
-import { FIELDS } from '../src/ts/languages/runic-data.js';
+import { eldritchRoot, runesFor } from '../src/ts/languages/runic.js';
+import { FIELDS, IDIOM_WORDS, NORSE_VOX } from '../src/ts/languages/runic-data.js';
 import { runicGlosses } from '../src/ts/glosses/en/runic.js';
+import { runicGlosses as frRunicGlosses } from '../src/ts/glosses/fr/runic.js';
 import type { SemanticField } from '../src/ts/generator/types.js';
+import { NORSE_VOX_TABLE, NORSE_VOX_WORDS, RO5_SPEC } from './runic-spec.js';
 import { SEEDS, runic } from './gen.js';
 
 // Normative rune-name assignment table of spec 2.3.
@@ -77,5 +79,54 @@ test('tier 2 invocation pool is wider than wek and kall', () => {
   for (const seed of SEEDS) {
     const verb = runic('invocation', 2, seed).transliteration.split(' ')[0] ?? '';
     assert.ok(verb.length > 0, `empty verb at seed ${seed}`);
+  }
+});
+
+// --- The Norse layer of spec 2.7 -------------------------------------------
+
+test('the norse layer is exactly the eleven words the spec lists', () => {
+  assert.deepStrictEqual([...NORSE_VOX], [...NORSE_VOX_WORDS]);
+});
+
+test('every norse word cuts to the runes the spec lists beside it', () => {
+  for (const [word, glyphs] of NORSE_VOX_TABLE) {
+    assert.strictEqual(runesFor(word), glyphs, `${word} cuts to other runes`);
+  }
+});
+
+// The layer is contained on purpose: a Norse word in a semantic field would
+// move every school that draws that field, and only Invocation asked for it.
+test('no norse word entered a semantic field', () => {
+  const roots = new Set(Object.values(FIELDS).flat().map((entry) => entry.root));
+  for (const word of NORSE_VOX) {
+    assert.ok(!roots.has(word), `${word} reached the lexicon`);
+  }
+  assert.ok(!roots.has('haim'), 'the world root reached the lexicon');
+});
+
+test('RO5 is the numeral phrase of the spec and belongs to no other idiom', () => {
+  assert.deepStrictEqual([...IDIOM_WORDS.RO5], [...RO5_SPEC]);
+  const others = Object.entries(IDIOM_WORDS).filter(([id]) => id !== 'RO5');
+  for (const [id, words] of others) {
+    assert.ok(!words.includes('haimoz'), `${id} carries the world word`);
+  }
+});
+
+test('both packs word every norse release and nothing else', () => {
+  for (const [language, pack] of [['en', runicGlosses], ['fr', frRunicGlosses]] as const) {
+    assert.deepStrictEqual(
+      Object.keys(pack.norse).slice().sort(),
+      [...NORSE_VOX_WORDS].sort(),
+      `${language} norse coverage`,
+    );
+    for (const [word, wording] of Object.entries(pack.norse)) {
+      assert.ok(wording.trim().length > 0, `${language} leaves ${word} blank`);
+      // The wording speaks the word first, so a reader hears what stood up
+      // before being told what it is (spec 2.7).
+      assert.ok(
+        wording.startsWith(word.charAt(0).toUpperCase() + word.slice(1)),
+        `${language} wording of ${word} does not open on the word`,
+      );
+    }
   }
 });

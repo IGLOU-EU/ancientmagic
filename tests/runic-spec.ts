@@ -63,6 +63,38 @@ export const BRIGHT_POWER_WORDS: ReadonlyArray<string> = [
   'futharkgwhnijeipzstbemlngdo',
 ];
 
+// The Norse layer of spec 2.7: the eleven words a free POWER-WORD slot may
+// release, listed here as the spec lists them, word and glyphs both. Held as
+// codepoints rather than re-derived by the tokenizer, so the table proves the
+// romanization and the runes agree instead of assuming it.
+export const NORSE_VOX_TABLE: ReadonlyArray<readonly [word: string, glyphs: string]> = [
+  ['wodanaz', '\u{16B9}\u{16DF}\u{16DE}\u{16A8}\u{16BE}\u{16A8}\u{16C9}'],
+  ['thunraz', '\u{16A6}\u{16A2}\u{16BE}\u{16B1}\u{16A8}\u{16C9}'],
+  ['frijjo', '\u{16A0}\u{16B1}\u{16C1}\u{16C3}\u{16DF}'],
+  ['wulthuz', '\u{16B9}\u{16A2}\u{16DA}\u{16A6}\u{16A2}\u{16C9}'],
+  ['ginarunaz', '\u{16B7}\u{16C1}\u{16BE}\u{16A8}\u{16B1}\u{16A2}\u{16BE}\u{16A8}\u{16C9}'],
+  ['erminasul', '\u{16D6}\u{16B1}\u{16D7}\u{16C1}\u{16BE}\u{16A8}\u{16CA}\u{16A2}\u{16DA}'],
+  ['ansugardaz', '\u{16A8}\u{16BE}\u{16CA}\u{16A2}\u{16B7}\u{16A8}\u{16B1}\u{16DE}\u{16A8}\u{16C9}'],
+  [
+    'midjagardaz',
+    '\u{16D7}\u{16C1}\u{16DE}\u{16C3}\u{16A8}\u{16B7}\u{16A8}\u{16B1}\u{16DE}\u{16A8}\u{16C9}',
+  ],
+  [
+    'nibulahaimaz',
+    '\u{16BE}\u{16C1}\u{16D2}\u{16A2}\u{16DA}\u{16A8}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16A8}\u{16C9}',
+  ],
+  ['muspellaz', '\u{16D7}\u{16A2}\u{16CA}\u{16C8}\u{16D6}\u{16DA}\u{16A8}\u{16C9}'],
+  ['halja', '\u{16BA}\u{16A8}\u{16DA}\u{16C3}\u{16A8}'],
+];
+
+export const NORSE_VOX_WORDS: ReadonlyArray<string> = NORSE_VOX_TABLE.map(([word]) => word);
+
+// RO5 of spec 2.6, the opener that names the worlds. It is the one Runic
+// opening that quotes nothing: niun is the numeral of 2.4 and haimoz is a
+// plural in -oz, so the genome's own morphology already licensed the phrase
+// and the Norse layer supplies only the count.
+export const RO5_SPEC: ReadonlyArray<string> = ['niun', 'haimoz'];
+
 export const DREAD_EPITHETS: ReadonlyArray<string> = [
   'thruznaz',
   'gulzoth',

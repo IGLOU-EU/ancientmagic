@@ -292,6 +292,27 @@ export const TRIANGLE_BRIGHT: ReadonlyArray<string> = BRIGHT_POWER.filter(
   (word) => word !== 'alu' && word !== 'ota',
 );
 
+// The Norse layer of spec 2.7. Eleven words the Invocation school may release
+// in place of a bracteate cry, so the genome can name the world-picture its
+// culture carries without dating itself to the Icelandic manuscripts. Four are
+// cut in the Elder Futhark or in a continental record, the rest are compounds
+// of words the comparative record attests outside Old Norse. Held apart from
+// BRIGHT_POWER because only a clause with a free POWER-WORD slot may draw one:
+// tier 1, tier 2 and the repetition segments take a cry and nothing else.
+export const NORSE_VOX: ReadonlyArray<string> = [
+  'wodanaz',
+  'thunraz',
+  'frijjo',
+  'wulthuz',
+  'ginarunaz',
+  'erminasul',
+  'ansugardaz',
+  'midjagardaz',
+  'nibulahaimaz',
+  'muspellaz',
+  'halja',
+];
+
 // Dread epithet pool of the Eldritch register (spec 2.10).
 export const DREAD_POWER: ReadonlyArray<string> = [
   'thruznaz',
@@ -326,6 +347,7 @@ export type RunicIdiomId =
   | 'RO3_FIRST_AETT'
   | 'RO3_FULL_ROW'
   | 'RO4'
+  | 'RO5'
   | 'RC1'
   | 'RC2'
   | 'RC3'
@@ -344,6 +366,10 @@ export const IDIOM_WORDS: Readonly<Record<RunicIdiomId, ReadonlyArray<string>>> 
   // Divination only (spec 2.6): the diviner lifts three marked strips, then
   // reads the runes. nemido and radido are fixed idiom verbs, never drawn.
   RO4: ['thri', 'teinoz', 'nemido'],
+  // Invocation only (spec 2.6 and 2.7): the count of the worlds, named at the
+  // head of the galdr. haim lives here rather than in a semantic field, so a
+  // school that never asked for the Norse layer keeps its draws.
+  RO5: ['niun', 'haimoz'],
   RC1: ['runoz', 'faihido'],
   RC2: ['runoz', 'tawido'],
   RC3: ['alu'],

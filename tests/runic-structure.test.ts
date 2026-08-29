@@ -8,8 +8,10 @@ import {
   CLAUSE_SEP,
   CROSS_SEP,
   DIRECTION_WORDS_SPEC,
+  NORSE_VOX_WORDS,
   NUMERAL_WORDS,
   RC5_TAIL_SPEC,
+  RO5_SPEC,
   WORD_SEP,
   parseGlyphs,
 } from './runic-spec.js';
@@ -302,7 +304,11 @@ test('protection and curse keep the verb clause-final, withra takes the accusati
   }
 });
 
-test('invocation clauses end on an attested power word', () => {
+// The free slot of the Invocation clause releases a bracteate cry or a word of
+// the Norse layer (spec 2.7), and nothing else ever reaches it.
+const FREE_VOX_WORDS: ReadonlyArray<string> = [...BRIGHT_POWER_WORDS, ...NORSE_VOX_WORDS];
+
+test('invocation clauses end on an attested power word or a norse release', () => {
   for (const difficulty of [3, 4, 5, 6, 7, 8, 9]) {
     for (const seed of SEEDS) {
       const out = runic('invocation', difficulty, seed);
@@ -310,12 +316,73 @@ test('invocation clauses end on an attested power word', () => {
       for (let c = 0; c < clauseCount(difficulty); c += 1) {
         const clause = segments[c] ?? [];
         assert.ok(
-          BRIGHT_POWER_WORDS.includes(clause[clause.length - 1] ?? ''),
-          `clause does not end on a power word in ${label('invocation', difficulty, seed)}`,
+          FREE_VOX_WORDS.includes(clause[clause.length - 1] ?? ''),
+          `clause does not end on a released word in ${label('invocation', difficulty, seed)}`,
         );
       }
     }
   }
+});
+
+// The layer is released, never whispered and never tripled: tier 1 and tier 2
+// are one word and a bare command, and a repetition segment cuts a cry down
+// rather than a world (spec 2.7).
+test('the norse layer never reaches a tier or a segment it is barred from', () => {
+  const layer = new Set(NORSE_VOX_WORDS);
+  for (const school of ALL_SCHOOLS) {
+    for (let seed = 0; seed < 200; seed += 1) {
+      for (const difficulty of [1, 2]) {
+        for (const word of runic(school, difficulty, seed).transliteration.split(' ')) {
+          assert.ok(!layer.has(word), `norse release at tier ${difficulty} in ${school}`);
+        }
+      }
+      for (const difficulty of [8, 9]) {
+        const repetition = alignSegments(runic(school, difficulty, seed)).segments[3] ?? [];
+        for (const word of repetition) {
+          assert.ok(!layer.has(word), `norse release repeated in ${label(school, difficulty, seed)}`);
+        }
+      }
+    }
+  }
+});
+
+// Only Invocation has a free POWER-WORD slot in the clear register, so only
+// Invocation ever speaks the layer, and only it opens on RO5.
+test('the norse layer and RO5 belong to invocation alone', () => {
+  const layer = new Set(NORSE_VOX_WORDS);
+  for (const school of ALL_SCHOOLS) {
+    if (school === 'invocation') continue;
+    for (const difficulty of [3, 4, 5, 6, 7, 8, 9]) {
+      for (let seed = 0; seed < 200; seed += 1) {
+        const words = runic(school, difficulty, seed).transliteration.split(' ');
+        for (const word of words) {
+          assert.ok(!layer.has(word), `norse release in ${label(school, difficulty, seed)}`);
+        }
+        assert.ok(
+          !words.includes(RO5_SPEC[1] ?? ''),
+          `RO5 in ${label(school, difficulty, seed)}`,
+        );
+      }
+    }
+  }
+});
+
+// RO5 falls in behind the cries the tier already gives and waits for tier 5,
+// so the openings the earlier tiers pin stay exactly where they were.
+test('RO5 opens invocation from tier 5, behind the openers of its tier', () => {
+  let seen = 0;
+  for (const difficulty of [3, 4, 5, 6, 7, 8, 9]) {
+    for (let seed = 0; seed < 200; seed += 1) {
+      const segment = alignSegments(runic('invocation', difficulty, seed)).segments[0] ?? [];
+      const at = segment.indexOf(RO5_SPEC[0] ?? '');
+      const opens = at >= 0 && segment[at + 1] === RO5_SPEC[1];
+      if (!opens) continue;
+      seen += 1;
+      assert.ok(difficulty >= 5, `RO5 below tier 5 in ${label('invocation', difficulty, seed)}`);
+      assert.ok(at > 0, `RO5 stands first in ${label('invocation', difficulty, seed)}`);
+    }
+  }
+  assert.ok(seen > 0, 'RO5 never opened a formula');
 });
 
 test('gloss is plain english and reflects the school', () => {

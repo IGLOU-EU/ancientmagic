@@ -42,18 +42,28 @@ export interface RunicDivination {
   readonly adverbRoot: string | null;
 }
 
+// What can stand in a free POWER-WORD slot. A cry and a dread epithet are
+// romanized words the pack speaks as they are, which is why they carry no
+// wording of their own here. A Norse-layer word is spoken and then said: the
+// glyph line writes Proto-Germanic and the gloss carries the picture those
+// words compose, which the record only spells out centuries later (spec 2.7).
+export type RunicVox =
+  | { readonly kind: 'power'; readonly id: string }
+  | { readonly kind: 'norse'; readonly id: string };
+
 export interface RunicInvocation {
   readonly agents: ReadonlyArray<GlossRef>;
   readonly intentRoot: string;
   readonly adverbRoot: string | null;
-  // Power words are romanized attested words, so the pack is handed the word
-  // itself rather than an id to look up.
-  readonly powerWord: string;
+  readonly powerWord: RunicVox;
 }
 
 export interface RunicGlosses extends GenomeGlosses {
   readonly roots: RootGlossTable;
   readonly powers: GlossTable;
+  // One wording per word of the Norse layer of 2.7: the word spoken, then what
+  // it is. A reader who hears an unfamiliar name needs to be told what stood up.
+  readonly norse: GlossTable;
   readonly idioms: GlossTable;
   readonly seals: GlossTable;
   readonly depths: GlossTable;

@@ -710,3 +710,60 @@ test('ogham fixture: the sixth genome writes an object rather than a line', () =
   assert.ok(!/[\u{16A0}-\u{16F8}]/u.test(f.glyphs), 'ogham leaked a runic codepoint');
   assert.notStrictEqual(a.glyphs, f.glyphs);
 });
+
+// --- The Norse layer of the Runic genome ------------------------------------
+// The two worked examples of genomes.md 2.7, byte for byte. Unlike the
+// divination and chronomancy examples of that section, these two were found by
+// search and then pinned, so the spec and the generator agree letter for
+// letter rather than only in shape.
+
+// Difficulty 5: opening RO2 then RO5, one invocation clause on a fire agent,
+// the world-axis released, closing RC1. The count and the axis in one breath,
+// which is the whole of what the layer had to do.
+const NORSE_RUNIC_D5_SEED = 18;
+
+test('norse fixture: the count of the worlds and the axis that holds them', () => {
+  const out = runic('invocation', 5, NORSE_RUNIC_D5_SEED);
+  assert.strictEqual(
+    out.glyphs,
+    '\u{16D6}\u{16B2}\u{16EB}\u{16D6}\u{16B1}\u{16C1}\u{16DA}\u{16A8}\u{16C9}\u{16EB}\u{16BE}\u{16C1}\u{16A2}\u{16BE}\u{16EB}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16DF}\u{16C9}\u{16EB}\u{16D2}\u{16A8}\u{16D6}\u{16DA}\u{16A8}\u{16C9}\u{16EB}\u{16B2}\u{16A2}\u{16D7}\u{16EB}\u{16D6}\u{16B1}\u{16D7}\u{16C1}\u{16BE}\u{16A8}\u{16CA}\u{16A2}\u{16DA}\u{16EC}\u{16B1}\u{16A2}\u{16BE}\u{16DF}\u{16C9}\u{16EB}\u{16A0}\u{16A8}\u{16C1}\u{16BA}\u{16C1}\u{16DE}\u{16DF}',
+  );
+  assert.strictEqual(
+    out.transliteration,
+    'ek erilaz niun haimoz baelaz kum erminasul runoz faihido',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'I, the rune-master! The nine worlds! O pyre, come! Erminasul, the pillar ' +
+      'that holds all up! I painted these runes.',
+  );
+});
+
+// Difficulty 8: full-row RO3 then RO5, three clauses of three agents, the last
+// carrying an adverb, the triple laukaz, stacked closings, seal seven. The
+// three released words descend the cosmology: the axis, the world under the
+// mist, the covered place at the bottom of it.
+const NORSE_RUNIC_D8_SEED = 47;
+
+test('norse fixture: three clauses descend the layer', () => {
+  const out = runic('invocation', 8, NORSE_RUNIC_D8_SEED);
+  assert.strictEqual(
+    out.transliteration,
+    'futharkgwhnijeipzstbemlngdo niun haimoz morganaz menaz baelaz wek ' +
+      'erminasul abandaz fornaz stundaz kum nibulahaimaz hrimaz abandaz rokaz ' +
+      'dimo wek halja laukaz laukaz laukaz runoz faihido alu sebun',
+  );
+  assert.strictEqual(
+    out.gloss,
+    'The full row of the futhark! The nine worlds! O morrow, O moon, O pyre, ' +
+      'wake! Erminasul, the pillar that holds all up! O evening of days, O ' +
+      'ancient time, O hour, come! Nibulahaimaz, the world under the mist! O ' +
+      'hoarfrost, O evening of days, O twilight, wake dimly! Halja, the ' +
+      'covered place of the hidden dead! Laukaz, spoken three times. I painted ' +
+      'these runes. Alu! Sealed seven times.',
+  );
+  assert.strictEqual(
+    out.glyphs,
+    '\u{16A0}\u{16A2}\u{16A6}\u{16A8}\u{16B1}\u{16B2}\u{16B7}\u{16B9}\u{16BA}\u{16BE}\u{16C1}\u{16C3}\u{16C7}\u{16C8}\u{16C9}\u{16CA}\u{16CF}\u{16D2}\u{16D6}\u{16D7}\u{16DA}\u{16DC}\u{16DE}\u{16DF}\u{16EB}\u{16BE}\u{16C1}\u{16A2}\u{16BE}\u{16EB}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16DF}\u{16C9}\u{16EB}\u{16D7}\u{16DF}\u{16B1}\u{16B7}\u{16A8}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16D7}\u{16D6}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16D2}\u{16A8}\u{16D6}\u{16DA}\u{16A8}\u{16C9}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16D6}\u{16B1}\u{16D7}\u{16C1}\u{16BE}\u{16A8}\u{16CA}\u{16A2}\u{16DA}\u{16EC}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16A0}\u{16DF}\u{16B1}\u{16BE}\u{16A8}\u{16C9}\u{16EB}\u{16CA}\u{16CF}\u{16A2}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16B2}\u{16A2}\u{16D7}\u{16EB}\u{16BE}\u{16C1}\u{16D2}\u{16A2}\u{16DA}\u{16A8}\u{16BA}\u{16A8}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EC}\u{16BA}\u{16B1}\u{16C1}\u{16D7}\u{16A8}\u{16C9}\u{16EB}\u{16A8}\u{16D2}\u{16A8}\u{16BE}\u{16DE}\u{16A8}\u{16C9}\u{16EB}\u{16B1}\u{16DF}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DE}\u{16C1}\u{16D7}\u{16DF}\u{16EB}\u{16B9}\u{16D6}\u{16B2}\u{16EB}\u{16BA}\u{16A8}\u{16DA}\u{16C3}\u{16A8}\u{16EC}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EB}\u{16DA}\u{16A8}\u{16A2}\u{16B2}\u{16A8}\u{16C9}\u{16EC}\u{16B1}\u{16A2}\u{16BE}\u{16DF}\u{16C9}\u{16EB}\u{16A0}\u{16A8}\u{16C1}\u{16BA}\u{16C1}\u{16DE}\u{16DF}\u{16EC}\u{16A8}\u{16DA}\u{16A2}\u{16ED}\u{1010D}\u{16ED}',
+  );
+});

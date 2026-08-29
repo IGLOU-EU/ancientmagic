@@ -9,6 +9,7 @@ import type {
   RunicGlosses,
   RunicInvocation,
   RunicProtection,
+  RunicVox,
 } from '../../languages/runic-glosses.js';
 import type {
   ChronomancyBind,
@@ -222,12 +223,31 @@ const powers: GlossTable = {
   kruthmol: 'the grinder of ages',
 };
 
+// The Norse layer of spec 2.7. The glyph line speaks Proto-Germanic and says
+// exactly what these wordings say, so nothing here is a later word smuggled
+// into an older mouth. What is later is only the picture the eleven compose,
+// which is why each is named and then told rather than left as a bare cry.
+const norse: GlossTable = {
+  wodanaz: 'Wodanaz, who hung to win the runes',
+  thunraz: 'Thunraz, who hallows with the hammer',
+  frijjo: 'Frijjo, who binds and looses',
+  wulthuz: 'Wulthuz, the glory',
+  ginarunaz: 'Ginarunaz, the runes of might',
+  erminasul: 'Erminasul, the pillar that holds all up',
+  ansugardaz: 'Ansugardaz, the enclosure of the gods',
+  midjagardaz: 'Midjagardaz, the middle enclosure where men live',
+  nibulahaimaz: 'Nibulahaimaz, the world under the mist',
+  muspellaz: 'Muspellaz, the fire that ends the worlds',
+  halja: 'Halja, the covered place of the hidden dead',
+};
+
 const idioms: GlossTable = {
   RO1: 'Alu!',
   RO2: 'I, the rune-master!',
   RO3_FIRST_AETT: 'The first aett of the futhark!',
   RO3_FULL_ROW: 'The full row of the futhark!',
   RO4: 'I took up three lot-staves.',
+  RO5: 'The nine worlds!',
   RC1: 'I painted these runes.',
   RC2: 'I made these runes.',
   RC3: 'Alu!',
@@ -279,9 +299,16 @@ function agentName(ref: GlossRef): string {
   return ref.kind === 'epithet' ? vocative(lookup(powers, ref.id, 'power')) : noun(ref.id);
 }
 
+// A released word: a cry or a dread epithet spoken as it stands, or a word of
+// the Norse layer, which is spoken and then said (spec 2.7).
+function voxName(vox: RunicVox): string {
+  return vox.kind === 'norse' ? lookup(norse, vox.id, 'norse word') : capitalize(vox.id);
+}
+
 export const runicGlosses: RunicGlosses = {
   roots,
   powers,
+  norse,
   idioms,
   seals,
   depths,
@@ -301,7 +328,7 @@ export const runicGlosses: RunicGlosses = {
   invocationClause: (p: RunicInvocation) =>
     `${p.agents.map((ref) => `O ${agentName(ref)}`).join(', ')}, ` +
     `${form(roots, p.intentRoot, 'verb')}${after(adverb(p.adverbRoot))}! ` +
-    `${capitalize(p.powerWord)}!`,
+    `${voxName(p.powerWord)}!`,
 
   divinationAsk: (p: RunicDivination) =>
     `Does the ${noun(p.agentRoot)} ${form(roots, p.intentRoot, 'verb')}` +

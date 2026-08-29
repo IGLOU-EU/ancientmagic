@@ -15,7 +15,7 @@ import type {
   SemanticField,
 } from '../generator/types.js';
 import type { GlossRef } from '../glosses/types.js';
-import type { RunicGlosses } from './runic-glosses.js';
+import type { RunicGlosses, RunicVox } from './runic-glosses.js';
 import {
   VOWELS,
   anchorPair,
@@ -39,6 +39,7 @@ import {
   FIELDS,
   IDIOM_WORDS,
   INVOCATION_COME,
+  NORSE_VOX,
   RC5_TAIL,
   RUNE_MAP,
   SEAL_GLYPHS,
@@ -345,6 +346,16 @@ function realizeCurseClause(
   };
 }
 
+// What a free POWER-WORD slot may release in the clear register: the seven
+// bracteate cries of 2.7 and the eleven words of its Norse layer, one pool and
+// one draw. The cries stay the whole of what tier 1, tier 2 and the repetition
+// segments may speak, so the layer never leaks into a formula with no clause
+// to release it (spec 2.7).
+const FREE_VOX: ReadonlyArray<RunicVox> = [
+  ...BRIGHT_POWER.map((id): RunicVox => ({ kind: 'power', id })),
+  ...NORSE_VOX.map((id): RunicVox => ({ kind: 'norse', id })),
+];
+
 function realizeInvocationClause(
   clause: ClausePlan,
   rng: Rng,
@@ -374,10 +385,14 @@ function realizeInvocationClause(
   if (mod.adv !== null) words.push(mod.advWord);
   words.push(verbForm(distort(intent.root), 'bare'));
 
-  const power = eldritch
-    ? drawUnused(rng, DREAD_POWER, usedEpithets, (word) => word)
-    : pick(rng, BRIGHT_POWER);
-  words.push(power);
+  // The released word. Under the register it is a dread epithet drawn without
+  // replacement, in the clear it is a bracteate cry or a word of the Norse
+  // layer (spec 2.7), which is the one slot in this genome free enough to hold
+  // one: everything else in a clause answers to a semantic field.
+  const power: RunicVox = eldritch
+    ? { kind: 'power', id: drawUnused(rng, DREAD_POWER, usedEpithets, (word) => word) }
+    : pick(rng, FREE_VOX);
+  words.push(power.id);
 
   return {
     words,
@@ -405,10 +420,22 @@ function pickOpenings(plan: FormulaPlan, rng: Rng): RunicIdiomId[] {
     }
     return ['RO3_FULL_ROW', 'RO4'];
   }
-  if (d <= 4) return ['RO1'];
-  if (d === 5) return [pick(rng, ['RO1', 'RO2'] as const)];
-  if (d === 6) return ['RO2'];
-  if (d === 7) {
+  const ids = baseOpenings(d, rng);
+  // RO5 names the worlds the galdr speaks into, so it falls in behind the
+  // cries the tier already gives, the way RO4 closes a divination opening. It
+  // is Invocation's alone and it waits for tier 5, where the formula first
+  // grows a closing to answer it (spec 2.7).
+  if (plan.school === 'invocation' && d >= 5 && chance(rng, 0.5)) ids.push('RO5');
+  return ids;
+}
+
+// The cries of the base tier table (spec 2.9), which every school outside
+// Divination and the register opens on.
+function baseOpenings(difficulty: number, rng: Rng): RunicIdiomId[] {
+  if (difficulty <= 4) return ['RO1'];
+  if (difficulty === 5) return [pick(rng, ['RO1', 'RO2'] as const)];
+  if (difficulty === 6) return ['RO2'];
+  if (difficulty === 7) {
     return chance(rng, 0.5) ? ['RO2', 'RO3_FIRST_AETT'] : ['RO2'];
   }
   return ['RO3_FULL_ROW'];

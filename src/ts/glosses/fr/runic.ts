@@ -13,6 +13,7 @@ import type {
   RunicGlosses,
   RunicInvocation,
   RunicProtection,
+  RunicVox,
 } from '../../languages/runic-glosses.js';
 import type {
   ChronomancyBind,
@@ -357,12 +358,31 @@ const powers: GlossTable = {
   kruthmol: 'le broyeur des âges',
 };
 
+// The Norse layer of spec 2.7. La ligne de glyphes dit exactement ce que ces
+// gloses disent, donc rien ici n’est un mot tardif glissé dans une bouche plus
+// ancienne. Ce qui est tardif, c’est seulement le tableau que les onze
+// composent, d’où le nom prononcé puis dit.
+const norse: GlossTable = {
+  wodanaz: 'Wodanaz, pendu à l’arbre pour gagner les runes',
+  thunraz: 'Thunraz, qui consacre au marteau',
+  frijjo: 'Frijjo, qui lie et qui délie',
+  wulthuz: 'Wulthuz, la gloire',
+  ginarunaz: 'Ginarunaz, les runes de puissance',
+  erminasul: 'Erminasul, le pilier qui soutient tout',
+  ansugardaz: 'Ansugardaz, l’enclos des dieux',
+  midjagardaz: 'Midjagardaz, l’enclos du milieu où vivent les hommes',
+  nibulahaimaz: 'Nibulahaimaz, le monde sous la brume',
+  muspellaz: 'Muspellaz, le feu qui met fin aux mondes',
+  halja: 'Halja, le lieu couvert des morts cachés',
+};
+
 const idioms: GlossTable = {
   RO1: exclaim('Alu'),
   RO2: exclaim('Moi, le maître des runes'),
   RO3_FIRST_AETT: exclaim('Le premier aett du futhark'),
   RO3_FULL_ROW: exclaim('La rangée entière du futhark'),
   RO4: 'J’ai levé trois baguettes de sort.',
+  RO5: exclaim('Les neuf mondes'),
   RC1: 'J’ai peint ces runes.',
   RC2: 'J’ai fait ces runes.',
   RC3: exclaim('Alu'),
@@ -418,9 +438,16 @@ function agentName(ref: GlossRef): string {
   return ref.kind === 'epithet' ? vocative(lookup(powers, ref.id, 'power')) : noun(ref.id);
 }
 
+// Un mot libéré : un cri ou une épithète prononcés tels quels, ou un mot de la
+// couche norroise, prononcé puis dit (spec 2.7).
+function voxName(vox: RunicVox): string {
+  return vox.kind === 'norse' ? lookup(norse, vox.id, 'norse word') : capitalize(vox.id);
+}
+
 export const runicGlosses: RunicGlosses = {
   roots,
   powers,
+  norse,
   idioms,
   seals,
   depths,
@@ -444,7 +471,7 @@ export const runicGlosses: RunicGlosses = {
       `${p.agents.map((ref) => `Ô ${agentName(ref)}`).join(', ')}, ` +
         `${form(roots, p.intentRoot, 'verb')}${after(adverb(p.adverbRoot))}`,
     ) +
-    ` ${exclaim(capitalize(p.powerWord))}`,
+    ` ${exclaim(voxName(p.powerWord))}`,
 
   // The question fronts its verb in the runes, and French asks by inverting
   // its own way: the subject stands first and a pronoun resumes it behind the
