@@ -363,7 +363,7 @@ a:focus-visible {
   top: 0;
   right: 0;
   z-index: 2;
-  animation: am-reveal $dur-enter $ease-emerge both;
+  animation: am-reveal $dur-enter $ease-emerge backwards;
 }
 
 .lang-fold {
@@ -453,7 +453,7 @@ a:focus-visible {
   background-color: $surface;
   box-shadow: 0 0 24px a($abyss, 0.7);
   list-style: none;
-  animation: am-reveal $dur-swap $ease-emerge both;
+  animation: am-reveal $dur-swap $ease-emerge backwards;
 }
 
 // An entry in a bordered list, not a link in a sentence: the panel already
@@ -490,7 +490,7 @@ a:focus-visible {
 // ------------------------------------------------------------------ header
 .site-header {
   text-align: center;
-  animation: am-reveal $dur-enter $ease-emerge both;
+  animation: am-reveal $dur-enter $ease-emerge backwards;
 }
 
 .wordmark {
@@ -557,7 +557,7 @@ a:focus-visible {
     inset 0 1px 0 a($control-border, 0.22),
     inset 0 -1px 0 a($abyss, 0.6),
     0 0 40px a($abyss, 0.55);
-  animation: am-reveal $dur-enter $ease-emerge 80ms both;
+  animation: am-reveal $dur-enter $ease-emerge 80ms backwards;
 }
 
 // Illuminator's corner marks. The 8px inset with an 18px arm is the one
@@ -1120,7 +1120,7 @@ a:focus-visible {
   text-shadow: $glow-glyph-core;
   animation:
     am-reveal $dur-reveal $ease-emerge both,
-    am-forge $dur-forge $ease-emerge both;
+    am-forge $dur-forge $ease-emerge backwards;
 }
 
 // The vapor twin, design revision 1. The same text blurred behind the real
@@ -1200,7 +1200,7 @@ a:focus-visible {
 .glyph-glow--strike {
   opacity: 0;
   text-shadow: $glow-glyph-strike;
-  animation: am-strike-cool $dur-forge $ease-emerge both;
+  animation: am-strike-cool $dur-forge $ease-emerge backwards;
 }
 
 .output[data-size='large'] .glyph-line {
@@ -1243,7 +1243,7 @@ a:focus-visible {
   font-style: italic;
   line-height: 1.5;
   letter-spacing: 0.04em;
-  animation: am-reveal $dur-reveal $ease-emerge 60ms both;
+  animation: am-reveal $dur-reveal $ease-emerge 60ms backwards;
 }
 
 .gloss {
@@ -1253,7 +1253,7 @@ a:focus-visible {
   font-family: $font-serif;
   font-size: var(--fs-gloss);
   line-height: 1.6;
-  animation: am-reveal $dur-reveal $ease-emerge 120ms both;
+  animation: am-reveal $dur-reveal $ease-emerge 120ms backwards;
 }
 
 // Wraps so the pair still fits when large text widens both buttons past the
@@ -1397,19 +1397,19 @@ a:focus-visible {
 // Movement and loops go, feedback stays, design 9.6.
 @media (prefers-reduced-motion: reduce) {
   .lang-switch {
-    animation: am-fade $dur-enter $ease-emerge both;
+    animation: am-fade $dur-enter $ease-emerge backwards;
   }
 
   .lang-list {
-    animation: am-fade $dur-reveal-reduced $ease-emerge both;
+    animation: am-fade $dur-reveal-reduced $ease-emerge backwards;
   }
 
   .site-header {
-    animation: am-fade $dur-enter $ease-emerge both;
+    animation: am-fade $dur-enter $ease-emerge backwards;
   }
 
   .altar {
-    animation: am-fade $dur-enter $ease-emerge 80ms both;
+    animation: am-fade $dur-enter $ease-emerge 80ms backwards;
   }
 
   // The panel appears rather than swells. A longer fade than the 120ms of the
@@ -1447,7 +1447,7 @@ a:focus-visible {
     text-shadow: $glow-glyph-rest;
     animation:
       am-fade $dur-reveal-reduced $ease-emerge both,
-      am-forge-cool $dur-forge-reduced $ease-emerge both;
+      am-forge-cool $dur-forge-reduced $ease-emerge backwards;
   }
 
   .glyph-glow {
@@ -1462,7 +1462,7 @@ a:focus-visible {
 
   .translit,
   .gloss {
-    animation: am-fade $dur-reveal-reduced $ease-emerge both;
+    animation: am-fade $dur-reveal-reduced $ease-emerge backwards;
   }
 
   .mc-spokes {
