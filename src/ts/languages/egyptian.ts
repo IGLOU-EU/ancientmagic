@@ -430,8 +430,9 @@ function realizeCurseClause(
   glosses: EgyptianGlosses,
 ): Realization {
   const targetField = geneField(clause, 'TARGET');
+  const intentField = geneField(clause, 'INTENT');
   const target = pick(rng, nounsOf(targetField));
-  const intent = pick(rng, verbsOf('harm'));
+  const intent = pick(rng, verbsOf(intentField));
   const modifier = drawModifier(clause, rng);
   const adverb = adverbPhrase(modifier, clause, false);
 
@@ -448,7 +449,7 @@ function realizeCurseClause(
     contentWord({
       skeleton: intent.skeleton,
       spoken: intent.spoken,
-      field: 'harm',
+      field: intentField,
       eldritch: false,
       verb: true,
       suffix: 'f',

@@ -112,7 +112,6 @@ const roots: RootGlossTable = {
   orm: { gloss: 'élan', forms: { verb: 'pousse' }, gender: 'm' },
   aggel: { gloss: 'messager', forms: { verb: 'annonce' }, gender: 'm' },
   // hidden
-  krupt: { gloss: 'cacher', forms: { verb: 'cache' } },
   lathr: { gloss: 'secrètement', forms: { adv: 'secrètement' } },
   musteer: { gloss: 'mystère', forms: { noun: 'mystère' }, gender: 'm' },
   aporreet: { gloss: 'chose interdite', forms: { noun: 'chose interdite' }, gender: 'f' },
@@ -121,11 +120,10 @@ const roots: RootGlossTable = {
     forms: { noun: 'dissimulation', adv: 'en secret' },
     gender: 'f',
   },
-  kalupt: { gloss: 'voile', forms: { noun: 'voile', verb: 'voile' }, gender: 'm' },
-  sioop: { gloss: 'silence', forms: { noun: 'silence', verb: 'étouffe' }, gender: 'm' },
+  kalupt: { gloss: 'voile', forms: { noun: 'voile' }, gender: 'm' },
+  sioop: { gloss: 'silence', forms: { noun: 'silence' }, gender: 'm' },
   ainigm: { gloss: 'énigme', forms: { noun: 'énigme' }, gender: 'f' },
   buth: { gloss: 'abîme', forms: { noun: 'abîme' }, gender: 'm' },
-  amaur: { gloss: 'obscurcir', forms: { verb: 'estompe' } },
   // binding
   desm: { gloss: 'lien', forms: { verb: 'lie' }, gender: 'm' },
   sphrag: { gloss: 'sceau', forms: { verb: 'scelle' }, gender: 'm' },
@@ -142,15 +140,28 @@ const roots: RootGlossTable = {
   sunekh: { gloss: 'tenir ensemble', forms: { verb: 'assemble' } },
   // fire
   pur: { gloss: 'feu', forms: { noun: 'feu' }, gender: 'm' },
-  phlog: { gloss: 'flamme', forms: { noun: 'flamme', verb: 'embrase' }, gender: 'f' },
-  kaus: { gloss: 'consumer', forms: { verb: 'consume' } },
+  phlog: { gloss: 'flamme', forms: { noun: 'flamme' }, gender: 'f' },
+  kaus: {
+    gloss: 'consumer',
+    forms: { verb: 'consume', pp: 'consumé' },
+    feminine: { pp: 'consumée' },
+  },
   anthrak: { gloss: 'charbon', forms: { noun: 'charbon' }, gender: 'm' },
-  lamp: { gloss: 'lampe', forms: { noun: 'lampe', verb: 'illumine' }, gender: 'f' },
+  lamp: { gloss: 'lampe', forms: { noun: 'lampe' }, gender: 'f' },
   aithal: { gloss: 'fumée', forms: { noun: 'fumée' }, gender: 'f' },
-  phleg: { gloss: 'brûler', forms: { verb: 'brûle' } },
+  phleg: {
+    gloss: 'brûler',
+    forms: { verb: 'brûle', pp: 'brûlé' },
+    feminine: { pp: 'brûlée' },
+  },
   therm: { gloss: 'chaleur', forms: { noun: 'chaleur' }, gender: 'f' },
   spintheer: { gloss: 'étincelle', forms: { noun: 'étincelle' }, gender: 'f' },
-  keraun: { gloss: 'foudre', forms: { noun: 'foudre', verb: 'foudroie' }, gender: 'f' },
+  keraun: {
+    gloss: 'foudre',
+    forms: { noun: 'foudre', verb: 'foudroie', pp: 'foudroyé' },
+    gender: 'f',
+    feminine: { pp: 'foudroyée' },
+  },
   // night
   nukt: { gloss: 'nuit', forms: { noun: 'nuit' }, gender: 'f' },
   skot: {
@@ -170,7 +181,7 @@ const roots: RootGlossTable = {
   esper: { gloss: 'soir', forms: { noun: 'soir' }, gender: 'm' },
   kneph: { gloss: 'crépuscule', forms: { noun: 'crépuscule' }, gender: 'm' },
   astr: { gloss: 'astre', forms: { noun: 'astre' }, gender: 'm' },
-  upn: { gloss: 'sommeil', forms: { noun: 'sommeil', verb: 'berce' }, gender: 'm' },
+  upn: { gloss: 'sommeil', forms: { noun: 'sommeil' }, gender: 'm' },
   // death
   thanat: { gloss: 'mort', forms: { noun: 'mort' }, gender: 'f' },
   nekr: {
@@ -179,12 +190,11 @@ const roots: RootGlossTable = {
     gender: 'm',
     feminine: { adj: 'morte' },
   },
-  taph: { gloss: 'tombeau', forms: { noun: 'tombeau', verb: 'enterre' }, gender: 'm' },
+  taph: { gloss: 'tombeau', forms: { noun: 'tombeau' }, gender: 'm' },
   aid: { gloss: 'demeure des morts', forms: { noun: 'demeure des morts' }, gender: 'f' },
-  phthin: { gloss: 'dépérir', forms: { verb: 'décline' } },
   keer: { gloss: 'esprit de mort', forms: { noun: 'esprit de mort' }, gender: 'm' },
   psukh: { gloss: 'ombre', forms: { noun: 'ombre' }, gender: 'f' },
-  sphag: { gloss: 'égorgement', forms: { noun: 'égorgement', verb: 'égorge' }, gender: 'm' },
+  sphag: { gloss: 'égorgement', forms: { noun: 'égorgement' }, gender: 'm' },
   tumb: { gloss: 'tertre funéraire', forms: { noun: 'tertre funéraire' }, gender: 'm' },
   leipsan: { gloss: 'reste', forms: { noun: 'reste' }, gender: 'm' },
   // gates
@@ -197,7 +207,6 @@ const roots: RootGlossTable = {
   khasm: { gloss: 'gouffre', forms: { noun: 'gouffre' }, gender: 'm' },
   gephur: { gloss: 'pont', forms: { noun: 'pont' }, gender: 'm' },
   oud: { gloss: 'seuil', forms: { noun: 'seuil' }, gender: 'm' },
-  anoig: { gloss: 'ouvrir', forms: { verb: 'ouvre' } },
   // time
   khron: { gloss: 'temps', forms: { noun: 'temps' }, gender: 'm' },
   oor: { gloss: 'heure', forms: { noun: 'heure' }, gender: 'f' },
@@ -232,8 +241,8 @@ const roots: RootGlossTable = {
   tukh: { gloss: 'fortune', forms: { noun: 'fortune' }, gender: 'f' },
   aisim: { gloss: 'promis par le sort', forms: { adj: 'promis' }, feminine: { adj: 'promise' } },
   nemes: { gloss: 'répartition', forms: { noun: 'répartition' }, gender: 'f' },
-  asphal: { gloss: 'infaillible', forms: { adj: 'infaillible', adv: 'infailliblement' } },
-  klooth: { gloss: 'fil filé', forms: { noun: 'fil filé', verb: 'file' }, gender: 'm' },
+  asphal: { gloss: 'infaillible', forms: { adj: 'infaillible' } },
+  klooth: { gloss: 'fil filé', forms: { noun: 'fil filé' }, gender: 'm' },
   orism: { gloss: 'borne fixée', forms: { noun: 'borne fixée' }, gender: 'f' },
   // signs
   seem: { gloss: 'signe', forms: { noun: 'signe' }, gender: 'm' },
@@ -246,7 +255,7 @@ const roots: RootGlossTable = {
     forms: { noun: 'augure des entrailles' },
     gender: 'm',
   },
-  graph: { gloss: 'marque écrite', forms: { noun: 'marque écrite', verb: 'consigne' }, gender: 'f' },
+  graph: { gloss: 'marque écrite', forms: { noun: 'marque écrite' }, gender: 'f' },
   pheem: { gloss: 'parole', forms: { noun: 'parole' }, gender: 'f' },
   kleedon: { gloss: 'mot entendu', forms: { noun: 'mot entendu' }, gender: 'm' },
   tekmeer: { gloss: 'preuve', forms: { noun: 'preuve' }, gender: 'f' },

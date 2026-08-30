@@ -222,64 +222,14 @@ const roots: RootGlossTable = {
     feminine: { pp: 'évoquée' },
   },
   // hidden
-  imn: {
-    gloss: 'caché',
-    forms: { noun: 'chose cachée', verb: 'cache', pp: 'caché', adj: 'caché' },
-    gender: 'f',
-    feminine: { pp: 'cachée', adj: 'cachée' },
-  },
-  StA: {
-    gloss: 'secret',
-    forms: { noun: 'secret', adj: 'secret' },
-    gender: 'm',
-    feminine: { adj: 'secrète' },
-  },
-  HAp: {
-    gloss: 'dissimuler',
-    forms: { noun: 'dissimulation', verb: 'dissimule', pp: 'dissimulé' },
-    gender: 'f',
-    feminine: { pp: 'dissimulée' },
-  },
-  dgy: {
-    gloss: 'soustraire aux regards',
-    forms: { verb: 'dérobe', pp: 'dérobé' },
-    feminine: { pp: 'dérobée' },
-  },
-  kAp: {
-    gloss: 'recouvrir',
-    forms: { noun: 'couverture', verb: 'recouvre', pp: 'recouvert' },
-    gender: 'f',
-    feminine: { pp: 'recouverte' },
-  },
-  sdx: {
-    gloss: 'envelopper d’un linceul',
-    forms: { noun: 'linceul', verb: 'enveloppe', pp: 'enveloppé' },
-    gender: 'm',
-    feminine: { pp: 'enveloppée' },
-  },
-  bsy: {
-    gloss: 'initier au mystère',
-    forms: { noun: 'mystère', verb: 'initie', pp: 'initié' },
-    gender: 'm',
-    feminine: { pp: 'initiée' },
-  },
-  sStA: {
-    gloss: 'rendre secret',
-    forms: { noun: 'rite secret', verb: 'voile', pp: 'voilé' },
-    gender: 'm',
-    feminine: { pp: 'voilée' },
-  },
-  Tms: {
-    gloss: 'enterrer hors de vue',
-    forms: { verb: 'enterre', pp: 'enterré' },
-    feminine: { pp: 'enterrée' },
-  },
-  qrf: {
-    gloss: 'envelopper de ténèbres',
-    forms: { noun: 'ténèbre enveloppante', verb: 'enténèbre', pp: 'enténébré' },
-    gender: 'f',
-    feminine: { pp: 'enténébrée' },
-  },
+  imn: { gloss: 'caché', forms: { noun: 'chose cachée' }, gender: 'f' },
+  StA: { gloss: 'secret', forms: { noun: 'secret' }, gender: 'm' },
+  HAp: { gloss: 'dissimuler', forms: { noun: 'dissimulation' }, gender: 'f' },
+  kAp: { gloss: 'recouvrir', forms: { noun: 'couverture' }, gender: 'f' },
+  sdx: { gloss: 'envelopper d’un linceul', forms: { noun: 'linceul' }, gender: 'm' },
+  bsy: { gloss: 'initier au mystère', forms: { noun: 'mystère' }, gender: 'm' },
+  sStA: { gloss: 'rendre secret', forms: { noun: 'rite secret' }, gender: 'm' },
+  qrf: { gloss: 'envelopper de ténèbres', forms: { noun: 'ténèbre enveloppante' }, gender: 'f' },
   // binding
   qAs: {
     gloss: 'lier',
@@ -344,24 +294,14 @@ const roots: RootGlossTable = {
   // fire
   xt: { gloss: 'feu', forms: { noun: 'feu' }, gender: 'm' },
   sDt: { gloss: 'flamme', forms: { noun: 'flamme' }, gender: 'f' },
-  nsr: {
-    gloss: 'flamboyer',
-    forms: { noun: 'brasier', verb: 'embrase', pp: 'embrasé' },
-    gender: 'm',
-    feminine: { pp: 'embrasée' },
-  },
+  nsr: { gloss: 'flamboyer', forms: { noun: 'brasier' }, gender: 'm' },
   rkH: {
     gloss: 'brûler',
     forms: { noun: 'brûlure', verb: 'brûle', pp: 'brûlé' },
     gender: 'f',
     feminine: { pp: 'brûlée' },
   },
-  nby: {
-    gloss: 'flamber',
-    forms: { noun: 'flambée', verb: 'flambe', pp: 'flambé' },
-    gender: 'f',
-    feminine: { pp: 'flambée' },
-  },
+  nby: { gloss: 'flamber', forms: { noun: 'flambée' }, gender: 'f' },
   Am: {
     gloss: 'consumer',
     forms: { verb: 'consume', pp: 'consumé' },
@@ -376,9 +316,8 @@ const roots: RootGlossTable = {
   tkA: { gloss: 'torche', forms: { noun: 'torche' }, gender: 'f' },
   qrH: {
     gloss: 'couver sous la cendre',
-    forms: { noun: 'braise fumante', verb: 'couve', pp: 'couvé' },
+    forms: { noun: 'braise fumante' },
     gender: 'f',
-    feminine: { pp: 'couvée' },
   },
   psy: {
     gloss: 'dessécher par le feu',
@@ -404,11 +343,6 @@ const roots: RootGlossTable = {
   // Named by its own adjective rather than by a genitive, so a genitive chain
   // stacking the night behind it does not say the night twice.
   mskt: { gloss: 'barque nocturne', forms: { noun: 'barque nocturne' }, gender: 'f' },
-  sDr: {
-    gloss: 'passer la nuit couché',
-    forms: { verb: 'repose', pp: 'reposé' },
-    feminine: { pp: 'reposée' },
-  },
   qnH: {
     gloss: 'obscurité du sanctuaire',
     forms: { noun: 'ombre du naos', adj: 'obscur' },
@@ -422,21 +356,11 @@ const roots: RootGlossTable = {
     gender: 'f',
     feminine: { adj: 'morte' },
   },
-  xpy: {
-    gloss: 'trépasser',
-    forms: { verb: 'trépasse', pp: 'trépassé' },
-    feminine: { pp: 'trépassée' },
-  },
-  sxr: {
-    gloss: 'coucher à terre',
-    forms: { verb: 'couche', pp: 'couché' },
-    feminine: { pp: 'couchée' },
-  },
   qrs: {
     gloss: 'ensevelir',
-    forms: { noun: 'sépulture', verb: 'inhume', pp: 'inhumé', adj: 'inhumé' },
+    forms: { noun: 'sépulture', adj: 'inhumé' },
     gender: 'f',
-    feminine: { pp: 'inhumée', adj: 'inhumée' },
+    feminine: { adj: 'inhumée' },
   },
   imAx: {
     gloss: 'les morts vénérés',
@@ -448,12 +372,7 @@ const roots: RootGlossTable = {
   isft: { gloss: 'dissolution', forms: { noun: 'dissolution' }, gender: 'f' },
   nSp: { gloss: 'dernier souffle', forms: { noun: 'dernier souffle' }, gender: 'm' },
   igrt: { gloss: 'la terre du silence', forms: { noun: 'terre du silence' }, gender: 'f' },
-  Htm: {
-    gloss: 'anéantir',
-    forms: { noun: 'anéantissement', verb: 'annihile', pp: 'annihilé' },
-    gender: 'm',
-    feminine: { pp: 'annihilée' },
-  },
+  Htm: { gloss: 'anéantir', forms: { noun: 'anéantissement' }, gender: 'm' },
   // gates
   sbA: { gloss: 'portail', forms: { noun: 'portail' }, gender: 'm' },
   sbxt: { gloss: 'porche', forms: { noun: 'porche' }, gender: 'm' },
@@ -463,16 +382,6 @@ const roots: RootGlossTable = {
   TpHt: { gloss: 'bouche de caverne', forms: { noun: 'bouche de caverne' }, gender: 'f' },
   wAt: { gloss: 'route', forms: { noun: 'route' }, gender: 'f' },
   xnd: { gloss: 'seuil', forms: { noun: 'seuil' }, gender: 'm' },
-  wpy: {
-    gloss: 'ouvrir',
-    forms: { verb: 'ouvre', pp: 'ouvert' },
-    feminine: { pp: 'ouverte' },
-  },
-  snS: {
-    gloss: 'ouvrir en grand',
-    forms: { verb: 'écarte', pp: 'écarté' },
-    feminine: { pp: 'écartée' },
-  },
   // time
   wnwt: { gloss: 'heure', forms: { noun: 'heure' }, gender: 'f' },
   nHH: { gloss: 'temps sans fin', forms: { noun: 'temps sans fin' }, gender: 'm' },

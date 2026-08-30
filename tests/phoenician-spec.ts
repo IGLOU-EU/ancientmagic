@@ -96,7 +96,6 @@ export const LEXICON: Readonly<
     ['khshk', 'obscure'],
     ['lkhsh', 'whisper a charm'],
     ['ghmq', 'be unfathomed'],
-    ['ttmn', 'bury from sight'],
     ['khdr', 'inner chamber'],
     ['swd', 'secret council'],
   ],
@@ -140,12 +139,9 @@ export const LEXICON: Readonly<
     ['mwt', 'death'],
     ['qbr', 'grave'],
     ["rp'", 'shade of the dead'],
-    ['shkhb', 'lie in death'],
     ['krt', 'cut off'],
     ['shkht', 'pit of ruin'],
     ['dwy', 'waste away'],
-    ['blgh', 'swallow up'],
-    ['khdl', 'cease'],
     ['nbl', 'wither'],
   ],
   gates: [
@@ -234,8 +230,13 @@ export const LEXICON: Readonly<
   ],
 };
 
-// Spec 4.3: the five roots that never fill a slot taking a direct object.
-export const INTRANSITIVE: ReadonlyArray<string> = ['nwm', 'shkhb', 'dwy', 'khdl', 'nbl'];
+// Spec 4.3 declared five roots that never fill a slot taking a direct
+// object, and all five stood in night or death, two fields the planner asks
+// for nouns and adjectives alone. The mute-verb sweep took the verb off
+// every one of them, so this genome now writes no intransitive verb and the
+// flag is spent nowhere. The filter stays in the genome: the grammar rule is
+// still true, it simply has nothing left to catch here.
+export const INTRANSITIVE: ReadonlyArray<string> = [];
 
 // Spec 4.3: the biconsonantal roots the table allows, all noun material.
 export const BICONSONANTAL: ReadonlyArray<string> = [

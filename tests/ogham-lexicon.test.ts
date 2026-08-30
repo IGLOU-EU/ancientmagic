@@ -9,6 +9,8 @@
 
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
+import { CURSE_INTENT } from '../src/ts/generator/plan.js';
+import type { SemanticField } from '../src/ts/generator/types.js';
 import {
   ADVERBS as DATA_ADVERBS,
   BRIGHT_POWER,
@@ -71,7 +73,9 @@ test('the fifteen fields carry the roots of 10.3, in the order it lists them', (
   // Twelve fields still hold ten. Summoning, binding and course are shorter
   // since the dead-lexicon sweep took out the nouns no order ever asked them
   // for (spec 10.3).
-  assert.strictEqual(ALL_ROOTS.length, 139, 'twelve fields of ten roots and three shortened');
+  // Summoning, binding and course were shortened by the dead-lexicon sweep,
+  // and hidden, death, gates and signs by the mute-verb one (spec 10.3).
+  assert.strictEqual(ALL_ROOTS.length, 134, 'eight fields of ten roots and seven shortened');
 });
 
 test('exactly three roots are intransitive and exactly six are scholastic', () => {
@@ -224,7 +228,7 @@ test('the perfective and the adverb keep their prefix off the root letters', () 
   }
 });
 
-test('the adverbs are the closed set of six the spec names', () => {
+test('the adverbs are the closed set of five the spec names', () => {
   const declared = ALL_ROOTS.filter((root) => root.forms.includes('adv')).map((root) =>
     adverbForm(root.root),
   );
@@ -233,11 +237,14 @@ test('the adverbs are the closed set of six the spec names', () => {
   assert.strictEqual(lettersFor(ADVERB_SAMPLE[0]), ADVERB_SAMPLE[1]);
 });
 
-test('past participles are declared in the harm field alone', () => {
+test('past participles are declared in the fields a Curse intends from', () => {
   for (const [field, roots] of Object.entries(FIELDS)) {
     for (const root of roots) {
       if (!root.forms.includes('pp')) continue;
-      assert.strictEqual(field, 'harm', `a participle on ${root.root}, outside harm`);
+      assert.ok(
+        CURSE_INTENT.includes(field as SemanticField),
+        `a participle on ${root.root}, in ${field}`,
+      );
     }
   }
 });

@@ -88,7 +88,6 @@ export const LEXICON: Readonly<
     ['advol', 'advolare', 'fly hither'],
   ],
   hidden: [
-    ['cel', 'celare', 'hide'],
     ['occult', 'occultare', 'conceal'],
     ['vel', 'velum', 'veil'],
     ['latebr', 'latebra', 'hiding place'],
@@ -110,7 +109,6 @@ export const LEXICON: Readonly<
     ['flamm', 'flamma', 'flame'],
     ['crem', 'cremare', 'burn up'],
     ['ustul', 'ustulare', 'scorch'],
-    ['flagr', 'flagrare', 'blaze'],
     ['favill', 'favilla', 'ember'],
     ['scintill', 'scintilla', 'spark'],
     ['prun', 'pruna', 'live coal'],
@@ -139,8 +137,6 @@ export const LEXICON: Readonly<
     ['urn', 'urna', 'urn'],
     ['defunct', 'defunctus', 'dead'],
     ['funest', 'funestus', 'deathly'],
-    ['trucid', 'trucidare', 'slaughter'],
-    ['immol', 'immolare', 'sacrifice'],
   ],
   gates: [
     ['port', 'porta', 'gate'],
@@ -152,7 +148,6 @@ export const LEXICON: Readonly<
     ['claustr', 'claustrum', 'barred passage'],
     ['vestibul', 'vestibulum', 'forecourt'],
     ['postic', 'posticum', 'back door'],
-    ['reser', 'reserare', 'unbar'],
   ],
   time: [
     ['hor', 'hora', 'hour'],
@@ -231,8 +226,11 @@ export const LEXICON: Readonly<
   ],
 };
 
-// Spec 9.3: the three roots that never fill a slot taking an object.
-export const INTRANSITIVE: ReadonlyArray<string> = ['proper', 'advol', 'flagr'];
+// Spec 9.3: the two roots that never fill a slot taking an object. Flagr was
+// the third until the mute-verb sweep: a Curse intends transitively, so the
+// one fire verb that blazes of itself could not be drawn even once fire
+// opened.
+export const INTRANSITIVE: ReadonlyArray<string> = ['proper', 'advol'];
 
 // The declension a citation form declares (spec 9.4): -a feminine, -us
 // masculine, -um neuter. A verb is cited by its infinitive in -are and belongs

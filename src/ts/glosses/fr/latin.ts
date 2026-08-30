@@ -104,12 +104,11 @@ const roots: RootGlossTable = {
   // which is what lets a wording carry its own direction.
   advol: { gloss: 'voler jusqu’ici', forms: { verb: 'vole ici' } },
   // hidden
-  cel: { gloss: 'cacher', forms: { verb: 'cache' } },
-  occult: { gloss: 'dissimuler', forms: { verb: 'dissimule', adv: 'secrètement' } },
-  vel: { gloss: 'voile', forms: { noun: 'voile', verb: 'voile' }, gender: 'm' },
+  occult: { gloss: 'dissimuler', forms: { adv: 'secrètement' } },
+  vel: { gloss: 'voile', forms: { noun: 'voile' }, gender: 'm' },
   latebr: { gloss: 'cachette', forms: { noun: 'cachette' }, gender: 'f' },
   cavern: { gloss: 'caverne', forms: { noun: 'caverne' }, gender: 'f' },
-  susurr: { gloss: 'murmure', forms: { noun: 'murmure', verb: 'murmure' }, gender: 'm' },
+  susurr: { gloss: 'murmure', forms: { noun: 'murmure' }, gender: 'm' },
   secret: { gloss: 'secret', forms: { noun: 'secret' }, gender: 'm' },
   arcan: { gloss: 'arcane', forms: { noun: 'arcane' }, gender: 'm' },
   silenti: { gloss: 'silence', forms: { noun: 'silence' }, gender: 'm' },
@@ -121,10 +120,22 @@ const roots: RootGlossTable = {
   obsign: { gloss: 'sceller', forms: { verb: 'scelle' } },
   fren: { gloss: 'bride', forms: { verb: 'refrène' }, gender: 'f' },
   // fire
-  flamm: { gloss: 'flamme', forms: { noun: 'flamme', verb: 'embrase' }, gender: 'f' },
-  crem: { gloss: 'consumer', forms: { verb: 'consume' } },
-  ustul: { gloss: 'brûler', forms: { verb: 'brûle' } },
-  flagr: { gloss: 'flamboyer', forms: { verb: 'flamboie' } },
+  flamm: {
+    gloss: 'flamme',
+    forms: { noun: 'flamme', verb: 'embrase', pp: 'embrasé' },
+    gender: 'f',
+    feminine: { pp: 'embrasée' },
+  },
+  crem: {
+    gloss: 'consumer',
+    forms: { verb: 'consume', pp: 'consumé' },
+    feminine: { pp: 'consumée' },
+  },
+  ustul: {
+    gloss: 'brûler',
+    forms: { verb: 'brûle', pp: 'brûlé' },
+    feminine: { pp: 'brûlée' },
+  },
   favill: { gloss: 'braise', forms: { noun: 'braise' }, gender: 'f' },
   scintill: { gloss: 'étincelle', forms: { noun: 'étincelle' }, gender: 'f' },
   prun: { gloss: 'charbon ardent', forms: { noun: 'charbon ardent' }, gender: 'm' },
@@ -155,8 +166,6 @@ const roots: RootGlossTable = {
   urn: { gloss: 'urne', forms: { noun: 'urne funéraire' }, gender: 'f' },
   defunct: { gloss: 'défunt', forms: { adj: 'défunt' }, feminine: { adj: 'défunte' } },
   funest: { gloss: 'funeste', forms: { adj: 'funeste' } },
-  trucid: { gloss: 'massacrer', forms: { verb: 'massacre' } },
-  immol: { gloss: 'immoler', forms: { verb: 'immole' } },
   // gates
   port: { gloss: 'portail', forms: { noun: 'portail' }, gender: 'm' },
   ianu: { gloss: 'porte', forms: { noun: 'porte' }, gender: 'f' },
@@ -167,7 +176,6 @@ const roots: RootGlossTable = {
   claustr: { gloss: 'passage barré', forms: { noun: 'passage barré' }, gender: 'm' },
   vestibul: { gloss: 'avant-cour', forms: { noun: 'avant-cour' }, gender: 'f' },
   postic: { gloss: 'porte de derrière', forms: { noun: 'porte de derrière' }, gender: 'f' },
-  reser: { gloss: 'déverrouiller', forms: { verb: 'déverrouille' } },
   // time
   hor: { gloss: 'heure', forms: { noun: 'heure' }, gender: 'f' },
   auror: { gloss: 'aurore', forms: { noun: 'aurore' }, gender: 'f' },
@@ -206,14 +214,10 @@ const roots: RootGlossTable = {
   iudici: { gloss: 'jugement', forms: { noun: 'jugement' }, gender: 'm' },
   genitur: { gloss: 'astre natal', forms: { noun: 'astre natal' }, gender: 'm' },
   destin: { gloss: 'destiné', forms: { adj: 'destiné' }, feminine: { adj: 'destinée' } },
-  cert: {
-    gloss: 'certain',
-    forms: { adj: 'certain', adv: 'assurément' },
-    feminine: { adj: 'certaine' },
-  },
+  cert: { gloss: 'certain', forms: { adj: 'certain' }, feminine: { adj: 'certaine' } },
   fatidic: { gloss: 'fatidique', forms: { adj: 'fatidique' } },
   // signs
-  sign: { gloss: 'signe', forms: { noun: 'signe', verb: 'marque' }, gender: 'm' },
+  sign: { gloss: 'signe', forms: { noun: 'signe' }, gender: 'm' },
   portent: { gloss: 'prodige', forms: { noun: 'prodige' }, gender: 'm' },
   oracul: { gloss: 'oracle', forms: { noun: 'oracle' }, gender: 'm' },
   auguri: { gloss: 'augure', forms: { noun: 'augure' }, gender: 'm' },

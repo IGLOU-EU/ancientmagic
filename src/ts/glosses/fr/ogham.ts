@@ -98,16 +98,14 @@ const roots: RootGlossTable = {
   ling: { gloss: 'bondir jusqu’ici', forms: { verb: 'bondis ici' } },
   guid: { gloss: 'implorer', forms: { verb: 'implore' } },
   // hidden
-  cel: { gloss: 'cacher', forms: { verb: 'cache' } },
   run: { gloss: 'secret', forms: { noun: 'secret' }, gender: 'm' },
   ruin: { gloss: 'mystère', forms: { noun: 'mystère' }, gender: 'm' },
   clet: { gloss: 'couvert', forms: { noun: 'couvert', adv: 'furtivement' }, gender: 'm' },
   tost: { gloss: 'silence', forms: { noun: 'silence' }, gender: 'm' },
-  sanas: { gloss: 'murmure', forms: { noun: 'murmure', verb: 'murmure' }, gender: 'm' },
-  celt: { gloss: 'voile', forms: { noun: 'voile', verb: 'voile' }, gender: 'm' },
+  sanas: { gloss: 'murmure', forms: { noun: 'murmure' }, gender: 'm' },
+  celt: { gloss: 'voile', forms: { noun: 'voile' }, gender: 'm' },
   elad: { gloss: 'art secret', forms: { noun: 'art secret' }, gender: 'm' },
   ogom: { gloss: 'écriture secrète', forms: { noun: 'écriture secrète' }, gender: 'f' },
-  dall: { gloss: 'aveugler', forms: { verb: 'aveugle' } },
   // binding
   nasc: { gloss: 'lien', forms: { verb: 'lie' }, gender: 'm' },
   cengal: { gloss: 'entrave', forms: { verb: 'entrave' }, gender: 'f' },
@@ -117,15 +115,32 @@ const roots: RootGlossTable = {
   timarc: { gloss: 'enserrer', forms: { verb: 'enserre' } },
   // fire
   ten: { gloss: 'feu', forms: { noun: 'feu' }, gender: 'm' },
-  adand: { gloss: 'allumer', forms: { verb: 'allume' } },
+  adand: {
+    gloss: 'allumer',
+    forms: { verb: 'allume', pp: 'allumé' },
+    feminine: { pp: 'allumée' },
+  },
   brut: { gloss: 'brasier', forms: { noun: 'brasier' }, gender: 'm' },
-  losc: { gloss: 'brûler', forms: { verb: 'brûle' } },
+  losc: {
+    gloss: 'brûler',
+    forms: { verb: 'brûle', pp: 'brûlé' },
+    feminine: { pp: 'brûlée' },
+  },
   gris: { gloss: 'braise', forms: { noun: 'braise' }, gender: 'f' },
   grisc: { gloss: 'étincelle', forms: { noun: 'étincelle' }, gender: 'f' },
   deg: { gloss: 'tison', forms: { noun: 'tison' }, gender: 'm' },
-  gred: { gloss: 'calciner', forms: { verb: 'calcine' } },
+  gred: {
+    gloss: 'calciner',
+    forms: { verb: 'calcine', pp: 'calciné' },
+    feminine: { pp: 'calcinée' },
+  },
   tellac: { gloss: 'foyer', forms: { noun: 'foyer' }, gender: 'm' },
-  lasar: { gloss: 'flamme', forms: { noun: 'flamme', verb: 'embrase' }, gender: 'f' },
+  lasar: {
+    gloss: 'flamme',
+    forms: { noun: 'flamme', verb: 'embrase', pp: 'embrasé' },
+    gender: 'f',
+    feminine: { pp: 'embrasée' },
+  },
   // night
   adag: { gloss: 'nuit', forms: { noun: 'nuit' }, gender: 'f' },
   dorc: {
@@ -143,13 +158,11 @@ const roots: RootGlossTable = {
   noct: { gloss: 'cœur de la nuit', forms: { noun: 'cœur de la nuit' }, gender: 'm' },
   // death
   bas: { gloss: 'mort', forms: { noun: 'mort' }, gender: 'f' },
-  marb: { gloss: 'mort', forms: { adj: 'mort', verb: 'tue' }, feminine: { adj: 'morte' } },
+  marb: { gloss: 'mort', forms: { adj: 'mort' }, feminine: { adj: 'morte' } },
   lig: { gloss: 'lit funéraire', forms: { noun: 'lit funéraire' }, gender: 'm' },
   vert: { gloss: 'tertre funéraire', forms: { noun: 'tertre funéraire' }, gender: 'm' },
   scal: { gloss: 'fantôme', forms: { noun: 'fantôme' }, gender: 'm' },
-  crin: { gloss: 'faner', forms: { verb: 'fane' } },
   ec: { gloss: 'agonie', forms: { noun: 'agonie' }, gender: 'f' },
-  adnac: { gloss: 'enterrer', forms: { verb: 'enterre' } },
   cnam: { gloss: 'os', forms: { noun: 'os' }, gender: 'm' },
   tam: { gloss: 'peste', forms: { noun: 'peste' }, gender: 'f' },
   // gates
@@ -160,7 +173,6 @@ const roots: RootGlossTable = {
   comlad: { gloss: 'battant', forms: { noun: 'battant' }, gender: 'm' },
   tarsec: { gloss: 'seuil', forms: { noun: 'seuil' }, gender: 'm' },
   bern: { gloss: 'brèche', forms: { noun: 'brèche' }, gender: 'f' },
-  oslac: { gloss: 'ouvrir', forms: { verb: 'ouvre' } },
   rod: { gloss: 'route', forms: { noun: 'route' }, gender: 'f' },
   glenn: { gloss: 'défilé', forms: { noun: 'défilé' }, gender: 'm' },
   // time
@@ -195,11 +207,7 @@ const roots: RootGlossTable = {
   cinned: { gloss: 'décret', forms: { noun: 'décret' }, gender: 'm' },
   tocad: { gloss: 'fortune', forms: { noun: 'fortune' }, gender: 'f' },
   dal: { gloss: 'échéance fixée', forms: { noun: 'échéance fixée' }, gender: 'f' },
-  derb: {
-    gloss: 'certain',
-    forms: { adj: 'certain', adv: 'assurément' },
-    feminine: { adj: 'certaine' },
-  },
+  derb: { gloss: 'certain', forms: { adj: 'certain' }, feminine: { adj: 'certaine' } },
   rand: { gloss: 'part', forms: { noun: 'part' }, gender: 'f' },
   crandcor: { gloss: 'sort jeté', forms: { noun: 'sort jeté' }, gender: 'm' },
   bret: { gloss: 'jugement', forms: { noun: 'jugement' }, gender: 'm' },
@@ -213,11 +221,7 @@ const roots: RootGlossTable = {
   en: { gloss: 'oiseau', forms: { noun: 'oiseau' }, gender: 'm' },
   vis: { gloss: 'prescience', forms: { noun: 'prescience' }, gender: 'f' },
   celman: { gloss: 'augure', forms: { noun: 'augure' }, gender: 'm' },
-  tarngir: {
-    gloss: 'prédire',
-    forms: { noun: 'prophétie', verb: 'annonce' },
-    gender: 'f',
-  },
+  tarngir: { gloss: 'prédire', forms: { noun: 'prophétie' }, gender: 'f' },
   brig: { gloss: 'sens', forms: { noun: 'sens' }, gender: 'm' },
   // course
   tect: { gloss: 'traverser', forms: { verb: 'traverse' } },

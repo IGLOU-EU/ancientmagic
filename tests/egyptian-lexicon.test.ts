@@ -93,7 +93,11 @@ test('the coined lexicon matches the spec table, skeleton, spoken form and gloss
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 150, 'fifteen fields of ten roots');
+  // Twelve fields still hold ten. Hidden, night, death and gates are shorter
+  // since the mute-verb sweep took out the actions no slot ever asked them
+  // for, and fire lost three verb declarations without losing a root
+  // (spec 3.3).
+  assert.strictEqual(total, 143, 'eleven fields of ten roots and four shortened');
 });
 
 test('coined skeletons respect the phonotactics of the spec', () => {

@@ -286,7 +286,7 @@ test('greek fixture: the amulet of section 8.13, letter for letter', () => {
 // after it, twice, each clause carrying an adverb, joined by ΚΑΙ. The spec's
 // own Curse example is out of reach of a seed, so this fixture records its own
 // draw in the same shape.
-const GREEK_CURSE_SEED = 12;
+const GREEK_CURSE_SEED = 43536783;
 
 test('greek fixture: the binding tablet and its two commands', () => {
   const out = greek('curse', 6, GREEK_CURSE_SEED);
@@ -402,7 +402,7 @@ test('latin fixture: the amulet of section 9.13, letter for letter', () => {
 // Difficulty 6: the tablet of spec 9.13. The victim is named first and the law
 // pronounced on him, twice, the second carrying its adverb clause-final, which
 // is where the school order puts it against the general rule.
-const LATIN_CURSE_SEED = 376508;
+const LATIN_CURSE_SEED = 1117110;
 
 test('latin fixture: the defixio of section 9.13', () => {
   const out = latin('curse', 6, LATIN_CURSE_SEED);
@@ -579,7 +579,7 @@ test('ogham fixture: the section 5 plan rendered a sixth time', () => {
 // Greek writes KAI and Latin ET, an ogham formula is a bundle of rods and the
 // reader sees how many. The adverb trails the second clause, per the school
 // override of 10.5.
-const OGHAM_CURSE_SEED = 2805986;
+const OGHAM_CURSE_SEED = 4422582;
 
 test('ogham fixture: the two rods of section 10.13', () => {
   const out = ogham('curse', 6, OGHAM_CURSE_SEED);

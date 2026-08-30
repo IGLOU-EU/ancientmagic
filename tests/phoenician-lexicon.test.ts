@@ -105,7 +105,10 @@ test('the coined lexicon matches the spec table, skeleton and gloss', () => {
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 150, 'fifteen fields of ten roots');
+  // Twelve fields still hold ten. Hidden and death are shorter since the
+  // mute-verb sweep took out the actions no slot ever asked them for
+  // (spec 4.3).
+  assert.strictEqual(total, 146, 'thirteen fields of ten roots and two shortened');
 });
 
 test('root shape follows the phonotactics of the spec', () => {
@@ -171,7 +174,7 @@ test('every root carries the gloss forms of the roles it can fill', () => {
       assert.ok(
         root.forms.includes('noun') ||
           root.forms.includes('verb') ||
-          (divination && root.forms.includes('adj')),
+          root.forms.includes('adj'),
         `${root.root} fills no role`,
       );
       if (root.forms.includes('noun') && (!divination || field === 'signs')) {

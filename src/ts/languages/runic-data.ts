@@ -151,7 +151,9 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'log', forms: ['noun'] },
     { root: 'eim', forms: ['noun'] },
     { root: 'glod', forms: ['noun'] },
-    { root: 'tand', forms: ['noun'] },
+    { root: 'tand', forms: ['noun', 'verb', 'pp'] },
+    { root: 'brin', forms: ['verb', 'pp'] },
+    { root: 'swid', forms: ['verb', 'pp'] },
     { root: 'funk', forms: ['noun'] },
     { root: 'bael', forms: ['noun'] },
     { root: 'sowil', forms: ['noun'], runeName: true },
@@ -177,7 +179,6 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'lik', forms: ['noun'] },
     { root: 'mold', forms: ['noun'] },
     { root: 'draug', forms: ['noun'] },
-    { root: 'swelt', forms: ['verb'], intransitive: true },
     { root: 'naw', forms: ['noun'] },
     { root: 'thurs', forms: ['noun'], runeName: true },
     { root: 'iw', forms: ['noun'], runeName: true },
@@ -236,7 +237,7 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'hail', forms: ['noun', 'adj'] },
     { root: 'end', forms: ['noun'] },
     { root: 'thrad', forms: ['noun'] },
-    { root: 'wis', forms: ['adj', 'adv'] },
+    { root: 'wis', forms: ['adj'] },
   ],
   // The Chronomancy field (spec 2.3 and 2.12): the verbs and nouns of moving
   // through time. No pp, every verb transitive, every noun able to sit behind

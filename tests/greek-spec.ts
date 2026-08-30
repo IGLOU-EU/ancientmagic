@@ -81,7 +81,6 @@ export const LEXICON: Readonly<
     ['aggel', 'messenger'],
   ],
   hidden: [
-    ['krupt', 'hide'],
     ['lathr', 'secretly'],
     ['musteer', 'mystery'],
     ['aporreet', 'forbidden thing'],
@@ -90,7 +89,6 @@ export const LEXICON: Readonly<
     ['sioop', 'silence'],
     ['ainigm', 'riddle'],
     ['buth', 'deep'],
-    ['amaur', 'dim'],
   ],
   binding: [
     ['desm', 'bond'],
@@ -132,7 +130,6 @@ export const LEXICON: Readonly<
     ['nekr', 'corpse'],
     ['taph', 'tomb'],
     ['aid', 'house of the dead'],
-    ['phthin', 'waste away'],
     ['keer', 'death-spirit'],
     ['psukh', 'shade'],
     ['sphag', 'slaughter'],
@@ -149,7 +146,6 @@ export const LEXICON: Readonly<
     ['khasm', 'chasm'],
     ['gephur', 'bridge'],
     ['oud', 'threshold'],
-    ['anoig', 'open'],
   ],
   time: [
     ['khron', 'time'],
@@ -223,8 +219,10 @@ export const LEXICON: Readonly<
   ],
 };
 
-// Spec 8.3: the three roots that never fill a slot taking an object.
-export const INTRANSITIVE: ReadonlyArray<string> = ['elth', 'ik', 'phthin'];
+// Spec 8.3: the two roots that never fill a slot taking an object. Phthin
+// was the third until the mute-verb sweep: it wasted away in a field the
+// planner asks for nouns and adjectives alone.
+export const INTRANSITIVE: ReadonlyArray<string> = ['elth', 'ik'];
 
 // Voces magicae of spec 8.7, romanization and glyph string.
 export const POWER_TABLE: ReadonlyArray<readonly [word: string, glyphs: string]> = [

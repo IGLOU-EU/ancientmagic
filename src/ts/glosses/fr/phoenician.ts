@@ -179,64 +179,25 @@ const roots: RootGlossTable = {
   drsh: { gloss: 'rechercher', forms: { verb: 'recherche', pp: 'recherché' } },
   qbts: { gloss: 'assembler', forms: { verb: 'assemble', pp: 'assemblé' } },
   // hidden
-  str: {
-    gloss: 'cacher',
-    forms: { noun: 'cachette', plural: 'cachettes', verb: 'cache', pp: 'caché' },
-    gender: 'f',
-  },
+  str: { gloss: 'cacher', forms: { noun: 'cachette', plural: 'cachettes' }, gender: 'f' },
   ghlm: {
     gloss: 'dissimuler',
-    forms: {
-      noun: 'dissimulation',
-      plural: 'dissimulations',
-      verb: 'dissimule',
-      pp: 'dissimulé',
-    },
+    forms: { noun: 'dissimulation', plural: 'dissimulations' },
     gender: 'f',
   },
-  "khb'": {
-    gloss: 'abriter en secret',
-    forms: { noun: 'abri', plural: 'abris', verb: 'abrite', pp: 'abrité' },
-    gender: 'm',
-  },
-  tspn: {
-    gloss: 'mettre en réserve',
-    forms: {
-      noun: 'trésor',
-      plural: 'trésors',
-      verb: 'thésaurise',
-      pp: 'thésaurisé',
-    },
-    gender: 'm',
-  },
-  khshk: {
-    gloss: 'obscurcir',
-    forms: {
-      noun: 'obscurité',
-      plural: 'obscurités',
-      verb: 'voile',
-      pp: 'voilé',
-      adj: 'voilé',
-    },
-    gender: 'f',
-    feminine: { adj: 'voilée' },
-  },
+  "khb'": { gloss: 'abriter en secret', forms: { noun: 'abri', plural: 'abris' }, gender: 'm' },
+  tspn: { gloss: 'mettre en réserve', forms: { noun: 'trésor', plural: 'trésors' }, gender: 'm' },
+  khshk: { gloss: 'obscurcir', forms: { noun: 'obscurité', plural: 'obscurités' }, gender: 'f' },
   lkhsh: {
     gloss: 'murmurer un charme',
-    forms: {
-      noun: 'charme murmuré',
-      plural: 'charmes murmurés',
-      verb: 'murmure',
-      pp: 'murmuré',
-    },
+    forms: { noun: 'charme murmuré', plural: 'charmes murmurés' },
     gender: 'm',
   },
   ghmq: {
     gloss: 'être insondable',
-    forms: { noun: 'abîme insondé', plural: 'abîmes insondés', adj: 'insondable' },
+    forms: { noun: 'abîme insondé', plural: 'abîmes insondés' },
     gender: 'm',
   },
-  ttmn: { gloss: 'enterrer hors de vue', forms: { verb: 'enterre', pp: 'enterré' } },
   khdr: {
     gloss: 'chambre intérieure',
     forms: { noun: 'chambre intérieure', plural: 'chambres intérieures' },
@@ -307,12 +268,7 @@ const roots: RootGlossTable = {
   },
   zrkh: {
     gloss: 'flamboyer',
-    forms: {
-      noun: 'flamboiement',
-      plural: 'flamboiements',
-      verb: 'flamboie',
-      pp: 'flamboyé',
-    },
+    forms: { noun: 'flamboiement', plural: 'flamboiements' },
     gender: 'm',
   },
   rshp: {
@@ -321,11 +277,7 @@ const roots: RootGlossTable = {
     gender: 'm',
   },
   gkhl: { gloss: 'braise', forms: { noun: 'braise', plural: 'braises' }, gender: 'f' },
-  khrr: {
-    gloss: 'calciner',
-    forms: { verb: 'calcine', pp: 'calciné', adj: 'calciné' },
-    feminine: { adj: 'calcinée' },
-  },
+  khrr: { gloss: 'calciner', forms: { verb: 'calcine', pp: 'calciné' } },
   tnr: {
     gloss: 'fournaise',
     forms: { noun: 'fournaise', plural: 'fournaises' },
@@ -367,17 +319,9 @@ const roots: RootGlossTable = {
     gender: 'm',
     feminine: { adj: 'silencieuse' },
   },
-  nwm: {
-    gloss: 'sommeil',
-    forms: { noun: 'sommeil', plural: 'sommeils', verb: 'sommeille', pp: 'endormi' },
-    gender: 'm',
-  },
+  nwm: { gloss: 'sommeil', forms: { noun: 'sommeil', plural: 'sommeils' }, gender: 'm' },
   khlm: { gloss: 'rêve', forms: { noun: 'rêve', plural: 'rêves' }, gender: 'm' },
-  qdr: {
-    gloss: 's’assombrir',
-    forms: { verb: 'enténèbre', pp: 'enténébré', adj: 'enténébré' },
-    feminine: { adj: 'enténébrée' },
-  },
+  qdr: { gloss: 's’assombrir', forms: { adj: 'enténébré' }, feminine: { adj: 'enténébrée' } },
   // death
   mwt: { gloss: 'mort', forms: { noun: 'mort', plural: 'morts' }, gender: 'f' },
   qbr: { gloss: 'tombe', forms: { noun: 'tombe', plural: 'tombes' }, gender: 'f' },
@@ -386,15 +330,9 @@ const roots: RootGlossTable = {
     forms: { noun: 'ombre des morts', plural: 'ombres' },
     gender: 'f',
   },
-  shkhb: { gloss: 'gésir dans la mort', forms: { verb: 'couche', pp: 'couché' } },
   krt: {
     gloss: 'retrancher',
-    forms: {
-      noun: 'retranchement',
-      plural: 'retranchements',
-      verb: 'retranche',
-      pp: 'retranché',
-    },
+    forms: { noun: 'retranchement', plural: 'retranchements' },
     gender: 'm',
   },
   shkht: {
@@ -402,26 +340,12 @@ const roots: RootGlossTable = {
     forms: { noun: 'fosse de ruine', plural: 'fosses de ruine' },
     gender: 'f',
   },
-  dwy: {
-    gloss: 'dépérir',
-    forms: { verb: 'étiole', pp: 'étiolé', adj: 'étiolé' },
-    feminine: { adj: 'étiolée' },
-  },
-  blgh: { gloss: 'engloutir', forms: { verb: 'avale', pp: 'avalé' } },
-  khdl: { gloss: 'cesser', forms: { verb: 'cesse', pp: 'cessé' } },
-  nbl: {
-    gloss: 'se flétrir',
-    forms: { verb: 'dessèche', pp: 'desséché', adj: 'desséché' },
-    feminine: { adj: 'desséchée' },
-  },
+  dwy: { gloss: 'dépérir', forms: { adj: 'étiolé' }, feminine: { adj: 'étiolée' } },
+  nbl: { gloss: 'se flétrir', forms: { adj: 'desséché' }, feminine: { adj: 'desséchée' } },
   // gates
   shghr: { gloss: 'porte', forms: { noun: 'porte', plural: 'portes' }, gender: 'f' },
   dl: { gloss: 'battant', forms: { noun: 'battant', plural: 'battants' }, gender: 'm' },
-  ptkh: {
-    gloss: 'ouvrir',
-    forms: { noun: 'ouverture', plural: 'ouvertures', verb: 'ouvre', pp: 'ouvert' },
-    gender: 'f',
-  },
+  ptkh: { gloss: 'ouvrir', forms: { noun: 'ouverture', plural: 'ouvertures' }, gender: 'f' },
   sp: { gloss: 'seuil', forms: { noun: 'seuil', plural: 'seuils' }, gender: 'm' },
   shqp: {
     gloss: 'linteau',
@@ -435,16 +359,8 @@ const roots: RootGlossTable = {
   },
   shbl: { gloss: 'sentier', forms: { noun: 'sentier', plural: 'sentiers' }, gender: 'm' },
   drk: { gloss: 'route', forms: { noun: 'route', plural: 'routes' }, gender: 'f' },
-  ghbr: {
-    gloss: 'traverser',
-    forms: { noun: 'passage', plural: 'passages', verb: 'traverse', pp: 'traversé' },
-    gender: 'm',
-  },
-  bqgh: {
-    gloss: 'percer une brèche',
-    forms: { noun: 'brèche', plural: 'brèches', verb: 'perce', pp: 'percé' },
-    gender: 'f',
-  },
+  ghbr: { gloss: 'traverser', forms: { noun: 'passage', plural: 'passages' }, gender: 'm' },
+  bqgh: { gloss: 'percer une brèche', forms: { noun: 'brèche', plural: 'brèches' }, gender: 'f' },
   // time
   ghd: {
     gloss: 'perpétuité',

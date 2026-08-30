@@ -326,7 +326,7 @@ function realizeCurseClause(
 ): ClauseRealization {
   const targetField = geneField(clause, 'TARGET');
   const target = pick(rng, nounsOf(targetField));
-  const intent = pick(rng, verbsOf('harm'));
+  const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
   const mod = realizeModifier(clause, rng, distort);
 
   const words: string[] = [];

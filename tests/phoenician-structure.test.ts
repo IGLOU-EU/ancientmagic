@@ -78,11 +78,16 @@ test('an intransitive root never reaches a slot that takes a direct object', () 
       assert.ok(!pool.includes(flagged), `${flagged} reached the transitive pool of ${field}`);
     }
   }
-  // The filter removes the flagged roots and keeps the others.
-  const deathVerbs = FIELDS.death.filter((r) => r.forms.includes('verb')).map((r) => r.root);
-  const deathTransitive = transitiveVerbsOf('death').map((r) => r.root);
-  assert.ok(deathVerbs.length > deathTransitive.length, 'the filter removed nothing');
-  assert.ok(deathTransitive.includes('krt'), 'a transitive death verb was dropped');
+  // All five flagged roots stood in night or death, and the mute-verb sweep
+  // took the verb off every one of them, so this genome now declares no
+  // intransitive verb at all and the filter is the identity here. The rule
+  // is still enforced, on an empty set, and the day a Semitic verb of
+  // slumbering comes back the assertion above catches it.
+  assert.deepStrictEqual([...INTRANSITIVE], [], 'a flagged root is back in this genome');
+  const flagged = Object.values(FIELDS)
+    .flat()
+    .filter((r) => r.intransitive === true);
+  assert.deepStrictEqual(flagged, [], 'a root still carries the flag in the data');
 });
 
 test('school openers follow the tier table', () => {

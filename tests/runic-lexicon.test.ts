@@ -48,17 +48,19 @@ test('rune-name roots follow the normative table and stay noun-only', () => {
   assert.strictEqual(flagged.length, 24, 'exactly the 24 rune names are flagged');
 });
 
-test('intransitive flags cover exactly kum and swelt', () => {
+test('the intransitive flag covers exactly kum', () => {
   const flagged = Object.values(FIELDS)
     .flat()
     .filter((r) => r.intransitive === true)
     .map((r) => r.root)
     .sort();
-  assert.deepStrictEqual(flagged, ['kum', 'swelt']);
+  // Swelt was the second until the mute-verb sweep: it died in a field the
+  // planner asks for nouns and adjectives alone (spec 2.3).
+  assert.deepStrictEqual(flagged, ['kum']);
 });
 
 test('tier 2 never draws an intransitive intent', () => {
-  const banned = new Set(['kum', 'swelt', eldritchRoot('kum'), eldritchRoot('swelt')]);
+  const banned = new Set(['kum', eldritchRoot('kum')]);
   for (const school of ['protection', 'curse', 'invocation', 'eldritch'] as const) {
     for (let seed = 0; seed < 60; seed += 1) {
       const verb = runic(school, 2, seed).transliteration.split(' ')[0] ?? '';

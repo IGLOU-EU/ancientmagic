@@ -1,5 +1,6 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
+import { CURSE_INTENT } from '../src/ts/generator/plan.js';
 import {
   BRIGHT_POWER,
   DARK_POWER,
@@ -114,7 +115,7 @@ test('the selected lexicon matches the spec table, root and gloss', () => {
   // Eleven fields hold ten, sight and signs hold thirteen, and binding and
   // course are shorter since the dead-lexicon sweep took out the nouns no
   // order ever asked them for (spec 9.3).
-  assert.strictEqual(total, 148, 'eleven of ten, two of thirteen, two shortened');
+  assert.strictEqual(total, 143, 'eight of ten, two of thirteen, five shortened');
 });
 
 // This genome selects rather than coins, so the class is not a choice: it is
@@ -188,10 +189,14 @@ test('every root carries the gloss forms of the roles it can fill', () => {
           root.forms.includes('adv'),
         `${root.root} fills no role`,
       );
-      // Past participles are declared in the harm field alone, because the
-      // Curse gloss is the only clause template here that reaches for one.
+      // A past participle is declared in the fields the Curse draws its
+      // INTENT from, because the Curse gloss is the only clause template here
+      // that reaches for one.
       if (root.forms.includes('pp')) {
-        assert.strictEqual(field, 'harm', `${root.root} declares a participle`);
+        assert.ok(
+          CURSE_INTENT.includes(field as SemanticField),
+          `${root.root} declares a participle in ${field}`,
+        );
       }
       if (field === 'harm' && root.forms.includes('verb')) {
         assert.ok(root.forms.includes('pp'), `${root.root} is a curse verb without a participle`);

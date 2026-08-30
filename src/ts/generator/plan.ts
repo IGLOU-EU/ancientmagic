@@ -18,6 +18,15 @@ import type {
 // plan only decides which semantic field the genome will draw roots from.
 const PROTECTION_INTENT: ReadonlyArray<SemanticField> = ['warding', 'binding'];
 const PROTECTION_TARGET: ReadonlyArray<SemanticField> = ['harm', 'death', 'night', 'fire'];
+// Curse was the one school whose INTENT was a constant rather than a pool, so
+// every curse ever written said one of the seven ways a genome knows to hurt.
+// Fire is the second way, and it is the only field the ruling of genomes.md
+// 1.3 could open: a clause never draws its verb and its object from one field,
+// and death, night, hidden and gates are already this school's targets.
+// Exported because a participle is spent on a Curse INTENT and nothing else,
+// so the genome suites that hold their pp declarations to a field read the
+// pool off the planner instead of transcribing it.
+export const CURSE_INTENT: ReadonlyArray<SemanticField> = ['harm', 'fire'];
 const CURSE_TARGET: ReadonlyArray<SemanticField> = ['death', 'night', 'hidden', 'gates'];
 // Four cosmic powers and the beings field the school gained in the widening of
 // genomes.md 1.3, so an Invocation can address somebody as well as something.
@@ -112,7 +121,7 @@ function buildClause(
     genes.push({ role: 'TARGET', field: pick(rng, PROTECTION_TARGET), flavor: null });
   } else if (school === 'curse') {
     genes.push({ role: 'TARGET', field: pick(rng, CURSE_TARGET), flavor: null });
-    genes.push({ role: 'INTENT', field: 'harm', flavor: 'optative' });
+    genes.push({ role: 'INTENT', field: pick(rng, CURSE_INTENT), flavor: 'optative' });
   } else if (school === 'divination') {
     // The formula asks once and answers as many times as its tier allows, so
     // the clause kind is the index and the genes only change mood with it.
@@ -205,7 +214,7 @@ export function buildPlan(school: School, difficulty: number, rng: Rng): Formula
       genes.push({ role: 'INTENT', field: pick(rng, PROTECTION_INTENT), flavor: 'imperative' });
       genes.push({ role: 'TARGET', field: pick(rng, PROTECTION_TARGET), flavor: null });
     } else if (school === 'curse') {
-      genes.push({ role: 'INTENT', field: 'harm', flavor: 'imperative' });
+      genes.push({ role: 'INTENT', field: pick(rng, CURSE_INTENT), flavor: 'imperative' });
       genes.push({ role: 'TARGET', field: pick(rng, CURSE_TARGET), flavor: null });
     } else if (school === 'divination') {
       genes.push({ role: 'INTENT', field: pick(rng, DIVINATION_INTENT), flavor: 'imperative' });

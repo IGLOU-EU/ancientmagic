@@ -224,7 +224,7 @@ function realizeCurseClause(
   glosses: LatinGlosses,
 ): ClauseRealization {
   const target = pick(rng, nounsOf(geneField(clause, 'TARGET')));
-  const intent = pick(rng, transitiveVerbsOf('harm'));
+  const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT')));
   const mod = drawModifier(clause, rng);
 
   const words = [

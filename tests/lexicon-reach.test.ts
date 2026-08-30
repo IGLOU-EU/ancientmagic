@@ -2,13 +2,15 @@
 //
 // A root is written in a data module, glossed in every pack, listed in
 // genomes.md and counted by its genome's lexicon test, and none of that says
-// a school will ever ask for it. Three fields are named in plan.ts inside
-// INTENT lists alone, and an INTENT slot draws a verb, so ninety-three nouns
-// were declared, inflected and glossed twice in two languages, and no seed at
-// any tier in any school could reach one of them. Six more roots declared no
-// role at all. The whole set was resolved in the sweep of 2026-08-30
-// (docs/dead-lexicon-review.md), and this suite is what stops the next genome
-// from doing it again.
+// a school will ever ask for it. The question was first asked of nouns:
+// three fields are named in plan.ts inside INTENT lists alone, an INTENT slot
+// draws a verb, and ninety-three nouns were declared, inflected and glossed
+// twice in two languages that no seed at any tier in any school could reach
+// (docs/dead-lexicon-review.md). It was then asked of the other three
+// demands, and the answer was worse: eighty-eight verbs, five adjectives and
+// four adverbs stood in fields drawn for none of them
+// (docs/mute-verbs-review.md). This suite is what stops the next genome from
+// doing it again, and it asks all four demands of every genome.
 //
 // The reach question is answered in two steps, because it has two halves that
 // live in different places. Which SEMANTIC FIELD is drawn for what is the
@@ -59,7 +61,10 @@ const DEMANDS: Readonly<Record<SemanticField, ReadonlyArray<Demand>>> = {
   hidden: ['adverb', 'noun'],
   // Named in INTENT lists alone: the Protection and Chronomancy orders.
   binding: ['verb'],
-  fire: ['noun'],
+  // Fire gained a verb when the ruling of genomes.md 1.3 opened it to the
+  // Curse INTENT, which until then was the one intent in the model that was a
+  // constant rather than a pool.
+  fire: ['noun', 'verb'],
   night: ['adjective', 'adverb', 'noun'],
   death: ['adjective', 'noun'],
   gates: ['noun'],
@@ -194,28 +199,55 @@ test('every declared root declares a role', () => {
   }
 });
 
-// The defect this suite was written for. A noun is the form the packs spend
-// the most work on, since it carries gender, article and agreement in the
-// languages that inflect, and it is the form three verb fields collected
-// without a slot to spend it in.
-// The same question is open for the other three demands, and the answer is
-// worse: eighty-eight verbs, five adjectives and four adverbs are declared in
-// fields drawn for none of them, plus the participles and plurals that hang
-// off them. That sweep is priced in docs/dead-lexicon-review.md and was not
-// taken here. When it is ruled, this test becomes a loop over the four demands
-// and nothing else about the suite changes.
-test('every declared noun stands in a slot some school fills', () => {
+// The defect this suite was written for, asked of all four demands. A noun is
+// the form the packs spend the most work on, since it carries gender, article
+// and agreement in the languages that inflect, and it is the form three verb
+// fields collected without a slot to spend it in. A verb is the form the six
+// thing-fields collected the same way, and the two modifiers followed them.
+//
+// One loop over the four, because the question is one question. A demand that
+// lost its last declaration in every genome would still be asked here, and a
+// genome that gains one in a field no school reads fails by name.
+const DEMANDS_ASKED: ReadonlyArray<Demand> = ['noun', 'verb', 'adjective', 'adverb'];
+
+for (const demand of DEMANDS_ASKED) {
+  test(`every declared ${demand} stands in a slot some school fills`, () => {
+    for (const language of LANGUAGES) {
+      const spends = SPENDS[language];
+      const wanted = spends[demand];
+      for (const [field, roots] of Object.entries(LEXICONS[language])) {
+        const reach = drawable(language, field as SemanticField);
+        for (const root of roots) {
+          if (!root.forms.includes(wanted)) continue;
+          assert.ok(
+            reach.has(wanted),
+            `${language} declares the ${wanted} ${root.id} in ${field}, which is ` +
+              `drawn for ${[...(DEMANDS[field as SemanticField] ?? [])].join(' and ')} alone`,
+          );
+        }
+      }
+    }
+  });
+}
+
+// The two secondary forms ride a primary one and are never drawn on their own:
+// a participle is the Curse's reading of its INTENT verb, and a plural is the
+// Phoenician and Egyptian reading of a noun. So each is reachable exactly when
+// the form it hangs on is, and a genome that declares one without the other
+// has written a wording no clause can ask for.
+const RIDES: Readonly<Record<string, RootForm>> = { pp: 'verb', plural: 'noun' };
+
+test('a participle and a plural ride a form the same root declares', () => {
   for (const language of LANGUAGES) {
-    const lexicon = LEXICONS[language];
-    for (const [field, roots] of Object.entries(lexicon)) {
-      const reach = drawable(language, field as SemanticField);
+    for (const [field, roots] of Object.entries(LEXICONS[language])) {
       for (const root of roots) {
-        if (!root.forms.includes('noun')) continue;
-        assert.ok(
-          reach.has('noun'),
-          `${language} declares the noun ${root.id} in ${field}, which is drawn for ` +
-            `${[...(DEMANDS[field as SemanticField] ?? [])].join(' and ')} alone`,
-        );
+        for (const [rider, carrier] of Object.entries(RIDES)) {
+          if (!root.forms.includes(rider as RootForm)) continue;
+          assert.ok(
+            root.forms.includes(carrier),
+            `${language} declares the ${rider} of ${root.id} in ${field} and no ${carrier}`,
+          );
+        }
       }
     }
   }

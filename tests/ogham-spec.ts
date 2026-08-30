@@ -103,7 +103,6 @@ export const LEXICON: Readonly<
     ['guid', 'beseech'],
   ],
   hidden: [
-    ['cel', 'hide'],
     ['run', 'secret'],
     ['ruin', 'mystery'],
     ['clet', 'covert'],
@@ -112,7 +111,6 @@ export const LEXICON: Readonly<
     ['celt', 'veil'],
     ['elad', 'secret craft'],
     ['ogom', 'secret writing'],
-    ['dall', 'blind'],
   ],
   binding: [
     ['nasc', 'bond'],
@@ -152,9 +150,7 @@ export const LEXICON: Readonly<
     ['lig', 'grave-bed'],
     ['vert', 'grave-mound'],
     ['scal', 'phantom'],
-    ['crin', 'wither'],
     ['ec', 'dying'],
-    ['adnac', 'bury'],
     ['cnam', 'bone'],
     ['tam', 'plague'],
   ],
@@ -166,7 +162,6 @@ export const LEXICON: Readonly<
     ['comlad', 'door-leaf'],
     ['tarsec', 'threshold'],
     ['bern', 'breach'],
-    ['oslac', 'open'],
     ['rod', 'road'],
     ['glenn', 'defile'],
   ],
@@ -241,8 +236,10 @@ export const LEXICON: Readonly<
   ],
 };
 
-// Spec 10.3: the three roots that never fill a slot taking an object.
-export const INTRANSITIVE: ReadonlyArray<string> = ['tic', 'ling', 'crin'];
+// Spec 10.3: the two roots that never fill a slot taking an object. Crin was
+// the third until the mute-verb sweep: it withered in a field the planner
+// asks for nouns and adjectives alone.
+export const INTRANSITIVE: ReadonlyArray<string> = ['tic', 'ling'];
 
 // The scholastic six, one per field the seeing schools lean on hardest. Each
 // carries a forfid, so each is drawable only at difficulties 8 and 9.
@@ -287,7 +284,6 @@ export const ADVERBS: ReadonlyArray<string> = [
   'codorc',
   'coclet',
   'coglan',
-  'coderb',
   'cogrib',
 ];
 

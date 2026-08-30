@@ -1,5 +1,6 @@
 import test from 'node:test';
 import * as assert from 'node:assert/strict';
+import { CURSE_INTENT } from '../src/ts/generator/plan.js';
 import {
   BRIGHT_POWER,
   DARK_POWER,
@@ -83,10 +84,11 @@ test('the coined lexicon matches the spec table, root and gloss', () => {
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  // Twelve fields still hold ten. Summoning, binding and course are shorter
-  // since the dead-lexicon sweep took out the nouns no order ever asked them
-  // for (spec 8.3).
-  assert.strictEqual(total, 146, 'twelve fields of ten roots and three shortened');
+  // Summoning, binding and course are shorter since the dead-lexicon sweep
+  // took out the nouns no order ever asked them for, and hidden, death and
+  // gates since the mute-verb sweep took out the actions no slot asked for
+  // (spec 8.3).
+  assert.strictEqual(total, 142, 'nine fields of ten roots and six shortened');
 });
 
 test('root shape follows the phonotactics of the spec', () => {
@@ -120,10 +122,14 @@ test('every root carries the gloss forms of the roles it can fill', () => {
           root.forms.includes('adv'),
         `${root.root} fills no role`,
       );
-      // Past participles are declared in the harm field alone, because the
-      // Curse gloss is the only clause template here that reaches for one.
+      // A past participle is declared in the fields the Curse draws its
+      // INTENT from, because the Curse gloss is the only clause template here
+      // that reaches for one.
       if (root.forms.includes('pp')) {
-        assert.strictEqual(field, 'harm', `${root.root} declares a participle`);
+        assert.ok(
+          CURSE_INTENT.includes(field as SemanticField),
+          `${root.root} declares a participle in ${field}`,
+        );
       }
       if (field === 'harm' && root.forms.includes('verb')) {
         assert.ok(root.forms.includes('pp'), `${root.root} is a curse verb without a participle`);

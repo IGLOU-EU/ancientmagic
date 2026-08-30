@@ -271,7 +271,7 @@ function realizeCurseClause(
 ): ClauseRealization {
   const difficulty = plan.difficulty;
   const target = pick(rng, nounsOf(geneField(clause, 'TARGET'), difficulty));
-  const intent = pick(rng, transitiveVerbsOf('harm', difficulty));
+  const intent = pick(rng, transitiveVerbsOf(geneField(clause, 'INTENT'), difficulty));
   const mod = drawModifier(clause, rng, difficulty);
 
   return {
