@@ -83,7 +83,10 @@ test('the coined lexicon matches the spec table, root and gloss', () => {
     });
   }
   const total = Object.values(FIELDS).reduce((n, roots) => n + roots.length, 0);
-  assert.strictEqual(total, 150, 'fifteen fields of ten roots');
+  // Twelve fields still hold ten. Summoning, binding and course are shorter
+  // since the dead-lexicon sweep took out the nouns no order ever asked them
+  // for (spec 8.3).
+  assert.strictEqual(total, 146, 'twelve fields of ten roots and three shortened');
 });
 
 test('root shape follows the phonotactics of the spec', () => {
@@ -143,8 +146,11 @@ test('every root carries the gloss forms of the roles it can fill', () => {
   for (const field of ['hidden', 'night', 'harm', 'sight', 'course'] as const) {
     assert.ok(FIELDS[field].some((r) => r.forms.includes('adv')), `no adverb in ${field}`);
   }
+  // Every field a school draws a noun from. Summoning, binding and course are
+  // left out because no order of spec 8.5 asks any of them for one: this
+  // genome spends all three on verbs.
   for (const field of [
-    'warding', 'harm', 'summoning', 'hidden', 'binding', 'fire', 'night',
+    'warding', 'harm', 'hidden', 'fire', 'night',
     'death', 'gates', 'time', 'sight', 'fate', 'signs',
   ] as const) {
     assert.ok(

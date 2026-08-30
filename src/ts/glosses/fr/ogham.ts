@@ -90,7 +90,6 @@ const roots: RootGlossTable = {
   amnas: { gloss: 'cruel', forms: { adj: 'cruel' }, feminine: { adj: 'cruelle' } },
   // summoning
   gar: { gloss: 'appeler', forms: { verb: 'appelle' } },
-  garm: { gloss: 'sommation', forms: { noun: 'sommation' }, gender: 'f' },
   toc: { gloss: 'invoquer', forms: { verb: 'invoque' } },
   congar: { gloss: 'convoquer', forms: { verb: 'convoque' } },
   // Drawn as an imperative addressed to the invoked power and nowhere else,
@@ -98,9 +97,6 @@ const roots: RootGlossTable = {
   tic: { gloss: 'venir', forms: { verb: 'viens' } },
   ling: { gloss: 'bondir jusqu’ici', forms: { verb: 'bondis ici' } },
   guid: { gloss: 'implorer', forms: { verb: 'implore' } },
-  scol: { gloss: 'cri', forms: { noun: 'cri' }, gender: 'm' },
-  gut: { gloss: 'voix', forms: { noun: 'voix' }, gender: 'f' },
-  dord: { gloss: 'chant', forms: { noun: 'chant' }, gender: 'm' },
   // hidden
   cel: { gloss: 'cacher', forms: { verb: 'cache' } },
   run: { gloss: 'secret', forms: { noun: 'secret' }, gender: 'm' },
@@ -113,15 +109,11 @@ const roots: RootGlossTable = {
   ogom: { gloss: 'écriture secrète', forms: { noun: 'écriture secrète' }, gender: 'f' },
   dall: { gloss: 'aveugler', forms: { verb: 'aveugle' } },
   // binding
-  nasc: { gloss: 'lien', forms: { noun: 'lien', verb: 'lie' }, gender: 'm' },
-  cengal: { gloss: 'entrave', forms: { noun: 'entrave', verb: 'entrave' }, gender: 'f' },
-  cumrec: { gloss: 'carcan', forms: { noun: 'carcan' }, gender: 'm' },
-  glas: { gloss: 'serrure', forms: { noun: 'serrure', verb: 'verrouille' }, gender: 'f' },
+  nasc: { gloss: 'lien', forms: { verb: 'lie' }, gender: 'm' },
+  cengal: { gloss: 'entrave', forms: { verb: 'entrave' }, gender: 'f' },
+  glas: { gloss: 'serrure', forms: { verb: 'verrouille' }, gender: 'f' },
   drut: { gloss: 'barricader', forms: { verb: 'barricade' } },
   snim: { gloss: 'torsader', forms: { verb: 'torsade' } },
-  tet: { gloss: 'corde', forms: { noun: 'corde' }, gender: 'f' },
-  slabrad: { gloss: 'chaîne', forms: { noun: 'chaîne' }, gender: 'f' },
-  gell: { gloss: 'gage', forms: { noun: 'gage' }, gender: 'm' },
   timarc: { gloss: 'enserrer', forms: { verb: 'enserre' } },
   // fire
   ten: { gloss: 'feu', forms: { noun: 'feu' }, gender: 'm' },
@@ -229,8 +221,7 @@ const roots: RootGlossTable = {
   brig: { gloss: 'sens', forms: { noun: 'sens' }, gender: 'm' },
   // course
   tect: { gloss: 'traverser', forms: { verb: 'traverse' } },
-  cem: { gloss: 'pas', forms: { noun: 'pas' }, gender: 'm' },
-  cor: { gloss: 'tournant', forms: { noun: 'tournant', verb: 'ramène' }, gender: 'm' },
+  cor: { gloss: 'tournant', forms: { verb: 'ramène' }, gender: 'm' },
   brost: { gloss: 'presser', forms: { verb: 'presse' } },
   cosc: { gloss: 'endiguer', forms: { verb: 'endigue' } },
   mall: {
@@ -240,8 +231,6 @@ const roots: RootGlossTable = {
   },
   grib: { gloss: 'rapide', forms: { adj: 'rapide', adv: 'rapidement' } },
   gen: { gloss: 'renouveler', forms: { verb: 'renouvelle' } },
-  rit: { gloss: 'course', forms: { noun: 'course' }, gender: 'f' },
-  lorg: { gloss: 'trace', forms: { noun: 'trace' }, gender: 'f' },
   // beings
   dev: { gloss: 'dieu', forms: { noun: 'dieu' }, gender: 'm' },
   rig: { gloss: 'roi', forms: { noun: 'roi' }, gender: 'm' },

@@ -68,7 +68,10 @@ test('the fifteen fields carry the roots of 10.3, in the order it lists them', (
       `the ${field} field drifted from the spec`,
     );
   }
-  assert.strictEqual(ALL_ROOTS.length, 150, 'fifteen fields of ten roots');
+  // Twelve fields still hold ten. Summoning, binding and course are shorter
+  // since the dead-lexicon sweep took out the nouns no order ever asked them
+  // for (spec 10.3).
+  assert.strictEqual(ALL_ROOTS.length, 139, 'twelve fields of ten roots and three shortened');
 });
 
 test('exactly three roots are intransitive and exactly six are scholastic', () => {

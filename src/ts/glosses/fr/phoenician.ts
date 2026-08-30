@@ -158,18 +158,18 @@ const roots: RootGlossTable = {
   // summoning
   "qr'": {
     gloss: 'appeler',
-    forms: { noun: 'appel', plural: 'appels', verb: 'appelle', pp: 'appelé' },
+    forms: { verb: 'appelle', pp: 'appelé' },
     gender: 'm',
   },
   zghq: {
     gloss: 'crier',
-    forms: { noun: 'clameur', plural: 'clameurs', verb: 'clame', pp: 'clamé' },
+    forms: { verb: 'clame', pp: 'clamé' },
     gender: 'f',
   },
   shlkh: { gloss: 'envoyer quérir', forms: { verb: 'mande', pp: 'mandé' } },
   "bw'": {
     gloss: 'faire venir',
-    forms: { noun: 'venue', plural: 'venues', verb: 'approche', pp: 'approché' },
+    forms: { verb: 'approche', pp: 'approché' },
     gender: 'f',
   },
   ngd: { gloss: 'annoncer', forms: { verb: 'annonce', pp: 'annoncé' } },
@@ -250,27 +250,27 @@ const roots: RootGlossTable = {
   // binding
   "'sr": {
     gloss: 'lier',
-    forms: { noun: 'lien', plural: 'liens', verb: 'lie', pp: 'lié' },
+    forms: { verb: 'lie', pp: 'lié' },
     gender: 'm',
   },
   khtm: {
     gloss: 'sceller',
-    forms: { noun: 'sceau', plural: 'sceaux', verb: 'scelle', pp: 'scellé' },
+    forms: { verb: 'scelle', pp: 'scellé' },
     gender: 'm',
   },
   qshr: {
     gloss: 'nouer',
-    forms: { noun: 'nœud', plural: 'nœuds', verb: 'noue', pp: 'noué' },
+    forms: { verb: 'noue', pp: 'noué' },
     gender: 'm',
   },
   kbl: {
     gloss: 'entraver',
-    forms: { noun: 'entrave', plural: 'entraves', verb: 'entrave', pp: 'entravé' },
+    forms: { verb: 'entrave', pp: 'entravé' },
     gender: 'f',
   },
   rtq: {
     gloss: 'enchaîner',
-    forms: { noun: 'chaîne', plural: 'chaînes', verb: 'enchaîne', pp: 'enchaîné' },
+    forms: { verb: 'enchaîne', pp: 'enchaîné' },
     gender: 'f',
   },
   ghqd: { gloss: 'lier pour l’offrande', forms: { verb: 'ligote', pp: 'ligoté' } },
@@ -278,12 +278,12 @@ const roots: RootGlossTable = {
   tsrr: { gloss: 'envelopper serré', forms: { verb: 'emmaillote', pp: 'emmailloté' } },
   khgr: {
     gloss: 'sangler',
-    forms: { noun: 'sangle', plural: 'sangles', verb: 'sangle', pp: 'sanglé' },
+    forms: { verb: 'sangle', pp: 'sanglé' },
     gender: 'f',
   },
   zmm: {
     gloss: 'museler',
-    forms: { noun: 'muselière', plural: 'muselières', verb: 'muselle', pp: 'muselé' },
+    forms: { verb: 'muselle', pp: 'muselé' },
     gender: 'f',
   },
   // fire

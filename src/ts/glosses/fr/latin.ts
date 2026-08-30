@@ -98,7 +98,7 @@ const roots: RootGlossTable = {
   rog: { gloss: 'implorer', forms: { verb: 'implore' } },
   flagit: { gloss: 'exiger', forms: { verb: 'exige' } },
   incant: { gloss: 'enchanter', forms: { verb: 'enchante' } },
-  nunti: { gloss: 'messager', forms: { noun: 'messager', verb: 'annonce' }, gender: 'm' },
+  nunti: { gloss: 'messager', forms: { verb: 'annonce' }, gender: 'm' },
   proper: { gloss: 'approcher en hâte', forms: { verb: 'approche' } },
   // Drawn as an imperative addressed to the invoked power and nowhere else,
   // which is what lets a wording carry its own direction.
@@ -117,14 +117,9 @@ const roots: RootGlossTable = {
   // binding
   lig: { gloss: 'lier', forms: { verb: 'lie' } },
   oblig: { gloss: 'ligoter', forms: { verb: 'ligote' } },
-  nod: { gloss: 'nœud', forms: { noun: 'nœud', verb: 'noue' }, gender: 'm' },
-  vincul: { gloss: 'lien', forms: { noun: 'lien' }, gender: 'm' },
-  caten: { gloss: 'chaîne', forms: { noun: 'chaîne' }, gender: 'f' },
+  nod: { gloss: 'nœud', forms: { verb: 'noue' }, gender: 'm' },
   obsign: { gloss: 'sceller', forms: { verb: 'scelle' } },
-  sigill: { gloss: 'sceau', forms: { noun: 'sceau' }, gender: 'm' },
-  fren: { gloss: 'bride', forms: { noun: 'bride', verb: 'refrène' }, gender: 'f' },
-  ser: { gloss: 'barre de porte', forms: { noun: 'barre de porte' }, gender: 'f' },
-  clav: { gloss: 'clou', forms: { noun: 'clou' }, gender: 'm' },
+  fren: { gloss: 'bride', forms: { verb: 'refrène' }, gender: 'f' },
   // fire
   flamm: { gloss: 'flamme', forms: { noun: 'flamme', verb: 'embrase' }, gender: 'f' },
   crem: { gloss: 'consumer', forms: { verb: 'consume' } },
@@ -247,9 +242,6 @@ const roots: RootGlossTable = {
     feminine: { adj: 'neuve' },
   },
   rapid: { gloss: 'rapide', forms: { adj: 'rapide', adv: 'rapidement' } },
-  curricul: { gloss: 'course', forms: { noun: 'course' }, gender: 'f' },
-  vestigi: { gloss: 'empreinte', forms: { noun: 'empreinte' }, gender: 'f' },
-  orbit: { gloss: 'ornière', forms: { noun: 'ornière' }, gender: 'f' },
   // beings
   div: { gloss: 'dieu', forms: { noun: 'dieu' }, gender: 'm' },
   domin: { gloss: 'seigneur', forms: { noun: 'seigneur' }, gender: 'm' },

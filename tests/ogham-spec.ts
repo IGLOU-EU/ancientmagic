@@ -96,15 +96,11 @@ export const LEXICON: Readonly<
   ],
   summoning: [
     ['gar', 'call'],
-    ['garm', 'summons'],
     ['toc', 'summon'],
     ['congar', 'convoke'],
     ['tic', 'come'],
     ['ling', 'leap hither'],
     ['guid', 'beseech'],
-    ['scol', 'cry'],
-    ['gut', 'voice'],
-    ['dord', 'chant'],
   ],
   hidden: [
     ['cel', 'hide'],
@@ -121,13 +117,9 @@ export const LEXICON: Readonly<
   binding: [
     ['nasc', 'bond'],
     ['cengal', 'fetter'],
-    ['cumrec', 'shackle'],
     ['glas', 'lock'],
     ['drut', 'shut'],
     ['snim', 'twist'],
-    ['tet', 'cord'],
-    ['slabrad', 'chain'],
-    ['gell', 'pledge'],
     ['timarc', 'constrain'],
   ],
   fire: [
@@ -228,15 +220,12 @@ export const LEXICON: Readonly<
   ],
   course: [
     ['tect', 'traverse'],
-    ['cem', 'step'],
     ['cor', 'turn'],
     ['brost', 'hasten'],
     ['cosc', 'check'],
     ['mall', 'slow'],
     ['grib', 'swift'],
     ['gen', 'renew'],
-    ['rit', 'course'],
-    ['lorg', 'track'],
   ],
   beings: [
     ['dev', 'god'],

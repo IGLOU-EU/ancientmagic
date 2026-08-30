@@ -70,10 +70,13 @@ export const SEAL_WORDS: Readonly<Record<SealCount, string>> = {
 
 // Coined roots by semantic field (spec 2.3), each field followed by its
 // rune-name roots per the normative assignment table. The beings field is the
-// one the Invocation widening added (spec 1.3), and it carries no rune name:
-// the row already spent its gods on the fields they guard. Rune names are noun
-// roots only. Verb forms exist on every root a school can draw as a verb,
-// kum and swelt carry the spec's intransitive flag.
+// one the Invocation widening added (spec 1.3), and four rune names sit in it:
+// the row's gods and beasts were parked in summoning while the model had
+// nowhere to address anybody, and summoning is drawn for verbs alone. Rune
+// names are noun roots only. Verb forms exist on every root a school can draw
+// as a verb, kum and swelt carry the spec's intransitive flag. A root declares
+// only the roles some school draws from its field: a field drawn for verbs
+// alone carries no noun.
 export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> = {
   warding: [
     { root: 'ward', forms: ['noun', 'verb'] },
@@ -92,6 +95,8 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'tiw', forms: ['noun'], runeName: true },
     { root: 'berk', forms: ['noun'], runeName: true },
     { root: 'othal', forms: ['noun'], runeName: true },
+    { root: 'geb', forms: ['noun'], runeName: true },
+    { root: 'is', forms: ['noun'], runeName: true },
   ],
   harm: [
     { root: 'skath', forms: ['verb', 'pp'] },
@@ -106,6 +111,7 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'harm', forms: ['noun', 'verb', 'pp'] },
     { root: 'kaun', forms: ['noun'], runeName: true },
     { root: 'hagl', forms: ['noun'], runeName: true },
+    { root: 'naud', forms: ['noun'], runeName: true },
   ],
   summoning: [
     { root: 'lath', forms: ['verb'] },
@@ -117,21 +123,13 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'sok', forms: ['verb'] },
     { root: 'kum', forms: ['verb'], intransitive: true },
     { root: 'lok', forms: ['verb'] },
-    { root: 'stefn', forms: ['noun', 'verb'] },
-    { root: 'ur', forms: ['noun'], runeName: true },
-    { root: 'ans', forms: ['noun'], runeName: true },
-    { root: 'ehw', forms: ['noun'], runeName: true },
-    { root: 'ingw', forms: ['noun'], runeName: true },
+    { root: 'stefn', forms: ['verb'] },
   ],
   hidden: [
     { root: 'run', forms: ['noun'] },
     { root: 'laun', forms: ['noun'] },
-    { root: 'hel', forms: [] },
-    { root: 'hul', forms: [] },
     { root: 'dul', forms: ['noun'] },
     { root: 'mirk', forms: ['noun', 'adv'] },
-    { root: 'felh', forms: [] },
-    { root: 'grub', forms: [] },
     { root: 'huld', forms: ['noun'] },
     { root: 'swik', forms: ['noun'] },
     { root: 'feh', forms: ['noun'], runeName: true },
@@ -139,18 +137,13 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
   ],
   binding: [
     { root: 'bind', forms: ['verb', 'pp'] },
-    { root: 'band', forms: ['noun'] },
-    { root: 'haft', forms: ['noun', 'verb'] },
-    { root: 'fetur', forms: ['noun', 'verb'] },
-    { root: 'knut', forms: ['noun', 'verb'] },
+    { root: 'haft', forms: ['verb'] },
+    { root: 'fetur', forms: ['verb'] },
+    { root: 'knut', forms: ['verb'] },
     { root: 'wrid', forms: ['verb'] },
     { root: 'spann', forms: ['verb'] },
-    { root: 'tug', forms: ['noun'] },
     { root: 'hald', forms: ['verb', 'pp'] },
     { root: 'luk', forms: ['verb', 'pp'] },
-    { root: 'geb', forms: ['noun'], runeName: true },
-    { root: 'naud', forms: ['noun'], runeName: true },
-    { root: 'is', forms: ['noun'], runeName: true },
   ],
   fire: [
     { root: 'fur', forms: ['noun'] },
@@ -158,9 +151,7 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'log', forms: ['noun'] },
     { root: 'eim', forms: ['noun'] },
     { root: 'glod', forms: ['noun'] },
-    { root: 'brin', forms: [] },
     { root: 'tand', forms: ['noun'] },
-    { root: 'swid', forms: [] },
     { root: 'funk', forms: ['noun'] },
     { root: 'bael', forms: ['noun'] },
     { root: 'sowil', forms: ['noun'], runeName: true },
@@ -252,13 +243,11 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
   // an article.
   course: [
     { root: 'far', forms: ['verb'] },
-    { root: 'wend', forms: ['noun', 'verb'] },
+    { root: 'wend', forms: ['verb'] },
     { root: 'skund', forms: ['verb'] },
     { root: 'lat', forms: ['verb', 'adj'] },
     { root: 'stand', forms: ['verb'] },
     { root: 'hef', forms: ['verb'] },
-    { root: 'gang', forms: ['noun'] },
-    { root: 'stap', forms: ['noun'] },
     { root: 'rath', forms: ['adj', 'adv'] },
     { root: 'niw', forms: ['verb', 'adj'] },
   ],
@@ -285,6 +274,10 @@ export const FIELDS: Readonly<Record<SemanticField, ReadonlyArray<RunicRoot>>> =
     { root: 'landwiht', forms: ['noun'] },
     { root: 'etun', forms: ['noun'] },
     { root: 'alba', forms: ['noun'] },
+    { root: 'ur', forms: ['noun'], runeName: true },
+    { root: 'ans', forms: ['noun'], runeName: true },
+    { root: 'ehw', forms: ['noun'], runeName: true },
+    { root: 'ingw', forms: ['noun'], runeName: true },
   ],
 };
 

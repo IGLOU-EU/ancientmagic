@@ -52,7 +52,7 @@ const roots: RootGlossTable = {
   rog: { gloss: 'entreat', forms: { verb: 'entreat' } },
   flagit: { gloss: 'demand', forms: { verb: 'demand' } },
   incant: { gloss: 'chant over', forms: { verb: 'chant over' } },
-  nunti: { gloss: 'messenger', forms: { noun: 'messenger', verb: 'announce' } },
+  nunti: { gloss: 'messenger', forms: { verb: 'announce' } },
   proper: { gloss: 'hasten near', forms: { verb: 'hasten near' } },
   advol: { gloss: 'fly hither', forms: { verb: 'fly hither' } },
   // hidden
@@ -69,14 +69,9 @@ const roots: RootGlossTable = {
   // binding
   lig: { gloss: 'bind', forms: { verb: 'bind' } },
   oblig: { gloss: 'bind fast', forms: { verb: 'bind fast' } },
-  nod: { gloss: 'knot', forms: { noun: 'knot', verb: 'knot' } },
-  vincul: { gloss: 'bond', forms: { noun: 'bond' } },
-  caten: { gloss: 'chain', forms: { noun: 'chain' } },
+  nod: { gloss: 'knot', forms: { verb: 'knot' } },
   obsign: { gloss: 'seal', forms: { verb: 'seal' } },
-  sigill: { gloss: 'seal', forms: { noun: 'seal' } },
-  fren: { gloss: 'bridle', forms: { noun: 'bridle', verb: 'curb' } },
-  ser: { gloss: 'door-bar', forms: { noun: 'door-bar' } },
-  clav: { gloss: 'nail', forms: { noun: 'nail' } },
+  fren: { gloss: 'bridle', forms: { verb: 'curb' } },
   // fire
   flamm: { gloss: 'flame', forms: { noun: 'flame', verb: 'set ablaze' } },
   crem: { gloss: 'burn up', forms: { verb: 'burn up' } },
@@ -179,9 +174,6 @@ const roots: RootGlossTable = {
   retent: { gloss: 'hold back', forms: { verb: 'hold back' } },
   nov: { gloss: 'renew', forms: { verb: 'renew', adj: 'new' } },
   rapid: { gloss: 'swift', forms: { adj: 'swift', adv: 'swiftly' } },
-  curricul: { gloss: 'course', forms: { noun: 'course' } },
-  vestigi: { gloss: 'footstep', forms: { noun: 'footstep' } },
-  orbit: { gloss: 'wheel-track', forms: { noun: 'wheel-track' } },
   // beings
   div: { gloss: 'god', forms: { noun: 'god' } },
   domin: { gloss: 'lord', forms: { noun: 'lord' } },

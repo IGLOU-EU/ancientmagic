@@ -111,7 +111,10 @@ test('the selected lexicon matches the spec table, root and gloss', () => {
   // thirteen: the sky and the liver entered signs, the entrail-reader and the
   // augural pair entered sight (spec 9.3, 9.11). The thirteenth field of ten
   // is beings, which the Invocation widening opened (spec 1.3).
-  assert.strictEqual(total, 156, 'thirteen fields of ten roots and two of thirteen');
+  // Eleven fields hold ten, sight and signs hold thirteen, and binding and
+  // course are shorter since the dead-lexicon sweep took out the nouns no
+  // order ever asked them for (spec 9.3).
+  assert.strictEqual(total, 148, 'eleven of ten, two of thirteen, two shortened');
 });
 
 // This genome selects rather than coins, so the class is not a choice: it is

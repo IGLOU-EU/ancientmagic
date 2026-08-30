@@ -103,13 +103,8 @@ export const LEXICON: Readonly<
     ['lig', 'ligare', 'bind'],
     ['oblig', 'obligare', 'bind fast'],
     ['nod', 'nodus', 'knot'],
-    ['vincul', 'vinculum', 'bond'],
-    ['caten', 'catena', 'chain'],
     ['obsign', 'obsignare', 'seal'],
-    ['sigill', 'sigillum', 'seal'],
     ['fren', 'frenum', 'bridle'],
-    ['ser', 'sera', 'door-bar'],
-    ['clav', 'clavus', 'nail'],
   ],
   fire: [
     ['flamm', 'flamma', 'flame'],
@@ -221,9 +216,6 @@ export const LEXICON: Readonly<
     ['retent', 'retentare', 'hold back'],
     ['nov', 'novare', 'renew'],
     ['rapid', 'rapidus', 'swift'],
-    ['curricul', 'curriculum', 'course'],
-    ['vestigi', 'vestigium', 'footstep'],
-    ['orbit', 'orbita', 'wheel-track'],
   ],
   beings: [
     ['div', 'divus', 'god'],
