@@ -195,7 +195,7 @@ const powers: NamedPowerTable = {
   akrammakhamarei: { name: 'Akrammachamarei', gloss: 'Akrammachamarei, the vox of the papyri.' },
   damnameneus: { name: 'Damnameneus', gloss: 'Damnameneus, the Ephesian word standing alone.' },
   ereskhigal: { name: 'Ereschigal', gloss: 'Ereschigal, called up from below.' },
-  nebutosoualeeth: {
+  neboutosoualeeth: {
     name: 'Nebutosualeth',
     gloss: 'Nebutosualeth, named in the binding spells.',
   },

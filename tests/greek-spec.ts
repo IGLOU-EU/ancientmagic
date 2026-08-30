@@ -235,7 +235,7 @@ export const POWER_TABLE: ReadonlyArray<readonly [word: string, glyphs: string]>
   ['akrammakhamarei', 'ΑΚΡΑΜΜΑΧΑΜΑΡΕΙ'],
   ['damnameneus', 'ΔΑΜΝΑΜΕΝΕΥΣ'],
   ['ereskhigal', 'ΕΡΕΣΧΙΓΑΛ'],
-  ['nebutosoualeeth', 'ΝΕΒΥΤΟΣΟΥΑΛΗΘ'],
+  ['neboutosoualeeth', 'ΝΕΒΟΥΤΟΣΟΥΑΛΗΘ'],
   ['aktioophi', 'ΑΚΤΙΩΦΙ'],
   ['ekatee', 'ΕΚΑΤΗ'],
   ['maskelli', 'ΜΑΣΚΕΛΛΙ'],
@@ -254,7 +254,7 @@ export const BRIGHT_WORDS: ReadonlyArray<string> = [
 
 export const DARK_WORDS: ReadonlyArray<string> = [
   'ereskhigal',
-  'nebutosoualeeth',
+  'neboutosoualeeth',
   'aktioophi',
   'ekatee',
   'maskelli',

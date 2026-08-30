@@ -307,7 +307,7 @@ const powers: NamedPowerTable = {
     gloss: 'Damnameneus, le mot d’Éphèse qui se tient seul.',
   },
   ereskhigal: { name: 'Ereschigal', gloss: 'Ereschigal, appelée d’en bas.' },
-  nebutosoualeeth: {
+  neboutosoualeeth: {
     name: 'Nebutosoualêth',
     gloss: 'Nebutosoualêth, nommée dans les charmes de lien.',
   },

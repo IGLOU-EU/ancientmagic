@@ -276,7 +276,7 @@ export const BRIGHT_POWER: ReadonlyArray<string> = [
 // Maskelli formula is cited by its head word the way the papyri cite it.
 export const DARK_POWER: ReadonlyArray<string> = [
   'ereskhigal',
-  'nebutosoualeeth',
+  'neboutosoualeeth',
   'aktioophi',
   'ekatee',
   'maskelli',
