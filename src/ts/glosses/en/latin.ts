@@ -205,6 +205,9 @@ const powers: NamedPowerTable = {
   egeria: { name: 'Egeria', gloss: 'Egeria, the spring consulted by night.' },
   proserpina: { name: 'Proserpina', gloss: 'Proserpina, the queen below.' },
   dispater: { name: 'Dis Pater', gloss: 'Dis Pater, the lord of the dead.' },
+  manes: { name: 'Manes', gloss: 'Manes, the dead of the house.' },
+  orcus: { name: 'Orcus', gloss: 'Orcus, death and the place of the dead in one name.' },
+  cerberus: { name: 'Cerberus', gloss: 'Cerberus, the hound at the gate below.' },
 };
 
 // Dread epithets of the Eldritch register (spec 9.10), each glossed with the

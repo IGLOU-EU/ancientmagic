@@ -199,6 +199,9 @@ const powers: NamedPowerTable = {
     name: 'Nebutosualeth',
     gloss: 'Nebutosualeth, named in the binding spells.',
   },
+  aktioophi: { name: 'Aktiophi', gloss: 'Aktiophi, the first word of the crossroads triad.' },
+  ekatee: { name: 'Hekate', gloss: 'Hekate, who holds the crossroads and the binding.' },
+  maskelli: { name: 'Maskelli', gloss: 'Maskelli, the formula named by its first word.' },
 };
 
 // Dread epithets of the Eldritch register (spec 8.10), each glossed with the

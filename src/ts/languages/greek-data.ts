@@ -270,7 +270,17 @@ export const BRIGHT_POWER: ReadonlyArray<string> = [
   'damnameneus',
 ];
 
-export const DARK_POWER: ReadonlyArray<string> = ['ereskhigal', 'nebutosoualeeth'];
+// The chthonic five of spec 8.7. Two of them are the second and third words of
+// the triad the papyri speak at the crossroads, so the first word and the
+// goddess it addresses joined them rather than a list being extended, and the
+// Maskelli formula is cited by its head word the way the papyri cite it.
+export const DARK_POWER: ReadonlyArray<string> = [
+  'ereskhigal',
+  'nebutosoualeeth',
+  'aktioophi',
+  'ekatee',
+  'maskelli',
+];
 
 // The shrinking sequence drops a letter at a time down to a single one, which
 // iaoo does exactly: ΙΑΩ, ΑΩ, Ω (spec 8.7).

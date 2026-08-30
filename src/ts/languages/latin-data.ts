@@ -298,9 +298,16 @@ export const BRIGHT_POWER: ReadonlyArray<LatinPower> = [
   { id: 'egeria', words: ['egeria'] },
 ];
 
+// The chthonic five of spec 9.7. Two come from the record alone, the dead the
+// tombstones and the tablets address and the one name for the lord below that
+// Latin did not borrow, and the third comes from the mythology and is declared
+// as such in the spec rather than passed off as a tablet's word.
 export const DARK_POWER: ReadonlyArray<LatinPower> = [
   { id: 'proserpina', words: ['proserpina'] },
   { id: 'dispater', words: ['dis', 'pater'] },
+  { id: 'manes', words: ['manes'] },
+  { id: 'orcus', words: ['orcus'] },
+  { id: 'cerberus', words: ['cerberus'] },
 ];
 
 // The triangle word of the clear register, fixed per school by the three-case

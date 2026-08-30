@@ -236,6 +236,9 @@ export const POWER_TABLE: ReadonlyArray<readonly [word: string, glyphs: string]>
   ['damnameneus', 'ΔΑΜΝΑΜΕΝΕΥΣ'],
   ['ereskhigal', 'ΕΡΕΣΧΙΓΑΛ'],
   ['nebutosoualeeth', 'ΝΕΒΥΤΟΣΟΥΑΛΗΘ'],
+  ['aktioophi', 'ΑΚΤΙΩΦΙ'],
+  ['ekatee', 'ΕΚΑΤΗ'],
+  ['maskelli', 'ΜΑΣΚΕΛΛΙ'],
 ];
 
 export const BRIGHT_WORDS: ReadonlyArray<string> = [
@@ -249,7 +252,13 @@ export const BRIGHT_WORDS: ReadonlyArray<string> = [
   'damnameneus',
 ];
 
-export const DARK_WORDS: ReadonlyArray<string> = ['ereskhigal', 'nebutosoualeeth'];
+export const DARK_WORDS: ReadonlyArray<string> = [
+  'ereskhigal',
+  'nebutosoualeeth',
+  'aktioophi',
+  'ekatee',
+  'maskelli',
+];
 
 // Dread epithets of spec 8.10, all ending in -OOTH.
 export const DREAD_TABLE: ReadonlyArray<readonly [word: string, gloss: string]> = [

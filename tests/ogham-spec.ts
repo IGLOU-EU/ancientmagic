@@ -377,6 +377,9 @@ export const POWER_TABLE: ReadonlyArray<readonly [id: string, glyphs: string]> =
   ['danu', '\u1687\u1690\u1685\u1692'],
   ['morrigan', '\u168B\u1691\u168F\u168F\u1694\u168C\u1690\u1685'],
   ['donn', '\u1687\u1691\u1685\u1685'],
+  ['bodua', '\u1681\u1691\u1687\u1692\u1690'],
+  ['macha', '\u168B\u1690\u1689\u1686\u1690'],
+  ['nemain', '\u1685\u1693\u168B\u1690\u1694\u1685'],
 ];
 
 export const BRIGHT_IDS: ReadonlyArray<string> = [
@@ -390,7 +393,13 @@ export const BRIGHT_IDS: ReadonlyArray<string> = [
   'danu',
 ];
 
-export const DARK_IDS: ReadonlyArray<string> = ['morrigan', 'donn'];
+export const DARK_IDS: ReadonlyArray<string> = [
+  'morrigan',
+  'donn',
+  'bodua',
+  'macha',
+  'nemain',
+];
 
 // The kenning vox of spec 10.7: one letter standing as its own word, spoken by
 // its attested name and glossed by its kenning. The closed pool is these five.

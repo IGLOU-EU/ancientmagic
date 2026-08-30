@@ -285,6 +285,12 @@ const powers: NamedPowerTable = {
     gloss: 'Morrigan, la grande reine, corneille de bataille et prophétesse.',
   },
   donn: { name: 'Donn', gloss: 'Donn, le sombre, dans la maison de qui les morts se rassemblent.' },
+  bodua: { name: 'Bodua', gloss: 'Bodua, la corneille de bataille, gravée sur un autel gaulois.' },
+  macha: {
+    name: 'Macha',
+    gloss: 'Macha, la deuxième des trois, dont la terre garde encore le nom.',
+  },
+  nemain: { name: 'Nemain', gloss: 'Nemain, la fureur qui rompt une armée.' },
 };
 
 // Each epithet keeps the article a vocative drops.

@@ -207,6 +207,9 @@ const powers: NamedPowerTable = {
   danu: { name: 'Danu', gloss: 'Danu, the mother the Túatha Dé Danann are named from.' },
   morrigan: { name: 'Morrigan', gloss: 'Morrigan, the great queen, battle-crow and prophetess.' },
   donn: { name: 'Donn', gloss: 'Donn, the dark one, in whose house the dead gather.' },
+  bodua: { name: 'Bodua', gloss: 'Bodua, the battle-crow, cut on a Gaulish altar.' },
+  macha: { name: 'Macha', gloss: 'Macha, second of the three, whose name the ground still keeps.' },
+  nemain: { name: 'Nemain', gloss: 'Nemain, the frenzy that breaks a host.' },
 };
 
 // Dread epithets of the Eldritch register (spec 10.10), each glossed with the

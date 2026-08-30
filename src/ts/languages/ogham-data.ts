@@ -331,9 +331,17 @@ export const BRIGHT_POWER: ReadonlyArray<OghamPower> = [
   power('danu', 'd a n u'),
 ];
 
+// The chthonic five of spec 10.7, and the one pool in this document that its
+// genome's first source could not fill at all: the stones keep no dark divine
+// name. So all five come from the mythology under the shape discipline of
+// 10.7, and three of them finish the triad the sources bind to the great queen
+// rather than lengthening a list.
 export const DARK_POWER: ReadonlyArray<OghamPower> = [
   power('morrigan', 'm o r r i g a n'),
   power('donn', 'd o n n'),
+  power('bodua', 'b o d u a'),
+  power('macha', 'm a c h a'),
+  power('nemain', 'n e m a i n'),
 ];
 
 // The triangle word of the clear register, fixed per school by the three-case

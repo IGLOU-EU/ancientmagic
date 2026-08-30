@@ -282,6 +282,9 @@ export const POWER_TABLE: ReadonlyArray<readonly [id: string, glyphs: string]> =
   ['egeria', 'EGERIA'],
   ['proserpina', 'PROSERPINA'],
   ['dispater', 'DIS·PATER'],
+  ['manes', 'MANES'],
+  ['orcus', 'ORCVS'],
+  ['cerberus', 'CERBERVS'],
 ];
 
 // The same rows read aloud. The glyph column cannot be turned back into the
@@ -297,6 +300,9 @@ export const POWER_WORDS: Readonly<Record<string, ReadonlyArray<string>>> = {
   egeria: ['egeria'],
   proserpina: ['proserpina'],
   dispater: ['dis', 'pater'],
+  manes: ['manes'],
+  orcus: ['orcus'],
+  cerberus: ['cerberus'],
 };
 
 export const BRIGHT_IDS: ReadonlyArray<string> = [
@@ -309,7 +315,13 @@ export const BRIGHT_IDS: ReadonlyArray<string> = [
   'egeria',
 ];
 
-export const DARK_IDS: ReadonlyArray<string> = ['proserpina', 'dispater'];
+export const DARK_IDS: ReadonlyArray<string> = [
+  'proserpina',
+  'dispater',
+  'manes',
+  'orcus',
+  'cerberus',
+];
 
 // The two chant rows, which fill only the free power word of a school clause.
 export const CHANT_IDS: ReadonlyArray<string> = ['motas', 'huat'];

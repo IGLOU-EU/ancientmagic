@@ -311,6 +311,12 @@ const powers: NamedPowerTable = {
     name: 'Nebutosoualêth',
     gloss: 'Nebutosoualêth, nommée dans les charmes de lien.',
   },
+  aktioophi: {
+    name: 'Aktiophi',
+    gloss: 'Aktiophi, le premier mot de la triade des carrefours.',
+  },
+  ekatee: { name: 'Hécate', gloss: 'Hécate, qui tient les carrefours et les liens.' },
+  maskelli: { name: 'Maskelli', gloss: 'Maskelli, la formule que l’on nomme par son premier mot.' },
 };
 
 // Each epithet keeps the article a vocative drops.

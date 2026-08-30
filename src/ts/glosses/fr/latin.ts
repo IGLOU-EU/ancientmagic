@@ -284,6 +284,9 @@ const powers: NamedPowerTable = {
   egeria: { name: 'Égérie', gloss: 'Égérie, la source que le roi consultait de nuit.' },
   proserpina: { name: 'Proserpine', gloss: 'Proserpine, la reine d’en bas.' },
   dispater: { name: 'Dis Pater', gloss: 'Dis Pater, le maître des morts.' },
+  manes: { name: 'Mânes', gloss: 'Mânes, les morts de la maison.' },
+  orcus: { name: 'Orcus', gloss: 'Orcus, la mort et le séjour des morts sous un seul nom.' },
+  cerberus: { name: 'Cerbère', gloss: 'Cerbère, le chien de la porte d’en bas.' },
 };
 
 // Each epithet keeps the article a vocative drops.
